@@ -6,11 +6,11 @@ This repository documents my journey of learning game development and OpenGL by 
 
 ## 🎯 Goals
 
-- [ ] Render a single cube with texture
-- [ ] First-person camera (WASD + mouse)
-- [ ] Chunk system (16×256×16)
-- [ ] Basic terrain generation (Perlin noise)
-- [ ] Block placing / breaking
+- [x] Render a single cube with texture
+- [x] First-person camera (WASD + mouse)
+- [x] Chunk system (16×256×16)
+- [x] Basic terrain generation (Perlin noise)
+- [x] Block placing / breaking
 - [ ] Save & load world
 - [ ] more...
 
@@ -24,6 +24,10 @@ This repository documents my journey of learning game development and OpenGL by 
 | Math | GLM |
 | Texture | stb_image |
 
+## External Assets
+- stb_image (https://github.com/nothings/stb)
+- FastNoiseLite (https://github.com/Auburn/FastNoiseLite)
+
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -31,6 +35,20 @@ This repository documents my journey of learning game development and OpenGL by 
 - CMake 3.10+
 - C++ compiler with C++11 support
 - OpenGL 3.3+ compatible GPU
+
+### Textures
+
+#### Resource Files Notice
+Due to copyright reasons, this repository does not include the original Minecraft textures.
+
+#### How to Obtain Textures
+- Purchase the official version of Minecraft
+
+- Extract them from the .minecraft/assets/ directory
+
+- Or use your own custom texture pack
+
+After obtaining the textures, place the textures folder from the texture pack into the same directory as the executable file.
 
 ### Build
 
