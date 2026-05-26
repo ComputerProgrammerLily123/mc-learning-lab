@@ -54,7 +54,7 @@ After obtaining the textures, place the textures folder from the texture pack in
 ### Build
 
 ```bash
-git clone https://github.com/[your-name]/mc-learning-lab.git
+git clone https://github.com/ComputerProgrammerLily123/mc-learning-lab.git
 cd mc-learning-lab
 mkdir build && cd build
 cmake ..
