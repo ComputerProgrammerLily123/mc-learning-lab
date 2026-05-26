@@ -85,6 +85,18 @@ void Input::ProcessKeyboard(int key, int scancode, int action, int mods)
         m_currentKeys[key] = (action != GLFW_RELEASE);
     }
 }
-void Input::ProcessScoll()
+void Input::ScrollCallback(GLFWwindow *window, double xOffset, double yOffset)
 {
+    Input::GetInstance().ProcessScoll(yOffset);
+}
+void Input::ProcessScoll(double yOffset)
+{
+    deltaScroll = yOffset;
+}
+double Input::GetDeltaScroll() const
+{
+    return deltaScroll;
+}
+void Input::UpdateScroll(){
+    deltaScroll = 0;
 }

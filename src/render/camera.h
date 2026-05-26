@@ -12,30 +12,25 @@ enum Camera_Movement
     RIGHT
 };
 
-const float YAW = -90.0f;
-const float PITCH = 0.0f;
-const float SENSITIVITY = 0.1f;
-const float ZOOM = 45.0f;
-
 class Camera
 {
 public:
-    glm::vec3 position;
-    glm::vec3 front;
-    glm::vec3 up;
+    glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 front = glm::vec3(0.0f, 0.0f, -1.0f);
+    glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
     glm::vec3 right;
-    glm::vec3 worldUp;
+    glm::vec3 worldUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
-    float yaw;
-    float pitch;
+    float yaw = -90.0f;
+    float pitch = 0.0f;
 
     unsigned screenWidth;
     unsigned screenHeight;
 
-    float mouseSensitivity;
-    float zoom;
+    float mouseSensitivity = 0.1f;
+    float zoom = 60.0f;
 
-    Camera(unsigned screenWidth, unsigned screenHeight, glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH);
+    Camera(unsigned screenWidth, unsigned screenHeight);
 
     glm::mat4 GetPerspectiveMatrix();
     glm::mat4 GetViewMatrix();
@@ -44,6 +39,8 @@ public:
     void ResizeScreen(unsigned width, unsigned height);
     void SetPosition(glm::vec3 position);
     void SetPosition(float x, float y, float z);
+    void SetYaw(float offset);
+    void SetZoom(float zoom);
 
 private:
     void UpdateCameraVectors();

@@ -2,6 +2,7 @@
 #define WORLD_H
 
 #include "chunk.h"
+#include "worldGenerator.h"
 #include <unordered_map>
 class World
 {
@@ -13,9 +14,11 @@ public:
     void SetBlockAndRefresh(int x, int y, int z, int id);
     Chunk* GetChunk(int x,int z);
     void CreateChunk(int x,int z);
-    void InitChunk();
+    void InitChunk(int32_t i, int32_t j);
 private:
-    unsigned worldSize;
+    int32_t renderRadian;
     std::unordered_map<uint64_t,Chunk*> chunks;
+    FastNoiseLite noise1,noise2;
+    WorldGenerator worldGen;
 };
 #endif

@@ -1,5 +1,5 @@
-#ifndef TIME_H
-#define TIME_H
+#ifndef TIME_SYSTEM_H
+#define TIME_SYSTEM_H
 
 class TimeSystem
 {

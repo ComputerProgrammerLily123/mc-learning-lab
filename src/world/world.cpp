@@ -1,7 +1,6 @@
 #include "world.h"
 
-#include <fastNoiseLite/FastNoiseLite.h>
-World::World(unsigned size) : worldSize(size)
+World::World(unsigned size) : renderRadian(size), worldGen(this)
 {
 }
 World::~World()
@@ -35,7 +34,7 @@ void World::SetBlock(int x, int y, int z, int id)
     unsigned localZ = z - chunkZ * 16;
     if (GetChunk(chunkX, chunkZ))
     {
-        GetChunk(chunkX, chunkZ)->SetBlock(id, localX, y, localZ);
+        GetChunk(chunkX, chunkZ)->SetBlock(localX, y, localZ,id);
     }
 }
 void World::SetBlockAndRefresh(int x, int y, int z, int id)
@@ -46,7 +45,7 @@ void World::SetBlockAndRefresh(int x, int y, int z, int id)
     unsigned localZ = z - chunkZ * 16;
     if (GetChunk(chunkX, chunkZ))
     {
-        GetChunk(chunkX, chunkZ)->SetBlock(id, localX, y, localZ);
+        GetChunk(chunkX, chunkZ)->SetBlock(localX, y, localZ,id);
         GetChunk(chunkX, chunkZ)->UpdateMesh();
         if (localX == 15 && GetChunk(chunkX + 1, chunkZ))
         {
@@ -83,42 +82,7 @@ void World::CreateChunk(int x, int z)
         return;
     chunks[key] = new Chunk(x, z, this);
 }
-void World::InitChunk()
+void World::InitChunk(int32_t i, int32_t j)
 {
-    FastNoiseLite noise;
-    noise.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
-    noise.SetFrequency(0.05f);
-    for (unsigned i = 0; i < worldSize; i++)
-    {
-        for (unsigned j = 0; j < worldSize; j++)
-        {
-            for (unsigned x = 0; x < CHUNK_WIDTH; x++)
-            {
-                for (unsigned z = 0; z < CHUNK_WIDTH; z++)
-                {
-                    if (GetChunk(i, j))
-                    {
-                        unsigned height = ((noise.GetNoise((float)(x + i * 16), (float)(z + j * 16)) + 1) / 2) * 10 + 10;
-                        for (unsigned y = 0; y < height - 3; y++)
-                        {
-                            GetChunk(i, j)->SetBlock(3, x, y, z);
-                        }
-                        for (unsigned y = height - 3; y < height; y++)
-                        {
-                            GetChunk(i, j)->SetBlock(2, x, y, z);
-                        }
-                        GetChunk(i, j)->SetBlock(1, x, height, z);
-                    }
-                }
-            }
-        }
-    }
-    for (unsigned i = 0; i < worldSize; i++)
-    {
-        for (unsigned j = 0; j < worldSize; j++)
-        {
-            if (GetChunk(i, j))
-                GetChunk(i, j)->UpdateMesh();
-        }
-    }
+    worldGen.GenerateChunk(i, j);
 }

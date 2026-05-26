@@ -1,62 +1,72 @@
 #include "collision.h"
 
 #include "world.h"
+#include <iostream>
 CollisionSystem::CollisionSystem(World *world) : world(world) {}
-void CollisionSystem::CheckCollisionAxis(glm::vec3 &pos, const glm::vec3 &move, int axis)
-{
-    glm::vec3 testPos = pos;
-    testPos[axis] += move[axis];
-    glm::i16vec3 testBlockPos = glm::round(testPos);
-    AABB playerBox = GetPlayerAABB(testPos);
-    auto block1 = GetBlockAABB(testBlockPos.x, testBlockPos.y, testBlockPos.z);
-    auto block2 = GetBlockAABB(testBlockPos.x, testBlockPos.y + 1, testBlockPos.z);
-    if (world->GetBlock(testBlockPos.x, testBlockPos.y, testBlockPos.z) && playerBox.Intersects(block1))
-    {
-        if (axis == 1)
-        {
-            if (move[axis] > 0)
-            {
-                pos[axis] = block1.min[axis];
-            }
-            else if (move[axis] < 0)
-            {
-                pos[axis] = block1.max[axis];
-            }
-        }
-        return;
-    }
-    if (world->GetBlock(testBlockPos.x, testBlockPos.y + 1, testBlockPos.z) && playerBox.Intersects(block2))
-    {
-        if (axis == 1)
-        {
-            if (move[axis] > 0)
-            {
-                pos[axis] = block2.min[axis];
-            }
-            else if (move[axis] < 0)
-            {
-                pos[axis] = block2.max[axis];
-            }
-        }
-        return;
-    }
-    pos[axis] += move[axis];
-}
-
 glm::vec3 CollisionSystem::Move(const glm::vec3 &position, const glm::vec3 &movement)
 {
     glm::vec3 result = position;
-
-    CheckCollisionAxis(result, movement, 1); // axis 1 = Y
-    CheckCollisionAxis(result, movement, 0); // axis 0 = X
-    CheckCollisionAxis(result, movement, 2); // axis 2 = Z
+    unsigned step = glm::max(static_cast<int>(glm::max(glm::max(abs(movement.x), abs(movement.y)), abs(movement.z))), 1) * 4;
+    for (unsigned i = 0; i < step; i++)
+    {
+        AABB playerBox = GetPlayerAABB(result + glm::vec3(movement.x / step, movement.y / step, movement.z / step));
+        auto block0 = glm::i16vec3(static_cast<int>(glm::round(result.x)), static_cast<int>(glm::floor(result.y + (movement.y > 0 ? 2.5f : -0.5f))), static_cast<int>(glm::round(result.z)));
+        auto block1 = glm::i16vec3(static_cast<int>(glm::round(result.x + movement.x / abs(movement.x))), static_cast<int>(glm::floor(result.y) + 1), static_cast<int>(glm::round(result.z)));
+        auto block2 = glm::i16vec3(static_cast<int>(glm::round(result.x)), static_cast<int>(glm::floor(result.y) + 1), static_cast<int>(glm::round(result.z + movement.z / abs(movement.z))));
+        if (world->GetBlock(block0.x, block0.y, block0.z) && playerBox.Intersects(GetBlockAABB(block0.x, block0.y, block0.z)))
+        {
+            if (movement.y > 0)
+            {
+                result.y = block0.y - 2.5f;
+            }
+            else if (movement.y < 0)
+            {
+                result.y = block0.y + 0.5f;
+            }
+        }
+        else
+        {
+            result.y += movement.y / step;
+        }
+        if (world->GetBlock(block1.x, block1.y, block1.z) && playerBox.Intersects(GetBlockAABB(block1.x, block1.y, block1.z)) || world->GetBlock(block1.x, block1.y + 1, block1.z) && playerBox.Intersects(GetBlockAABB(block1.x, block1.y + 1, block1.z)))
+        {
+            if (movement.x > 0)
+            {
+                result.x = block1.x - 0.8f;
+            }
+            else if (movement.x < 0)
+            {
+                result.x = block1.x + 0.8f;
+            }
+        }
+        else
+        {
+            result.x += movement.x / step;
+        }
+        if (world->GetBlock(block2.x, block2.y, block2.z) && playerBox.Intersects(GetBlockAABB(block2.x, block2.y, block2.z)) || world->GetBlock(block2.x, block2.y + 1, block2.z) && playerBox.Intersects(GetBlockAABB(block2.x, block2.y + 1, block2.z)))
+        {
+            if (movement.z > 0)
+            {
+                result.z = block2.z - 0.8f;
+            }
+            else if (movement.z < 0)
+            {
+                result.z = block2.z + 0.8f;
+            }
+        }
+        else
+        {
+            result.z += movement.z / step;
+        }
+    }
     return result;
 }
 
 bool CollisionSystem::IsOnGround(const glm::vec3 &position)
 {
-    int x = (int)glm::round(position.x);
-    int y = (int)glm::floor(position.y);
-    int z = (int)glm::round(position.z);
-    return world->GetBlock(x, y, z) && GetPlayerAABB(position).Intersects(GetBlockAABB(x, y, z));
+    AABB playerBox = GetPlayerAABB(position - glm::vec3(0, 0.000001f, 0));
+    int x = static_cast<int>(glm::round(position.x));
+    int y = static_cast<int>(glm::floor(position.y) + 1);
+    int z = static_cast<int>(glm::round(position.z));
+    return world->GetBlock(x, y - 1, z) && playerBox.Intersects(GetBlockAABB(x, y - 1, z));
 }

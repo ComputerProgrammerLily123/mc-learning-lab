@@ -27,6 +27,7 @@ This repository documents my journey of learning game development and OpenGL by 
 ## External Assets
 - stb_image (https://github.com/nothings/stb)
 - FastNoiseLite (https://github.com/Auburn/FastNoiseLite)
+- nlohmann_json (https://github.com/nlohmann/json)
 
 ## 🚀 Getting Started
 

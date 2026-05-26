@@ -1,12 +1,8 @@
 #include "camera.h"
 
 #include <iostream>
-Camera::Camera(unsigned screenWidth, unsigned screenHeight, glm::vec3 up, float yaw, float pitch) : screenWidth(screenWidth), screenHeight(screenHeight), front(glm::vec3(0.0f, 0.0f, -1.0f)), mouseSensitivity(SENSITIVITY), zoom(ZOOM)
+Camera::Camera(unsigned screenWidth, unsigned screenHeight) : screenWidth(screenWidth), screenHeight(screenHeight)
 {
-    this->position = position;
-    this->worldUp = up;
-    this->yaw = yaw;
-    this->pitch = pitch;
     UpdateCameraVectors();
 }
 glm::mat4 Camera::GetPerspectiveMatrix()
@@ -50,4 +46,11 @@ void Camera::SetPosition(glm::vec3 position)
 void Camera::SetPosition(float x, float y, float z)
 {
     position = glm::vec3(x,y,z);
+}
+void Camera::SetYaw(float offset){
+    yaw += offset;
+    UpdateCameraVectors();
+}
+void Camera::SetZoom(float zoom){
+    this->zoom = zoom;
 }

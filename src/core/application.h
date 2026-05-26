@@ -1,13 +1,15 @@
 #ifndef APPLICATION_H
 #define APPLICATION_H
 
-#define WORLD_SIZE 64
+#define WORLD_SIZE 6
 
 #include "input.h"
-#include "time.h"
+#include "timeSystem.h"
 
 class Window;
-class Renderer;
+class OutlineRenderer;
+class WorldRenderer;
+class SkyboxRenderer;
 class UISystem;
 class Camera;
 class World;
@@ -24,12 +26,14 @@ public:
     void Quit();
 
 private:
-    int screenWidth;
-    int screenHeight;
+    int screenWidth = 1200;
+    int screenHeight = 800;
 
     Window *window;
-    Renderer *renderer;
-    UISystem * uiSystem;
+    OutlineRenderer *outlineRenderer;
+    WorldRenderer *worldRenderer;
+    SkyboxRenderer *skyboxRenderer;
+    UISystem *uiSystem;
     Camera *camera;
     World *world;
     Player *player;
@@ -42,5 +46,7 @@ private:
     void InitGLFWCallback();
     void InitGame();
     void RegisterBlocks();
+    void RegisterItems();
+    void OnWindowResize(unsigned width, unsigned height);
 };
 #endif

@@ -1,21 +1,33 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
 
-#define ATLAS_SIZE 32
+#define ATLAS_CELL 16
+#define ATLAS_SIZE 64
+
+#include <glad/glad.h>
 
 #include <string>
-
-class Texture{
+#include <vector>
+enum TextureType
+{
+    SingleSprite,
+    MultipleSprite,
+    Cubemap
+};
+class Texture
+{
 public:
-    Texture(const std::string& path);
+    Texture(const std::string &path);
     ~Texture();
     void Bind(unsigned slot = 0) const;
-    void Unbind() const;
-    void CreateAtlas();
-    void LoadTexture(const std::string &filename);
-    private:
-    std::string loadPath; 
+    void CreateAtlas(const std::vector<std::string> &filename);
+    void CreateCubemap(const std::vector<std::string> &filename);
+    void CreateTexture(const std::string &filename);
+
+private:
+    std::string loadPath;
     unsigned ID;
-    void LoadTextureToAtlas(const std::string& filename, int x, int y, int width, int heigh);
+    void LoadSingleTexture(const std::string &filename);
+    void LoadMultipleTexture(const std::string &filename, int x, int y, int width, int height);
 };
 #endif

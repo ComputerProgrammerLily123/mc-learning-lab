@@ -23,7 +23,6 @@ public:
     }
     glm::vec2 GetMouseCurrentPosition();
     glm::vec2 GetMouseDeltaPosition();
-
     void UpdateMousePosition();
     bool IsMouseButtonDown(int button) const;
     bool IsMouseButtonPressed(int button) const;
@@ -32,10 +31,13 @@ public:
     bool IsKeyDown(int key) const;
     bool IsKeyPressed(int key) const;
     bool IsKeyUp(int key) const;
+    double GetDeltaScroll() const;
+    void UpdateScroll();
 
     static void MouseButtonCallback(GLFWwindow *window,int button,int action,int mods);
     static void MouseMoveCallback(GLFWwindow *window, double xpos, double ypos);
     static void KeyboardCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+    static void ScrollCallback(GLFWwindow* window,double xOffset,double yOffset);
 
 private:
     Input() = default;
@@ -50,9 +52,13 @@ private:
 
     int mouseButtonState[MOUSE_BUTTON_COUNT] = {0};
 
+    double lastScrollPos{0.0};
+    double currentScrollPos{0.0};
+    double deltaScroll{0.0};
+
     void ProcessMousePosition(double xpos, double ypos);
     void ProcessMouseButton(int button, int action, int mods);
     void ProcessKeyboard(int key, int scancode, int action, int mods);
-    void ProcessScoll();
+    void ProcessScoll(double yOffset);
 };
 #endif

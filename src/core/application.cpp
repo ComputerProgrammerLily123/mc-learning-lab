@@ -5,12 +5,16 @@
 #include <iostream>
 
 #include "window.h"
-#include "renderer.h"
+#include "outlineRenderer.h"
+#include "worldRenderer.h"
+#include "skyboxRenderer.h"
 #include "uiSystem.h"
 #include "camera.h"
 #include "world.h"
 #include "player.h"
-Application::Application() : screenWidth(1200), screenHeight(800), window(nullptr), camera(nullptr), renderer(nullptr), uiSystem(nullptr), world(nullptr), player(nullptr)
+#include "item.h"
+#include "jsonReader.h"
+Application::Application()
 {
     InitGLFW();
     InitGLAD();
@@ -19,21 +23,14 @@ Application::Application() : screenWidth(1200), screenHeight(800), window(nullpt
 }
 Application::~Application()
 {
-    delete renderer;
+    delete outlineRenderer;
+    delete worldRenderer;
     delete camera;
     delete world;
     delete window;
 }
 void Application::InitGLFW()
 {
-    if (!glfwInit())
-    {
-        std::cout << "Failed to initialize GLFW" << std::endl;
-        return;
-    }
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     window = new Window(screenWidth, screenHeight, "Minecraft:Papyrus Edition");
     window->SetCursorState(false);
 }
@@ -50,54 +47,99 @@ void Application::InitGLFWCallback()
     window->SetCursorPosCallback(Input::GetInstance().MouseMoveCallback);
     window->SetKeyCallback(Input::GetInstance().KeyboardCallback);
     window->SetMouseButtonCallback(Input::GetInstance().MouseButtonCallback);
+    window->SetScrollCallback(Input::GetInstance().ScrollCallback);
+    window->SetWindowUserPointer(this);
+    window->SetFrameBufferSizeCallback([](GLFWwindow *win, int width, int height)
+                                       {      
+        Application* app = static_cast<Application*>(glfwGetWindowUserPointer(win));
+        if (app) app->OnWindowResize(width, height); });
 }
 void Application::InitGame()
 {
     RegisterBlocks();
     camera = new Camera(screenWidth, screenHeight);
     world = new World(WORLD_SIZE);
-    renderer = new Renderer(WORLD_SIZE);
-    uiSystem = new UISystem(screenWidth,screenHeight);
-    player = new Player(glm::vec3(10.0f, 60.0f, 10.0f),camera,world);
-    for (unsigned a = 0; a < 16; a++)
-    {
-        for (unsigned b = 0; b < 16; b++)
-        {
-            world->CreateChunk(a, b);
-        }
-    }
-    world->InitChunk();
+    outlineRenderer = new OutlineRenderer(WORLD_SIZE);
+    worldRenderer = new WorldRenderer(WORLD_SIZE);
+    skyboxRenderer = new SkyboxRenderer();
+    uiSystem = new UISystem(screenWidth, screenHeight);
+    player = new Player(glm::vec3(10.0f, 100.0f, 10.0f), camera, world);
 }
 void Application::RegisterBlocks()
 {
     auto &blockRegister = BlockRegister::GetInstance();
-    blockRegister.RegisterBlock(1, {{1, 1, 1, 1, 0, 2}});
-    blockRegister.RegisterBlock(2, {{2, 2, 2, 2, 2, 2}});
-    blockRegister.RegisterBlock(3, {{3, 3, 3, 3, 3, 3}});
+
+    auto data = JsonReader::ReadJson("data/blocks.json")["blocks"];
+    for (auto &block : data)
+    {
+        blockRegister.RegisterBlock(block["name"], block["uv"], block["texture"], block["solid"]);
+    }
+}
+void Application::RegisterItems()
+{
+    auto &itemRegister = ItemRegister::GetInstance();
+    itemRegister.RegisterItem(1, "grass", "");
+    itemRegister.RegisterItem(2, "dirt", "");
+    itemRegister.RegisterItem(3, "stone", "");
+}
+void Application::OnWindowResize(unsigned width, unsigned height)
+{
+    window->ResizeWindow(width, height);
+    glfwGetFramebufferSize(window->GetNativeWindow(), &screenWidth, &screenHeight);
+    camera->ResizeScreen(screenWidth, screenHeight);
+    uiSystem->ResizeScreen(screenWidth, screenHeight);
 }
 void Application::Run()
 {
-    while (!glfwWindowShouldClose(window->GetNativeWindow()))
+    while (!window->ShouldClose())
     {
+        std::cout << "FPS:" << 1.0f/TimeSystem::GetInstance().GetDeltaTime()<<std::endl;
+        // std::cout << player->GetBlockPosition().x << "," << player->GetBlockPosition().y << "," << player->GetBlockPosition().z << std::endl;
+        // std::cout << player->GetChunkPosition().x << "," << player->GetChunkPosition().y << "," << player->GetChunkPosition().z << std::endl;
         tick.UpdateTimer();
         if (tick.ShouldTick())
         {
             player->UpdateTick();
             tick.ConsumeTick();
         }
-        camera->SetPosition((player->GetPreviousTickPosition() * (1 - tick.GetAlpha()) + player->GetPosition() * tick.GetAlpha())+glm::vec3(0.0f,1.62f,0.0f));
         time.UpdateTime();
         if (input.IsKeyDown(GLFW_KEY_ESCAPE))
             window->SetShouldClose();
-        glfwGetFramebufferSize(window->GetNativeWindow(), &screenWidth, &screenHeight);
-        camera->ResizeScreen(screenWidth, screenHeight);
+        if (input.IsKeyDown(GLFW_KEY_F11))
+            window->ToggleFullscreen();
+
+        // Main Menu
+        /*
+        camera->SetZoom(90.0f);
+        skyboxRenderer->Draw(camera);
+        camera->SetYaw(TimeSystem::GetInstance().GetDeltaTime() * 10);
+        uiSystem->CreateQuad(screenWidth / 2 - 524, screenHeight / 2 - 300, 605.46875f, 171.875f, 0.0f, 1.0f, 0.60546875f, 0.171875f, "title/minecraft.png");
+        uiSystem->CreateQuad(screenWidth / 2 + 78, screenHeight / 2 - 300, 464.84375f, 171.875f, 0.0f, 0.82421875f, 0.46484375, 0.171875f, "title/minecraft.png");
+        uiSystem->CreateQuad(screenWidth / 2 - 364, screenHeight / 2 - 40, 728.0f, 88.0f, 0.0f, 0.7421875f, 0.78125f, 0.078125f, "widgets.png");
+        uiSystem->CreateQuad(screenWidth / 2 - 364, screenHeight / 2 + 60, 728.0f, 88.0f, 0.0f, 0.7421875f, 0.78125f, 0.078125f, "widgets.png");
+        uiSystem->CreateQuad(screenWidth / 2 - 364, screenHeight / 2 + 160, 728.0f, 88.0f, 0.0f, 0.7421875f, 0.78125f, 0.078125f, "widgets.png");
+        uiSystem->CreateQuad(screenWidth / 2 - 364, screenHeight / 2 + 260, 348.0f, 88.0f, 0.0f, 0.7421875f, 0.78125f, 0.078125f, "widgets.png");
+        uiSystem->CreateQuad(screenWidth / 2 + 16, screenHeight / 2 + 260, 348.0f, 88.0f, 0.0f, 0.7421875f, 0.78125f, 0.078125f, "widgets.png");
+        uiSystem->CreateQuad(screenWidth / 2 - 504, screenHeight / 2 + 260, 88.0f, 88.0f, 0.0f, 0.5859375f, 0.078125f, 0.078125f, "widgets.png");
+        */
+        // Game Scene
+        
+        camera->SetPosition((player->GetPreviousTickPosition() * (1 - tick.GetAlpha()) + player->GetPosition() * tick.GetAlpha()) + glm::vec3(0.0f, 1.62f, 0.0f));
         glm::vec2 delta = input.GetMouseDeltaPosition();
         camera->ProcessMouseMovement(delta.x, -delta.y);
-
-        renderer->Draw(world, camera);
-        uiSystem->DrawQuad(screenWidth/2 - 16, screenHeight/2 - 16,32.0f,32.0f,0.0f,1.0f,0.05859375f,0.05859375f);
         input.UpdateMousePosition();
+        if (Input::GetInstance().GetDeltaScroll() > 0)
+        player->GetHotBar().SetHotBarSlot(player->GetHotBar().GetHotBarSlot() - 1);
+        if (Input::GetInstance().GetDeltaScroll() < 0)
+        player->GetHotBar().SetHotBarSlot(player->GetHotBar().GetHotBarSlot() + 1);
+        worldRenderer->Draw(world, camera, player->GetChunkPosition().x, player->GetChunkPosition().z);
+        outlineRenderer->DrawOutline(world, camera, player->GetLookAtPosition());
+        uiSystem->CreateQuad(screenWidth / 2 - 16, screenHeight / 2 - 16, 32.0f, 32.0f, 0.0f, 1.0f, 0.05859375f, 0.05859375f, "icons.png");
+        uiSystem->CreateQuad(screenWidth / 2 - 364, screenHeight - 88, 728.0f, 88.0f, 0.0f, 1.0f, 0.7109375f, 0.0859375f, "widgets.png");
+        uiSystem->CreateQuad(screenWidth / 2 - 364 + player->GetHotBar().GetHotBarSlot() * 80, screenHeight - 88, 88.0f, 88.0f, 0.0f, 0.9140625f, 0.09375f, 0.09375f, "widgets.png");
+        
         input.UpdateKey();
+        input.UpdateScroll();
         glfwSwapBuffers(window->GetNativeWindow());
         glfwPollEvents();
     }

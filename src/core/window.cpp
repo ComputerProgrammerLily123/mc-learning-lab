@@ -1,8 +1,18 @@
 #include "window.h"
 #include <iostream>
-Window::Window(unsigned width, unsigned height, const std::string &title)
+Window::Window(unsigned width, unsigned height, const std::string &title): width(width),height(height)
 {
-    nativeWindow = glfwCreateWindow(width, height, "Minecraft:Papyrus Edition", NULL, NULL);
+    if (!glfwInit())
+    {
+        std::cout << "Failed to initialize GLFW" << std::endl;
+        return;
+    }
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    nativeWindow = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
+    monitor = glfwGetPrimaryMonitor();
+    mode = glfwGetVideoMode(monitor);
     if (nativeWindow == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -10,9 +20,7 @@ Window::Window(unsigned width, unsigned height, const std::string &title)
     }
     glfwMakeContextCurrent(nativeWindow);
     glViewport(0, 0, width, height);
-    Center(width, height);
-    SetFrameBufferSizeCallback([](GLFWwindow *window, int width, int height)
-                               { glViewport(0, 0, width, height); });
+    Center();
 }
 Window::~Window()
 {
@@ -46,7 +54,11 @@ void Window::SetScrollCallback(GLFWscrollfun func)
 }
 void Window::SetMouseButtonCallback(GLFWmousebuttonfun func)
 {
-    glfwSetMouseButtonCallback(nativeWindow,func);
+    glfwSetMouseButtonCallback(nativeWindow, func);
+}
+void Window::SetWindowUserPointer(void* pointer)
+{
+    glfwSetWindowUserPointer(nativeWindow,pointer);
 }
 bool Window::ShouldClose()
 {
@@ -56,10 +68,29 @@ void Window::SetShouldClose()
 {
     glfwSetWindowShouldClose(nativeWindow, true);
 }
-
-void Window::Center(int width, int height)
+void Window::Center()
 {
-    GLFWmonitor *monitor = glfwGetPrimaryMonitor();
-    const GLFWvidmode *mode = glfwGetVideoMode(monitor);
-    glfwSetWindowPos(this->nativeWindow, (mode->width - width) / 2, (mode->height - height) / 2);
+    glfwSetWindowPos(nativeWindow, (mode->width - width) / 2, (mode->height - height) / 2);
+}
+void Window::ToggleFullscreen()
+{
+    static int windowedX, windowedY, windowedW, windowedH;
+
+    if (!isFullscreen)
+    {
+        glfwGetWindowPos(nativeWindow, &windowedX, &windowedY);
+        glfwGetWindowSize(nativeWindow, &windowedW, &windowedH);
+        glfwSetWindowMonitor(nativeWindow, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+    }
+    else
+    {
+        glfwSetWindowMonitor(nativeWindow, nullptr, windowedX, windowedY, windowedW, windowedH, 0);
+    }
+    isFullscreen = !isFullscreen;
+}
+void Window::ResizeWindow(unsigned width, unsigned height)
+{
+    this->width = width;
+    this->height = height;
+    glViewport(0, 0, width, height);
 }

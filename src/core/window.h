@@ -15,15 +15,22 @@ public:
     void SetKeyCallback(GLFWkeyfun func);
     void SetScrollCallback(GLFWscrollfun func);
     void SetMouseButtonCallback(GLFWmousebuttonfun func);
+    void SetWindowUserPointer(void* pointer);
 
     bool ShouldClose();
     void SetShouldClose();
+    void ToggleFullscreen();
+    void ResizeWindow(unsigned width, unsigned height);
 private:
     GLFWwindow *nativeWindow;
+    GLFWmonitor *monitor;
+    const GLFWvidmode *mode;
+
     unsigned width;
     unsigned height;
-    std::string title;
 
-    void Center(int width,int height);
+    bool isFullscreen = false;
+
+    void Center();
 };
 #endif

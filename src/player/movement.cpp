@@ -3,7 +3,7 @@
 #include "world.h"
 #include <GLFW/glfw3.h>
 #include "collision.h"
-Movement::Movement(World *world, float gravityFac) : isGrounded(false), collision(world)
+Movement::Movement(World *world, float gravityFac) : collision(world)
 {
     this->gravityFac = gravityFac;
 }
@@ -20,32 +20,48 @@ void Movement::Move(glm::vec3 &position, glm::vec3 front, glm::vec3 right)
 }
 void Movement::ProcessGravity()
 {
-    if (currentVelocity.y > -3.92f)
-        currentVelocity.y -= gravityFac;
-    if (isGrounded)
+    if (!isGrounded)
+    {
+        currentVelocity.y = glm::max(currentVelocity.y - gravityFac, -3.92f);
+    }
+    else
+    {
         currentVelocity.y = 0;
+    }
 }
 void Movement::ProcessMove(glm::vec3 front, glm::vec3 right)
 {
-    glm::vec3 velocity = glm::vec3(0.0f);
+    glm::vec3 acceleration = glm::vec3(0.0f);
     if (input.IsKeyPressed(GLFW_KEY_W))
-        velocity += front;
+        acceleration += front;
     if (input.IsKeyPressed(GLFW_KEY_S))
-        velocity -= front;
+        acceleration -= front;
     if (input.IsKeyPressed(GLFW_KEY_A))
-        velocity -= right;
+        acceleration -= right;
     if (input.IsKeyPressed(GLFW_KEY_D))
-        velocity += right;
-    velocity.y = 0;
-    if (glm::length(velocity))
+        acceleration += right;
+    acceleration.y = 0;
+    if (acceleration.x != 0.0f || acceleration.z != 0.0f)
     {
-        velocity = glm::normalize(velocity) * speed;
+        acceleration = glm::normalize(acceleration) * walkAcceleration;
     }
-    currentVelocity.x = velocity.x;
-    currentVelocity.z = velocity.z;
+    currentVelocity.x *= walkDragFac * blockFraction;
+    currentVelocity.x += acceleration.x;
+    currentVelocity.z *= walkDragFac * blockFraction;
+    currentVelocity.z += acceleration.z;
+    float speed = glm::length(glm::vec3(currentVelocity.x, 0, currentVelocity.z));
+    if (speed > maxWalkSpeed)
+    {
+        currentVelocity.x = currentVelocity.x / speed * maxWalkSpeed;
+        currentVelocity.z = currentVelocity.z / speed * maxWalkSpeed;
+    }
 }
 void Movement::ProcessJump()
 {
-    if (isGrounded && input.IsKeyPressed(GLFW_KEY_SPACE))
+    currentJumpTime += 0.05f;
+    if (currentJumpTime > jumpDuration && isGrounded && input.IsKeyPressed(GLFW_KEY_SPACE))
+    {
         currentVelocity.y = 0.42;
+        currentJumpTime = 0.0f;
+    }
 }

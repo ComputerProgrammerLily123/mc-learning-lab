@@ -35,6 +35,5 @@ public:
     bool IsOnGround(const glm::vec3& position);
 private:
     World* world;
-    void CheckCollisionAxis(glm::vec3& pos, const glm::vec3& move, int axis);
 };
 #endif
