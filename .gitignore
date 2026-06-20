@@ -1,5 +1,6 @@
 build/
 bin/textures
+bin/models
 *.exe
 *.obj
 *.o

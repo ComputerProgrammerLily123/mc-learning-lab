@@ -1,5 +1,4 @@
-#ifndef TEXTURE_H
-#define TEXTURE_H
+#pragma once
 
 #define ATLAS_CELL 16
 #define ATLAS_SIZE 64
@@ -30,4 +29,3 @@ private:
     void LoadSingleTexture(const std::string &filename);
     void LoadMultipleTexture(const std::string &filename, int x, int y, int width, int height);
 };
-#endif

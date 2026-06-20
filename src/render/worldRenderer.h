@@ -1,5 +1,4 @@
-#ifndef WORLD_RENDERER_H
-#define WORLD_RENDERER_H
+#pragma once
 #include "shader.h"
 #include "texture.h"
 #include <vector>
@@ -25,4 +24,3 @@ private:
     void DrawMesh(int32_t chunkX, int32_t chunkZ, const std::vector<float> &vertices, const std::vector<unsigned> &indices, bool &isDirty);
     bool IsChunkVisible(int32_t chunkX, int32_t chunkZ, const glm::mat4 &vp);
 };
-#endif

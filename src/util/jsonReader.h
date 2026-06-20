@@ -1,5 +1,4 @@
-#ifndef JSON_READER_H
-#define JSON_READER_H
+#pragma once
 #include<string>
 #include "nlohmann/json.hpp"
 class JsonReader{
@@ -11,4 +10,3 @@ public:
     static nlohmann::json ReadJson(const std::string& filePath);
 private:
 };
-#endif

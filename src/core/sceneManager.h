@@ -1,5 +1,4 @@
-#ifndef SCENE_MANAGER_H
-#define SCENE_MANAGER_H
+#pragma once
 enum SceneEnum{
     GameMenu,
     MainScene
@@ -17,4 +16,3 @@ private:
     SceneManager() = default;
     ~SceneManager() = default;
 };
-#endif

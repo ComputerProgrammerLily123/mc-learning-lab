@@ -1,6 +1,6 @@
 #include "world.h"
 
-World::World(unsigned size) : renderRadian(size), worldGen(this)
+World::World() : worldGen(this)
 {
 }
 World::~World()

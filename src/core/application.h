@@ -1,19 +1,21 @@
-#ifndef APPLICATION_H
-#define APPLICATION_H
+#pragma once
 
-#define WORLD_SIZE 6
+#define RENDER_RADIAN 6
 
 #include "input.h"
 #include "timeSystem.h"
+#include "uiSystem.h"
+#include "gameConstant.h"
 
 class Window;
 class OutlineRenderer;
 class WorldRenderer;
 class SkyboxRenderer;
-class UISystem;
+class UIRenderer;
 class Camera;
 class World;
 class Player;
+using namespace GameConstant;
 class Application
 {
 public:
@@ -26,14 +28,13 @@ public:
     void Quit();
 
 private:
-    int screenWidth = 1200;
-    int screenHeight = 800;
+    int screenWidth = INITIAL_SCREEN_WIDTH;
+    int screenHeight = INITIAL_SCREEN_HEIGHT;
 
     Window *window;
     OutlineRenderer *outlineRenderer;
     WorldRenderer *worldRenderer;
     SkyboxRenderer *skyboxRenderer;
-    UISystem *uiSystem;
     Camera *camera;
     World *world;
     Player *player;
@@ -49,4 +50,3 @@ private:
     void RegisterItems();
     void OnWindowResize(unsigned width, unsigned height);
 };
-#endif

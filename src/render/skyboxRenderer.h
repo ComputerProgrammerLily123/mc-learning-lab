@@ -1,5 +1,4 @@
-#ifndef SKYBOX_RENDERER_H
-#define SKYBOX_RENDERER_H
+#pragma once
 class Camera;
 class World;
 
@@ -17,4 +16,3 @@ private:
     Texture cubemap = Texture("textures/gui/title/background");
     unsigned VAO,VBO,EBO;
 };
-#endif

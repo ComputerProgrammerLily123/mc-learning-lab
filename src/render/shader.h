@@ -1,5 +1,4 @@
-#ifndef SHADER_H
-#define SHADER_H
+#pragma once
 
 #include <glm/glm.hpp>
 #include <string>
@@ -24,5 +23,3 @@ public:
     void setValue(const std::string &name, const glm::mat3 &mat) const;
     void setValue(const std::string &name, const glm::mat4 &mat) const;
 };
-
-#endif

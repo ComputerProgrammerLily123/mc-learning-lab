@@ -1,5 +1,4 @@
-#ifndef BLOCK_H
-#define BLOCK_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -57,4 +56,3 @@ private:
     unsigned blockCount = 0;
     std::unordered_map<int,Block> blocks;
 };
-#endif

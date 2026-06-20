@@ -1,5 +1,4 @@
-#ifndef CHUNK_H
-#define CHUNK_H
+#pragma once
 
 #include <glm/glm.hpp>
 
@@ -31,4 +30,3 @@ private:
     void AddVertices(int x,int y,int z,const int* const uvOffset, float blockId);
     bool ShouldRenderFace(int x,int y,int z, Face face);
 };
-#endif

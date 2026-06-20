@@ -1,5 +1,4 @@
-#ifndef ITEM_H
-#define ITEM_H
+#pragma once
 #include<string>
 #include<unordered_map>
 class Item
@@ -35,4 +34,3 @@ private:
     ~ItemRegister() = default;
     std::unordered_map<int,Item> items;
 };
-#endif

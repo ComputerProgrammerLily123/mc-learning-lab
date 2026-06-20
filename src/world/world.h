@@ -1,5 +1,4 @@
-#ifndef WORLD_H
-#define WORLD_H
+#pragma once
 
 #include "chunk.h"
 #include "worldGenerator.h"
@@ -7,7 +6,7 @@
 class World
 {
 public:
-    World(unsigned size);
+    World();
     ~World();
     int GetBlock(int x,int y,int z);
     void SetBlock(int x, int y, int z, int id);
@@ -16,9 +15,7 @@ public:
     void CreateChunk(int x,int z);
     void InitChunk(int32_t i, int32_t j);
 private:
-    int32_t renderRadian;
     std::unordered_map<uint64_t,Chunk*> chunks;
     FastNoiseLite noise1,noise2;
     WorldGenerator worldGen;
 };
-#endif

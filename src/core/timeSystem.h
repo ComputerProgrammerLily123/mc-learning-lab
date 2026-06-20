@@ -1,6 +1,4 @@
-#ifndef TIME_SYSTEM_H
-#define TIME_SYSTEM_H
-
+#pragma once
 class TimeSystem
 {
 public:
@@ -46,4 +44,3 @@ private:
     float accumulator = 0.0f;
     float lastTime = 0.0f;
 };
-#endif

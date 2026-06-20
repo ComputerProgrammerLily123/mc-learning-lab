@@ -1,6 +1,4 @@
-#ifndef WINDOW_H
-#define WINDOW_H
-
+#pragma once
 #include <GLFW/glfw3.h>
 #include <string>
 class Window
@@ -33,4 +31,3 @@ private:
 
     void Center();
 };
-#endif

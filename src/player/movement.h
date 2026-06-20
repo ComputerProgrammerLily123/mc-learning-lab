@@ -1,5 +1,4 @@
-#ifndef MOVEMENT_H
-#define MOVEMENT_H
+#pragma once
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -30,4 +29,3 @@ public:
     void ProcessMove(glm::vec3 front,glm::vec3 right);
     void ProcessJump();
 };
-#endif

@@ -1,5 +1,4 @@
-#ifndef PLAYER_H
-#define PLAYER_H
+#pragma once
 
 #include "glm/glm.hpp"
 #include "movement.h"
@@ -38,4 +37,3 @@ private:
 
     void ProcessRayCast();
 };
-#endif

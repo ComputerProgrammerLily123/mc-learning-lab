@@ -1,26 +1,21 @@
-#ifndef UI_SYSTEM_H
-#define UI_SYSTEM_H
-
-#include "shader.h"
-#include "texture.h"
-
-#include <vector>
-class UISystem{
+#pragma once
+#include "uiRenderer.h"
+#include "gameConstant.h"
+using namespace GameConstant;
+class UISystem
+{
 public:
-    UISystem(unsigned screenWidth, unsigned screenHeight);
-    ~UISystem();
-    void ResizeScreen(unsigned screenWidth, unsigned screenHeight);
+    UISystem(const UISystem &) = delete;
+    UISystem &operator=(const UISystem &) = delete;
+    static UISystem &GetInstance()
+    {
+        static UISystem instance;
+        return instance;
+    }
+    void CreateButton(int startX, int startY, int width, int height, float u, float v, float uvWidth, float uvHeight, std::string textureID);
     void CreateQuad(int startX, int startY, int width, int height, float u, float v, float uvWidth, float uvHeight, std::string textureID);
 private:
-    Shader shader = Shader("shaders/uiVertex.vert", "shaders/uiFragment.frag");
-    Texture texture = Texture("textures/gui");
-
-    unsigned screenWidth;
-    unsigned screenHeight;
-
-    unsigned VAO,VBO,EBO;
-
-    std::vector<float> vertices;
-    std::vector<unsigned> indices;
+    UISystem() = default;
+    ~UISystem() = default;
+    UIRenderer uiRenderer = UIRenderer(INITIAL_SCREEN_WIDTH, INITIAL_SCREEN_HEIGHT);
 };
-#endif

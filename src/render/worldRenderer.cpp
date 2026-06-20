@@ -6,7 +6,6 @@
 WorldRenderer::WorldRenderer(unsigned size) : renderRadian(size)
 {
     glClearColor(0.53f, 0.81f, 0.92f, 1.0f);
-    texture.Bind(0);
     std::vector<std::string> names;
     for (int i = 0; i < BlockRegister::GetInstance().GetBlockCount(); i++)
     {

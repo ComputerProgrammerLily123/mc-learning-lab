@@ -1,5 +1,4 @@
-#ifndef RAY_CASTER_H
-#define RAY_CASTER_H
+#pragma once
 
 #include <glm/glm.hpp>
 class World;
@@ -13,4 +12,3 @@ private:
     float maxDistance;
     float step;
 };
-#endif

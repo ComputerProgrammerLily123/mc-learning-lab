@@ -1,5 +1,4 @@
-#ifndef COLLISION_H
-#define COLLISION_H
+#pragma once
 #include <glm/glm.hpp>
 #include <vector>
 struct AABB
@@ -36,4 +35,3 @@ public:
 private:
     World* world;
 };
-#endif

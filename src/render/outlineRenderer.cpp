@@ -5,7 +5,7 @@
 #include "camera.h"
 #include "world.h"
 
-OutlineRenderer::OutlineRenderer(unsigned size) : renderRadian(size)
+OutlineRenderer::OutlineRenderer()
 {
     glEnable(GL_CULL_FACE);
     glClearColor(0.53f, 0.81f, 0.92f, 1.0f);

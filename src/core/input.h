@@ -1,6 +1,4 @@
-#ifndef INPUT_H
-#define INPUT_H
-
+#pragma once
 #include <glm/glm.hpp>
 
 #define KEY_COUNT 512
@@ -61,4 +59,3 @@ private:
     void ProcessKeyboard(int key, int scancode, int action, int mods);
     void ProcessScoll(double yOffset);
 };
-#endif
