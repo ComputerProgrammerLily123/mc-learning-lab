@@ -1,6 +1,6 @@
 #include "rayCaster.h"
 
-#include "world.h"
+#include "world/world.h"
 RayCaster::RayCaster(World *const world, float maxDistance, float step) : world(world), maxDistance(maxDistance), step(step) {}
 int RayCaster::Ray(glm::vec3 startPoint, glm::vec3 direction, glm::i16vec3 &targetPoint)
 {

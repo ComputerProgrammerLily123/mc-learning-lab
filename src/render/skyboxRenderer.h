@@ -3,7 +3,7 @@ class Camera;
 class World;
 
 #include "shader.h"
-#include "texture.h"
+#include "resource/texture.h"
 class SkyboxRenderer
 {
 public:

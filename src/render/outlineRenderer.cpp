@@ -3,7 +3,7 @@
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include "camera.h"
-#include "world.h"
+#include "world/world.h"
 
 OutlineRenderer::OutlineRenderer()
 {

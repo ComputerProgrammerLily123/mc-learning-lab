@@ -1,8 +1,8 @@
 #include "movement.h"
 
-#include "world.h"
+#include "world/world.h"
 #include <GLFW/glfw3.h>
-#include "collision.h"
+#include "core/collision.h"
 Movement::Movement(World *world, float gravityFac) : collision(world)
 {
     this->gravityFac = gravityFac;

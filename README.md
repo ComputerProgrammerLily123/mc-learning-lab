@@ -18,7 +18,7 @@ This repository documents my journey of learning game development and OpenGL by 
 
 | Component | Choice |
 |-----------|--------|
-| Language | C++11 |
+| Language | C++17 |
 | Graphics | OpenGL 3.3 Core |
 | Window | GLFW |
 | Math | GLM |

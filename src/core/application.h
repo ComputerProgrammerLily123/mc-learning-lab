@@ -4,8 +4,9 @@
 
 #include "input.h"
 #include "timeSystem.h"
-#include "uiSystem.h"
-#include "gameConstant.h"
+#include "gui/uiSystem.h"
+#include "config/gameConstant.h"
+#include "resource/resourceManager.h"
 
 class Window;
 class OutlineRenderer;
@@ -42,6 +43,8 @@ private:
     Input &input = Input::GetInstance();
     TimeSystem &time = TimeSystem::GetInstance();
     TickSystem &tick = TickSystem::GetInstance();
+    ResourceManager &resourceManager = ResourceManager::GetInstance();
+    
     void InitGLFW();
     void InitGLAD();
     void InitGLFWCallback();

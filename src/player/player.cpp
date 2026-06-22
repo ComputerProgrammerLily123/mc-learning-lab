@@ -1,8 +1,8 @@
 #include "player.h"
 
-#include "world.h"
+#include "world/world.h"
 #include "GLFW/glfw3.h"
-#include "camera.h"
+#include "render/camera.h"
 Player::Player(glm::vec3 position, Camera *camera, World *world) : position(position), movement(world, 0.08), rayCaster(world, 5, 0.01f), hotbar()
 {
     this->camera = camera;

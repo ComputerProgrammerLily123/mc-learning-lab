@@ -3,7 +3,9 @@
 #include "stbImage/stb_image.h"
 #include <glad/glad.h>
 #include <iostream>
-
+Texture::Texture()
+{
+}
 Texture::Texture(const std::string &path) : loadPath(path)
 {
     glGenTextures(1, &ID);
@@ -14,6 +16,10 @@ Texture::~Texture()
     {
         glDeleteTextures(1, &ID);
     }
+}
+void Texture::SetLoadPath(const std::string &path)
+{
+    loadPath = path;
 }
 void Texture::Bind(unsigned slot) const
 {
@@ -44,12 +50,15 @@ void Texture::CreateAtlas(const std::vector<std::string> &filename)
         if (file != "")
         {
             LoadMultipleTexture(file, offsetX, offsetY, ATLAS_CELL, ATLAS_CELL);
-        }
-        offsetX += ATLAS_CELL;
-        if (offsetX == ATLAS_SIZE)
-        {
-            offsetY += ATLAS_CELL;
-            offsetX = 0;
+
+            offsetX += ATLAS_CELL;
+            if (offsetX == ATLAS_SIZE)
+            {
+                offsetY += ATLAS_CELL;
+                offsetX = 0;
+            }
+            UVRegion region{static_cast<float>(offsetX) / ATLAS_SIZE, static_cast<float>(offsetY) / ATLAS_SIZE, (static_cast<float>(offsetX) + 16) / ATLAS_SIZE, (static_cast<float>(offsetY) + 16) / ATLAS_SIZE};
+            uvMap.emplace(file, region);
         }
     }
 }
@@ -85,7 +94,7 @@ void Texture::LoadSingleTexture(const std::string &filename)
     unsigned char *data = stbi_load((loadPath + "/" + filename).c_str(), &w, &h, &channels, 0);
     if (!data)
     {
-        std::cout << "loading failed." << std::endl;
+        std::cout << "loading failed:" << (loadPath + "/" + filename) << std::endl;
         return;
     }
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
@@ -98,9 +107,13 @@ void Texture::LoadMultipleTexture(const std::string &filename, int x, int y, int
     unsigned char *data = stbi_load((loadPath + "/" + filename).c_str(), &w, &h, &channels, 0);
     if (!data || w != width || h != height)
     {
-        std::cout << "loading failed." << std::endl;
+        std::cout << "loading failed:" << (loadPath + "/" + filename) << std::endl;
         return;
     }
     glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
     stbi_image_free(data);
+}
+const std::unordered_map<std::string, UVRegion> &Texture::GetUVMap()
+{
+    return uvMap;
 }

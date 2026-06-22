@@ -1,6 +1,6 @@
 #include "collision.h"
 
-#include "world.h"
+#include "world/world.h"
 #include <iostream>
 CollisionSystem::CollisionSystem(World *world) : world(world) {}
 glm::vec3 CollisionSystem::Move(const glm::vec3 &position, const glm::vec3 &movement)

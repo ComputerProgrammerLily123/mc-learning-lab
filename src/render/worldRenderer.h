@@ -1,6 +1,6 @@
 #pragma once
 #include "shader.h"
-#include "texture.h"
+#include "resource/texture.h"
 #include <vector>
 #include <unordered_map>
 class Camera;

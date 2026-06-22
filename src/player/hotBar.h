@@ -1,6 +1,6 @@
 #pragma once
 #include<array>
-#include "block.h"
+#include "block/blockRegister.h"
 class HotBar
 {
 public:

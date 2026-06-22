@@ -4,8 +4,8 @@
 #include "movement.h"
 #include "rayCaster.h"
 #include "hotBar.h"
-#include "input.h"
-#include "timeSystem.h"
+#include "core/input.h"
+#include "core/timeSystem.h"
 class Camera;
 class World;
 class Player{

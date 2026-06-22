@@ -31,7 +31,7 @@ void UIRenderer::ResizeScreen(unsigned screenWidth, unsigned screenHeight)
     this->screenWidth = screenWidth;
     this->screenHeight = screenHeight;
 }
-void UIRenderer::CreateQuad(int startX, int startY, int width, int height, float u, float v, float uvWidth, float uvHeight, std::string textureID)
+void UIRenderer::DrawQuad(int startX, int startY, int width, int height, float u, float v, float uvWidth, float uvHeight, std::string textureID)
 {
     float x = static_cast<float>(startX);
     float y = static_cast<float>(startY);

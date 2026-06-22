@@ -2,9 +2,9 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include "timeSystem.h"
-#include "input.h"
-#include "collision.h"
+#include "core/timeSystem.h"
+#include "core/input.h"
+#include "core/collision.h"
 class World;
 class Movement{
 public:

@@ -2,7 +2,8 @@
 
 #include <glm/glm.hpp>
 
-#include "block.h"
+#include "block/blockRegister.h"
+#include "resource/resourceManager.h"
 #include <vector>
 
 #define CHUNK_WIDTH 16
@@ -26,6 +27,7 @@ private:
     std::vector<float> vertices;
     std::vector<unsigned> indices;
     BlockRegister& blockRegister = BlockRegister::GetInstance();
+    ResourceManager& resourceManager = ResourceManager::GetInstance();
     World* world;
     void AddVertices(int x,int y,int z,const int* const uvOffset, float blockId);
     bool ShouldRenderFace(int x,int y,int z, Face face);

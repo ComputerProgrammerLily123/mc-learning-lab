@@ -1,8 +1,9 @@
 #include "worldRenderer.h"
 #include <glad/glad.h>
 #include <glm/gtc/matrix_access.hpp>
-#include "world.h"
+#include "world/world.h"
 #include "camera.h"
+#include "resource/resourceManager.h"
 WorldRenderer::WorldRenderer(unsigned size) : renderRadian(size)
 {
     glClearColor(0.53f, 0.81f, 0.92f, 1.0f);
@@ -12,7 +13,7 @@ WorldRenderer::WorldRenderer(unsigned size) : renderRadian(size)
         auto &textureList = BlockRegister::GetInstance().GetBlock(i).GetTextures();
         names.insert(names.end(), textureList.begin(), textureList.end());
     }
-    texture.CreateAtlas(names);
+    //texture.CreateAtlas(names);
     glGenVertexArrays(1, &VAO);
 }
 WorldRenderer::~WorldRenderer()
@@ -29,7 +30,7 @@ void WorldRenderer::Draw(World *world, Camera *camera, int32_t centralX, int32_t
     glEnable(GL_CULL_FACE);
     Clear();
     shader.Use();
-    texture.Bind(0);
+    ResourceManager::GetInstance().GetAtlas(AtlasType::Block).Bind(0);
     shader.setValue("textureIn", 0);
     shader.setValue("projection", camera->GetPerspectiveMatrix());
     shader.setValue("view", camera->GetViewMatrix());
