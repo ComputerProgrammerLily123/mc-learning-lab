@@ -91,6 +91,9 @@ void Application::InitScene()
             welcomeScene->sceneObject["Canvas"] = std::shared_ptr<Canvas>(canvas);
             welcomeScene->sceneObject["Camera"] = std::shared_ptr<Camera>(camera);
             welcomeScene->sceneObject["SkyboxRenderer"] = std::shared_ptr<SkyboxRenderer>(skyboxRenderer);
+
+            window->SetCursorState(true);
+
             welcomeScene->availableFlag = true;
         };
         welcomeScene->onUpdate = [this, welcomeScene]
@@ -135,6 +138,7 @@ void Application::InitScene()
             canvas->AddElement(crosshair);
             canvas->AddElement(hotbar);
             canvas->AddElement(hotbarFrame);
+            UISystem::GetInstance().SetMainCanvas(canvas);
 
             mainScene->sceneObject["Canvas"] = std::shared_ptr<Canvas>(canvas);
             mainScene->sceneObject["Camera"] = std::shared_ptr<Camera>(camera);
@@ -142,6 +146,9 @@ void Application::InitScene()
             mainScene->sceneObject["OutlineRenderer"] = std::shared_ptr<OutlineRenderer>(outlineRenderer);
             mainScene->sceneObject["WorldRenderer"] = std::shared_ptr<WorldRenderer>(worldRenderer);
             mainScene->sceneObject["Player"] = std::shared_ptr<Player>(player);
+
+            window->SetCursorState(false);
+
             mainScene->availableFlag = true;
         };
         mainScene->onUpdate = [this, mainScene]
@@ -166,13 +173,18 @@ void Application::InitScene()
                 outlineRenderer->DrawOutline(world, camera, player->GetLookAtPosition());
             }
         };
+        mainScene->onTickUpdate = [mainScene]
+        {
+            auto player = static_cast<Player *>(mainScene->sceneObject["Player"].get());
+            player->UpdateTick();
+        };
         mainScene->onUnLoad = [mainScene]
         {
             mainScene->availableFlag = false;
             mainScene->sceneObject.clear();
         };
     }
-    sceneManager.LoadScene("Main");
+    sceneManager.LoadScene("Welcome");
 }
 void Application::InitResource()
 {
@@ -215,7 +227,7 @@ void Application::Run()
         tick.UpdateTimer();
         if (tick.ShouldTick())
         {
-            // player->UpdateTick();
+            sceneManager.TickUpdate();
             tick.ConsumeTick();
         }
         time.UpdateTime();
@@ -223,9 +235,9 @@ void Application::Run()
             window->SetShouldClose();
         if (input.IsKeyDown(GLFW_KEY_F11))
             window->ToggleFullscreen();
-        //sceneManager.UpdateScene();
-        //UISystem::GetInstance().OnUpdate();
-        //UISystem::GetInstance().RenderAll();
+        sceneManager.Update();
+        UISystem::GetInstance().OnUpdate();
+        UISystem::GetInstance().RenderAll();
         input.UpdateKey();
         input.UpdateScroll();
         glfwSwapBuffers(window->GetNativeWindow());

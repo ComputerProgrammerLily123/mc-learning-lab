@@ -21,7 +21,13 @@ void SceneManager::LoadScene(std::string id)
         std::cout << "Scene load failed." << std::endl;
     }
 }
-void SceneManager::UpdateScene()
+void SceneManager::Update()
 {
-    currentScene->onUpdate();
+    if (currentScene->onUpdate)
+        currentScene->onUpdate();
+}
+void SceneManager::TickUpdate()
+{
+    if (currentScene->onTickUpdate)
+        currentScene->onTickUpdate();
 }

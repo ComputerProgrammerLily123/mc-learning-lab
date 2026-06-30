@@ -9,6 +9,7 @@ class Scene
 public:
     std::function<void()> onLoad;
     std::function<void()> onUpdate;
+    std::function<void()> onTickUpdate;
     std::function<void()> onUnLoad;
     std::unordered_map<std::string,std::shared_ptr<void>> sceneObject;
     bool availableFlag = false;
@@ -24,7 +25,8 @@ public:
     }
     Scene* CreateScene(std::string id);
     void LoadScene(std::string id);
-    void UpdateScene();
+    void Update();
+    void TickUpdate();
 private:
     SceneManager() = default;
     ~SceneManager() = default;

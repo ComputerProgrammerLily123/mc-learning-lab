@@ -16,7 +16,7 @@ void Chunk::UpdateMesh()
             int x = i % CHUNK_WIDTH;
             int z = (i / CHUNK_WIDTH) % CHUNK_WIDTH;
             int y = i / (CHUNK_WIDTH * CHUNK_WIDTH);
-            auto uv = uvMap.at(blockRegister.GetBlock(blockIDs[i]).GetName());
+            //auto uv = uvMap.at(blockRegister.GetBlock(blockIDs[i]).GetName());
             
             AddVertices(x, y, z, blockRegister.GetBlock(blockIDs[i]).GetUVOffsets().data(), blockIDs[i]);
         }
