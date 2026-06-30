@@ -7,6 +7,7 @@
 #include "gui/uiSystem.h"
 #include "config/gameConstant.h"
 #include "resource/resourceManager.h"
+#include "sceneManager.h"
 
 class Window;
 class OutlineRenderer;
@@ -33,22 +34,19 @@ private:
     int screenHeight = INITIAL_SCREEN_HEIGHT;
 
     Window *window;
-    OutlineRenderer *outlineRenderer;
-    WorldRenderer *worldRenderer;
-    SkyboxRenderer *skyboxRenderer;
-    Camera *camera;
-    World *world;
-    Player *player;
 
     Input &input = Input::GetInstance();
     TimeSystem &time = TimeSystem::GetInstance();
     TickSystem &tick = TickSystem::GetInstance();
     ResourceManager &resourceManager = ResourceManager::GetInstance();
-    
+    SceneManager &sceneManager = SceneManager::GetInstance();
+
     void InitGLFW();
     void InitGLAD();
     void InitGLFWCallback();
-    void InitGame();
+    void InitResource();
+    void InitScene();
+    
     void RegisterBlocks();
     void RegisterItems();
     void OnWindowResize(unsigned width, unsigned height);

@@ -45,12 +45,14 @@ void Camera::SetPosition(glm::vec3 position)
 }
 void Camera::SetPosition(float x, float y, float z)
 {
-    position = glm::vec3(x,y,z);
+    position = glm::vec3(x, y, z);
 }
-void Camera::SetYaw(float offset){
+void Camera::SetYaw(float offset)
+{
     yaw += offset;
     UpdateCameraVectors();
 }
-void Camera::SetZoom(float zoom){
+void Camera::SetZoom(float zoom)
+{
     this->zoom = zoom;
 }

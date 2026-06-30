@@ -6,9 +6,11 @@
 #include "hotBar.h"
 #include "core/input.h"
 #include "core/timeSystem.h"
+
 class Camera;
 class World;
-class Player{
+class Player
+{
 public:
     Player(glm::vec3 position,Camera* camera,World* world);
     ~Player();

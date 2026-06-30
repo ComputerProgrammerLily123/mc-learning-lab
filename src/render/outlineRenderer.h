@@ -3,7 +3,8 @@ class Camera;
 class World;
 
 #include "shader.h"
-class OutlineRenderer{
+class OutlineRenderer
+{
 public:
     OutlineRenderer();
     ~OutlineRenderer();

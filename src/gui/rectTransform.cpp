@@ -8,6 +8,8 @@ glm::vec2 RectTransform::GetPosition()
     {
     case PivotType::Center:
         return glm::vec2(x - width / 2, y - height / 2);
+    case PivotType::BottomMiddle:
+        return glm::vec2(x - width / 2, y - height / 2);
     default:
         return glm::vec2(0, 0);
     }

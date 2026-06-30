@@ -19,7 +19,10 @@ public:
 
     virtual glm::vec4 GetUV() { return glm::vec4(0, 0, 0, 0); }
     virtual std::string GetTextureID() { return ""; }
-
+    virtual void OnPointerEnter(){}
+    virtual void OnPointerExit(){}
+    virtual void OnPointerClick(){}
+    
 protected:
     RectTransform rectTransform;
     std::vector<UIElement *> childElements;
