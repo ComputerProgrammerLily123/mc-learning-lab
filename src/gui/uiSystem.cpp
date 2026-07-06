@@ -1,15 +1,16 @@
 #include "uiSystem.h"
-#include <iostream>
-#include "core/input.h"
+
 #include "GLFW/glfw3.h"
-void UISystem::ResizeScreen(float width, float height)
+#include "core/input.h"
+
+#include <iostream>
+void UISystem::ResizeScreen(unsigned width, unsigned height)
 {
     uiRenderer.ResizeScreen(width, height);
-    mainCanvas->SetCenterPosition(width / 2, height / 2);
 }
 void UISystem::RenderAll()
 {
-    for (auto element : mainCanvas->GetChildElement())
+    for (const auto& element : mainCanvas->GetChildElements())
     {
         auto pos = element->GetStartPointPosition() + mainCanvas->GetCenterPosition();
         auto size = element->GetSize();
@@ -21,7 +22,7 @@ void UISystem::SetMainCanvas(Canvas* canvas)
 {
     mainCanvas = canvas;
 }
-Canvas* UISystem::GetMainCanvas()
+Canvas* UISystem::GetMainCanvas() const
 {
     return mainCanvas;
 }
@@ -36,8 +37,12 @@ void UISystem::CreateQuad(int startX, int startY, int width, int height, float u
 void UISystem::OnUpdate()
 {
     glm::vec2 mousePos = Input::GetInstance().GetMouseCurrentPosition();
-    for (auto element : mainCanvas->GetChildElement())
+    mainCanvas = SceneManager::GetInstance().GetObject<Canvas>("Canvas");
+    if(mainCanvas == nullptr) return;
+    const auto& childElements = mainCanvas->GetChildElements();
+    for (const auto& element : childElements)
     {
+        if (element == nullptr) continue;
         auto pos = element->GetStartPointPosition() + mainCanvas->GetCenterPosition();
         auto size = element->GetSize();
         if (mousePos.x > pos.x && mousePos.y > pos.y && mousePos.x < pos.x + size.x && mousePos.y < pos.y + size.y)

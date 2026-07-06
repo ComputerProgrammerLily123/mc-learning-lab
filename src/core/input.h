@@ -1,9 +1,10 @@
 #pragma once
 #include <glm/glm.hpp>
+#include <array>
 
 #define KEY_COUNT 512
 #define MOUSE_BUTTON_COUNT 3
-enum KeyState
+enum class KeyState : unsigned char
 {
     Release,
     Press
@@ -12,7 +13,9 @@ class GLFWwindow;
 class Input
 {
 public:
-    Input(const Input &) = delete;
+    Input(Input&&) = delete;
+    Input& operator=(Input&&) = delete;
+    Input(const Input&) = delete;
     Input &operator=(const Input &) = delete;
     static Input &GetInstance()
     {
@@ -21,15 +24,15 @@ public:
     }
     glm::vec2 GetMouseCurrentPosition();
     glm::vec2 GetMouseDeltaPosition();
+    [[nodiscard]] bool IsMouseButtonDown(int button) const;
+    [[nodiscard]] bool IsMouseButtonPressed(int button) const;
+    [[nodiscard]] bool IsMouseButtonUp(int button) const;
+    [[nodiscard]] bool IsKeyDown(int key) const;
+    [[nodiscard]] bool IsKeyPressed(int key) const;
+    [[nodiscard]] bool IsKeyUp(int key) const;
+    [[nodiscard]] double GetDeltaScroll() const;
     void UpdateMousePosition();
-    bool IsMouseButtonDown(int button) const;
-    bool IsMouseButtonPressed(int button) const;
-    bool IsMouseButtonUp(int button) const;
     void UpdateKey();
-    bool IsKeyDown(int key) const;
-    bool IsKeyPressed(int key) const;
-    bool IsKeyUp(int key) const;
-    double GetDeltaScroll() const;
     void UpdateScroll();
 
     static void MouseButtonCallback(GLFWwindow *window,int button,int action,int mods);
@@ -45,10 +48,10 @@ private:
     glm::vec2 currentMousePosition{0.0f, 0.0f};
     glm::vec2 deltaMousePosition{0.0f, 0.0f};
 
-    bool m_currentKeys[KEY_COUNT] = {false};
-    bool m_previousKeys[KEY_COUNT] = {false};
+    std::array<bool,KEY_COUNT> m_currentKeys = {false};
+    std::array<bool,KEY_COUNT> m_previousKeys = {false};
 
-    int mouseButtonState[MOUSE_BUTTON_COUNT] = {0};
+    std::array<int,MOUSE_BUTTON_COUNT> mouseButtonState = {0};
 
     double lastScrollPos{0.0};
     double currentScrollPos{0.0};

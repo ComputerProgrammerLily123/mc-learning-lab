@@ -2,34 +2,34 @@
 UIElement::UIElement(PivotType pivotType, FlexType flexType, float x, float y, float width, float height) : rectTransform(pivotType, flexType, x, y, width, height)
 {
 }
-void UIElement::AddElement(UIElement* uiElement)
+void UIElement::AddElement(std::unique_ptr<UIElement> uiElement)
 {
-    childElements.push_back(uiElement);
+    childElements.push_back(std::move(uiElement));
 }
-void UIElement::ClearElement()
+void UIElement::ClearElements()
 {
     childElements.clear();
 }
-std::vector<UIElement*>& UIElement::GetChildElement()
+const std::vector<std::unique_ptr<UIElement>>& UIElement::GetChildElements() const
 {
     return childElements;
 }
-glm::vec2 UIElement::GetStartPointPosition()
+glm::vec2 UIElement::GetStartPointPosition() const
 {
-    return rectTransform.GetPosition();
+    return {rectTransform.GetPosition()};
 }
-glm::vec2 UIElement::GetCenterPosition()
+glm::vec2 UIElement::GetCenterPosition() const
 {
-    return glm::vec2(rectTransform.x, rectTransform.y);
+    return {rectTransform.x, rectTransform.y};
 }
 void UIElement::SetCenterPosition(float x, float y)
 {
     rectTransform.x = x;
     rectTransform.y = y;
 }
-glm::vec2 UIElement::GetSize()
+glm::vec2 UIElement::GetSize() const
 {
-    return glm::vec2(rectTransform.width, rectTransform.height);
+    return {rectTransform.width, rectTransform.height};
 }
 void UIElement::SetSize(float width, float height)
 {

@@ -19,8 +19,8 @@ glm::vec2 Input::GetMouseDeltaPosition()
 }
 void Input::ProcessMousePosition(double xposIn, double yposIn)
 {
-    float xpos = static_cast<float>(xposIn);
-    float ypos = static_cast<float>(yposIn);
+    auto xpos = static_cast<float>(xposIn);
+    auto ypos = static_cast<float>(yposIn);
     currentMousePosition = {xpos, ypos};
     if (isMouseFirstMove)
     {

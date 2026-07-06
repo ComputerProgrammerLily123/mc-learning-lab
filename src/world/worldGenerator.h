@@ -5,7 +5,11 @@ class World;
 class WorldGenerator
 {
 public:
-    WorldGenerator(World *world);
+    WorldGenerator(const WorldGenerator&) = default;
+    WorldGenerator(WorldGenerator&&) = delete;
+    WorldGenerator& operator=(const WorldGenerator&) = default;
+    WorldGenerator& operator=(WorldGenerator&&) = delete;
+    WorldGenerator(World* world);
     ~WorldGenerator();
     void GenerateChunk(int32_t i, int32_t j);
 

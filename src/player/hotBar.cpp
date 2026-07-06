@@ -9,5 +9,5 @@ unsigned HotBar::GetHotBarSlot() const
 }
 void HotBar::SetHotBarSlot(unsigned slot)
 {
-    currentSlot = (slot + 9) % 9;
+    currentSlot = (slot + SLOT_COUNT) % SLOT_COUNT;
 }

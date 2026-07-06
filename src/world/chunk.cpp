@@ -16,7 +16,7 @@ void Chunk::UpdateMesh()
             int x = i % CHUNK_WIDTH;
             int z = (i / CHUNK_WIDTH) % CHUNK_WIDTH;
             int y = i / (CHUNK_WIDTH * CHUNK_WIDTH);
-            //auto uv = uvMap.at(blockRegister.GetBlock(blockIDs[i]).GetName());
+            auto uv = uvMap.at(blockRegister.GetBlock(blockIDs[i]).GetName());
             
             AddVertices(x, y, z, blockRegister.GetBlock(blockIDs[i]).GetUVOffsets().data(), blockIDs[i]);
         }
@@ -53,95 +53,95 @@ void Chunk::AddVertices(int x, int y, int z, const int *const uvOffset, float bl
     unsigned cellCount = 4;
     unsigned startIndex;
 
-    if (ShouldRenderFace(x, y, z, front))
+    if (ShouldRenderFace(x, y, z, Face::front))
     {
         startIndex = vertices.size() / 9;
-        vertices.insert(vertices.end(), {fx - 0.5f, fy - 0.5f, fz + 0.5f, u1 + uvOffset[front] % cellCount * cellSize, v1 + uvOffset[front] / cellCount * cellSize, 0, 0, 1, blockId,
-                                         fx + 0.5f, fy - 0.5f, fz + 0.5f, u2 + uvOffset[front] % cellCount * cellSize, v1 + uvOffset[front] / cellCount * cellSize, 0, 0, 1, blockId,
-                                         fx + 0.5f, fy + 0.5f, fz + 0.5f, u2 + uvOffset[front] % cellCount * cellSize, v2 + uvOffset[front] / cellCount * cellSize, 0, 0, 1, blockId,
-                                         fx - 0.5f, fy + 0.5f, fz + 0.5f, u1 + uvOffset[front] % cellCount * cellSize, v2 + uvOffset[front] / cellCount * cellSize, 0, 0, 1, blockId});
+        vertices.insert(vertices.end(), {fx - 0.5f, fy - 0.5f, fz + 0.5f, u1 + uvOffset[static_cast<int>(Face::front)] % cellCount * cellSize, v1 + uvOffset[static_cast<int>(Face::front)] / cellCount * cellSize, 0, 0, 1, blockId,
+                                         fx + 0.5f, fy - 0.5f, fz + 0.5f, u2 + uvOffset[static_cast<int>(Face::front)] % cellCount * cellSize, v1 + uvOffset[static_cast<int>(Face::front)] / cellCount * cellSize, 0, 0, 1, blockId,
+                                         fx + 0.5f, fy + 0.5f, fz + 0.5f, u2 + uvOffset[static_cast<int>(Face::front)] % cellCount * cellSize, v2 + uvOffset[static_cast<int>(Face::front)] / cellCount * cellSize, 0, 0, 1, blockId,
+                                         fx - 0.5f, fy + 0.5f, fz + 0.5f, u1 + uvOffset[static_cast<int>(Face::front)] % cellCount * cellSize, v2 + uvOffset[static_cast<int>(Face::front)] / cellCount * cellSize, 0, 0, 1, blockId});
         indices.insert(indices.end(), {startIndex, startIndex + 1, startIndex + 2,
                                        startIndex, startIndex + 2, startIndex + 3});
     }
 
-    if (ShouldRenderFace(x, y, z, back))
+    if (ShouldRenderFace(x, y, z, Face::back))
     {
         startIndex = vertices.size() / 9;
-        vertices.insert(vertices.end(), {fx + 0.5f, fy - 0.5f, fz - 0.5f, u1 + uvOffset[back] % cellCount * cellSize, v1 + uvOffset[back] / cellCount * cellSize, 0, 0, -1, blockId,
-                                         fx - 0.5f, fy - 0.5f, fz - 0.5f, u2 + uvOffset[back] % cellCount * cellSize, v1 + uvOffset[back] / cellCount * cellSize, 0, 0, -1, blockId,
-                                         fx - 0.5f, fy + 0.5f, fz - 0.5f, u2 + uvOffset[back] % cellCount * cellSize, v2 + uvOffset[back] / cellCount * cellSize, 0, 0, -1, blockId,
-                                         fx + 0.5f, fy + 0.5f, fz - 0.5f, u1 + uvOffset[back] % cellCount * cellSize, v2 + uvOffset[back] / cellCount * cellSize, 0, 0, -1, blockId});
+        vertices.insert(vertices.end(), {fx + 0.5f, fy - 0.5f, fz - 0.5f, u1 + uvOffset[static_cast<int>(Face::back)] % cellCount * cellSize, v1 + uvOffset[static_cast<int>(Face::back)] / cellCount * cellSize, 0, 0, -1, blockId,
+                                         fx - 0.5f, fy - 0.5f, fz - 0.5f, u2 + uvOffset[static_cast<int>(Face::back)] % cellCount * cellSize, v1 + uvOffset[static_cast<int>(Face::back)] / cellCount * cellSize, 0, 0, -1, blockId,
+                                         fx - 0.5f, fy + 0.5f, fz - 0.5f, u2 + uvOffset[static_cast<int>(Face::back)] % cellCount * cellSize, v2 + uvOffset[static_cast<int>(Face::back)] / cellCount * cellSize, 0, 0, -1, blockId,
+                                         fx + 0.5f, fy + 0.5f, fz - 0.5f, u1 + uvOffset[static_cast<int>(Face::back)] % cellCount * cellSize, v2 + uvOffset[static_cast<int>(Face::back)] / cellCount * cellSize, 0, 0, -1, blockId});
         indices.insert(indices.end(), {startIndex, startIndex + 1, startIndex + 2,
                                        startIndex, startIndex + 2, startIndex + 3});
     }
 
-    if (ShouldRenderFace(x, y, z, left))
+    if (ShouldRenderFace(x, y, z, Face::left))
     {
         startIndex = vertices.size() / 9;
-        vertices.insert(vertices.end(), {fx - 0.5f, fy - 0.5f, fz - 0.5f, u1 + uvOffset[left] % cellCount * cellSize, v1 + uvOffset[left] / cellCount * cellSize, -1, 0, 0, blockId,
-                                         fx - 0.5f, fy - 0.5f, fz + 0.5f, u2 + uvOffset[left] % cellCount * cellSize, v1 + uvOffset[left] / cellCount * cellSize, -1, 0, 0, blockId,
-                                         fx - 0.5f, fy + 0.5f, fz + 0.5f, u2 + uvOffset[left] % cellCount * cellSize, v2 + uvOffset[left] / cellCount * cellSize, -1, 0, 0, blockId,
-                                         fx - 0.5f, fy + 0.5f, fz - 0.5f, u1 + uvOffset[left] % cellCount * cellSize, v2 + uvOffset[left] / cellCount * cellSize, -1, 0, 0, blockId});
+        vertices.insert(vertices.end(), {fx - 0.5f, fy - 0.5f, fz - 0.5f, u1 + uvOffset[static_cast<int>(Face::left)] % cellCount * cellSize, v1 + uvOffset[static_cast<int>(Face::left)] / cellCount * cellSize, -1, 0, 0, blockId,
+                                         fx - 0.5f, fy - 0.5f, fz + 0.5f, u2 + uvOffset[static_cast<int>(Face::left)] % cellCount * cellSize, v1 + uvOffset[static_cast<int>(Face::left)] / cellCount * cellSize, -1, 0, 0, blockId,
+                                         fx - 0.5f, fy + 0.5f, fz + 0.5f, u2 + uvOffset[static_cast<int>(Face::left)] % cellCount * cellSize, v2 + uvOffset[static_cast<int>(Face::left)] / cellCount * cellSize, -1, 0, 0, blockId,
+                                         fx - 0.5f, fy + 0.5f, fz - 0.5f, u1 + uvOffset[static_cast<int>(Face::left)] % cellCount * cellSize, v2 + uvOffset[static_cast<int>(Face::left)] / cellCount * cellSize, -1, 0, 0, blockId});
         indices.insert(indices.end(), {startIndex, startIndex + 1, startIndex + 2,
                                        startIndex, startIndex + 2, startIndex + 3});
     }
 
-    if (ShouldRenderFace(x, y, z, right))
+    if (ShouldRenderFace(x, y, z, Face::right))
     {
         startIndex = vertices.size() / 9;
-        vertices.insert(vertices.end(), {fx + 0.5f, fy - 0.5f, fz + 0.5f, u1 + uvOffset[right] % cellCount * cellSize, v1 + uvOffset[right] / cellCount * cellSize, 1, 0, 0, blockId,
-                                         fx + 0.5f, fy - 0.5f, fz - 0.5f, u2 + uvOffset[right] % cellCount * cellSize, v1 + uvOffset[right] / cellCount * cellSize, 1, 0, 0, blockId,
-                                         fx + 0.5f, fy + 0.5f, fz - 0.5f, u2 + uvOffset[right] % cellCount * cellSize, v2 + uvOffset[right] / cellCount * cellSize, 1, 0, 0, blockId,
-                                         fx + 0.5f, fy + 0.5f, fz + 0.5f, u1 + uvOffset[right] % cellCount * cellSize, v2 + uvOffset[right] / cellCount * cellSize, 1, 0, 0, blockId});
+        vertices.insert(vertices.end(), {fx + 0.5f, fy - 0.5f, fz + 0.5f, u1 + uvOffset[static_cast<int>(Face::right)] % cellCount * cellSize, v1 + uvOffset[static_cast<int>(Face::right)] / cellCount * cellSize, 1, 0, 0, blockId,
+                                         fx + 0.5f, fy - 0.5f, fz - 0.5f, u2 + uvOffset[static_cast<int>(Face::right)] % cellCount * cellSize, v1 + uvOffset[static_cast<int>(Face::right)] / cellCount * cellSize, 1, 0, 0, blockId,
+                                         fx + 0.5f, fy + 0.5f, fz - 0.5f, u2 + uvOffset[static_cast<int>(Face::right)] % cellCount * cellSize, v2 + uvOffset[static_cast<int>(Face::right)] / cellCount * cellSize, 1, 0, 0, blockId,
+                                         fx + 0.5f, fy + 0.5f, fz + 0.5f, u1 + uvOffset[static_cast<int>(Face::right)] % cellCount * cellSize, v2 + uvOffset[static_cast<int>(Face::right)] / cellCount * cellSize, 1, 0, 0, blockId});
         indices.insert(indices.end(), {startIndex, startIndex + 1, startIndex + 2,
                                        startIndex, startIndex + 2, startIndex + 3});
     }
 
-    if (ShouldRenderFace(x, y, z, top))
+    if (ShouldRenderFace(x, y, z, Face::top))
     {
         startIndex = vertices.size() / 9;
-        vertices.insert(vertices.end(), {fx - 0.5f, fy + 0.5f, fz - 0.5f, u1 + uvOffset[top] % cellCount * cellSize, v1 + uvOffset[top] / cellCount * cellSize, 0, 1, 0, blockId,
-                                         fx - 0.5f, fy + 0.5f, fz + 0.5f, u1 + uvOffset[top] % cellCount * cellSize, v2 + uvOffset[top] / cellCount * cellSize, 0, 1, 0, blockId,
-                                         fx + 0.5f, fy + 0.5f, fz + 0.5f, u2 + uvOffset[top] % cellCount * cellSize, v2 + uvOffset[top] / cellCount * cellSize, 0, 1, 0, blockId,
-                                         fx + 0.5f, fy + 0.5f, fz - 0.5f, u2 + uvOffset[top] % cellCount * cellSize, v1 + uvOffset[top] / cellCount * cellSize, 0, 1, 0, blockId});
+        vertices.insert(vertices.end(), {fx - 0.5f, fy + 0.5f, fz - 0.5f, u1 + uvOffset[static_cast<int>(Face::top)] % cellCount * cellSize, v1 + uvOffset[static_cast<int>(Face::top)] / cellCount * cellSize, 0, 1, 0, blockId,
+                                         fx - 0.5f, fy + 0.5f, fz + 0.5f, u1 + uvOffset[static_cast<int>(Face::top)] % cellCount * cellSize, v2 + uvOffset[static_cast<int>(Face::top)] / cellCount * cellSize, 0, 1, 0, blockId,
+                                         fx + 0.5f, fy + 0.5f, fz + 0.5f, u2 + uvOffset[static_cast<int>(Face::top)] % cellCount * cellSize, v2 + uvOffset[static_cast<int>(Face::top)] / cellCount * cellSize, 0, 1, 0, blockId,
+                                         fx + 0.5f, fy + 0.5f, fz - 0.5f, u2 + uvOffset[static_cast<int>(Face::top)] % cellCount * cellSize, v1 + uvOffset[static_cast<int>(Face::top)] / cellCount * cellSize, 0, 1, 0, blockId});
         indices.insert(indices.end(), {startIndex, startIndex + 1, startIndex + 2,
                                        startIndex, startIndex + 2, startIndex + 3});
     }
 
-    if (ShouldRenderFace(x, y, z, bottom))
+    if (ShouldRenderFace(x, y, z, Face::bottom))
     {
         startIndex = vertices.size() / 9;
-        vertices.insert(vertices.end(), {fx - 0.5f, fy - 0.5f, fz - 0.5f, u1 + uvOffset[bottom] % cellCount * cellSize, v1 + uvOffset[bottom] / cellCount * cellSize, 0, -1, 0, blockId,
-                                         fx + 0.5f, fy - 0.5f, fz - 0.5f, u2 + uvOffset[bottom] % cellCount * cellSize, v1 + uvOffset[bottom] / cellCount * cellSize, 0, -1, 0, blockId,
-                                         fx + 0.5f, fy - 0.5f, fz + 0.5f, u2 + uvOffset[bottom] % cellCount * cellSize, v2 + uvOffset[bottom] / cellCount * cellSize, 0, -1, 0, blockId,
-                                         fx - 0.5f, fy - 0.5f, fz + 0.5f, u1 + uvOffset[bottom] % cellCount * cellSize, v2 + uvOffset[bottom] / cellCount * cellSize, 0, -1, 0, blockId});
+        vertices.insert(vertices.end(), {fx - 0.5f, fy - 0.5f, fz - 0.5f, u1 + uvOffset[static_cast<int>(Face::bottom)] % cellCount * cellSize, v1 + uvOffset[static_cast<int>(Face::bottom)] / cellCount * cellSize, 0, -1, 0, blockId,
+                                         fx + 0.5f, fy - 0.5f, fz - 0.5f, u2 + uvOffset[static_cast<int>(Face::bottom)] % cellCount * cellSize, v1 + uvOffset[static_cast<int>(Face::bottom)] / cellCount * cellSize, 0, -1, 0, blockId,
+                                         fx + 0.5f, fy - 0.5f, fz + 0.5f, u2 + uvOffset[static_cast<int>(Face::bottom)] % cellCount * cellSize, v2 + uvOffset[static_cast<int>(Face::bottom)] / cellCount * cellSize, 0, -1, 0, blockId,
+                                         fx - 0.5f, fy - 0.5f, fz + 0.5f, u1 + uvOffset[static_cast<int>(Face::bottom)] % cellCount * cellSize, v2 + uvOffset[static_cast<int>(Face::bottom)] / cellCount * cellSize, 0, -1, 0, blockId});
         indices.insert(indices.end(), {startIndex, startIndex + 1, startIndex + 2,
                                        startIndex, startIndex + 2, startIndex + 3});
     }
 }
 bool Chunk::ShouldRenderFace(int x, int y, int z, Face face)
 {
-    if (face == front && (BlockRegister::GetInstance().GetBlock(GetBlock(x, y, z + 1)).GetSolid() || z == 15 && world->GetChunk(chunkX, chunkZ + 1) && BlockRegister::GetInstance().GetBlock(world->GetChunk(chunkX, chunkZ + 1)->GetBlock(x, y, 0)).GetSolid()))
+    if (face == Face::front && (BlockRegister::GetInstance().GetBlock(GetBlock(x, y, z + 1)).GetSolid() || z == 15 && world->GetChunk(chunkX, chunkZ + 1) && BlockRegister::GetInstance().GetBlock(world->GetChunk(chunkX, chunkZ + 1)->GetBlock(x, y, 0)).GetSolid()))
     {
         return false;
     }
-    if (face == back && (BlockRegister::GetInstance().GetBlock(GetBlock(x, y, z - 1)).GetSolid() || z == 0 && world->GetChunk(chunkX, chunkZ - 1) && BlockRegister::GetInstance().GetBlock(world->GetChunk(chunkX, chunkZ - 1)->GetBlock(x, y, 15)).GetSolid()))
+    if (face == Face::back && (BlockRegister::GetInstance().GetBlock(GetBlock(x, y, z - 1)).GetSolid() || z == 0 && world->GetChunk(chunkX, chunkZ - 1) && BlockRegister::GetInstance().GetBlock(world->GetChunk(chunkX, chunkZ - 1)->GetBlock(x, y, 15)).GetSolid()))
     {
         return false;
     }
-    if (face == left && (BlockRegister::GetInstance().GetBlock(GetBlock(x - 1, y, z)).GetSolid() || x == 0 && world->GetChunk(chunkX - 1, chunkZ) && BlockRegister::GetInstance().GetBlock(world->GetChunk(chunkX - 1, chunkZ)->GetBlock(15, y, z)).GetSolid()))
+    if (face == Face::left && (BlockRegister::GetInstance().GetBlock(GetBlock(x - 1, y, z)).GetSolid() || x == 0 && world->GetChunk(chunkX - 1, chunkZ) && BlockRegister::GetInstance().GetBlock(world->GetChunk(chunkX - 1, chunkZ)->GetBlock(15, y, z)).GetSolid()))
     {
         return false;
     }
-    if (face == right && (BlockRegister::GetInstance().GetBlock(GetBlock(x + 1, y, z)).GetSolid() || x == 15 && world->GetChunk(chunkX + 1, chunkZ) && BlockRegister::GetInstance().GetBlock(world->GetChunk(chunkX + 1, chunkZ)->GetBlock(0, y, z)).GetSolid()))
+    if (face == Face::right && (BlockRegister::GetInstance().GetBlock(GetBlock(x + 1, y, z)).GetSolid() || x == 15 && world->GetChunk(chunkX + 1, chunkZ) && BlockRegister::GetInstance().GetBlock(world->GetChunk(chunkX + 1, chunkZ)->GetBlock(0, y, z)).GetSolid()))
     {
         return false;
     }
-    if (face == top && BlockRegister::GetInstance().GetBlock(GetBlock(x, y + 1, z)).GetSolid())
+    if (face == Face::top && BlockRegister::GetInstance().GetBlock(GetBlock(x, y + 1, z)).GetSolid())
     {
         return false;
     }
-    if (face == bottom && BlockRegister::GetInstance().GetBlock(GetBlock(x, y - 1, z)).GetSolid())
+    if (face == Face::bottom && BlockRegister::GetInstance().GetBlock(GetBlock(x, y - 1, z)).GetSolid())
     {
         return false;
     }

@@ -1,6 +1,5 @@
 #include "resourceManager.h"
 #include <filesystem>
-#include <iostream>
 #include <windows.h>
 void ResourceManager::LoadTexture()
 {

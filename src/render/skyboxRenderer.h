@@ -4,10 +4,15 @@ class World;
 
 #include "shader.h"
 #include "resource/texture.h"
-class SkyboxRenderer
+#include "core/sceneManager.h"
+class SkyboxRenderer : public SceneObject
 {
 public:
     SkyboxRenderer();
+    SkyboxRenderer(const SkyboxRenderer&) = default;
+    SkyboxRenderer(SkyboxRenderer&&) = delete;
+    SkyboxRenderer& operator=(const SkyboxRenderer&) = delete;
+    SkyboxRenderer& operator=(SkyboxRenderer&&) = delete;
     ~SkyboxRenderer();
     void Draw(Camera *camera);
 

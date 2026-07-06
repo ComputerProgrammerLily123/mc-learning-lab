@@ -1,8 +1,10 @@
 #include "jsonReader.h"
+
 #include <fstream>
-#include <sstream>
 #include <iostream>
-nlohmann::json JsonReader::ReadJson(const std::string &filePath)
+#include <sstream>
+
+nlohmann::json JsonReader::ReadJson(const std::string& filePath)
 {
     std::string rawJson;
     std::ifstream jsonFile;
@@ -16,9 +18,10 @@ nlohmann::json JsonReader::ReadJson(const std::string &filePath)
         jsonFile.close();
         rawJson = jsonFileStream.str();
     }
-    catch (std::ifstream::failure e)
+    catch (const std::ifstream::failure& e)
     {
-        std::cout << "ERROR::JSON::FILE_NOT_SUCCESS_READ" << std::endl;
+        std::cout << "ERROR::JSON::FILE_NOT_SUCCESS_READ:" << filePath << '\n';
+        return nlohmann::json{};
     }
     return nlohmann::json::parse(rawJson);
 }

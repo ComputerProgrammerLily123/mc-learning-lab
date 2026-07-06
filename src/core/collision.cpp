@@ -1,7 +1,6 @@
 #include "collision.h"
 
 #include "world/world.h"
-#include <iostream>
 CollisionSystem::CollisionSystem(World *world) : world(world) {}
 glm::vec3 CollisionSystem::Move(const glm::vec3 &position, const glm::vec3 &movement)
 {
@@ -56,7 +55,7 @@ glm::vec3 CollisionSystem::Move(const glm::vec3 &position, const glm::vec3 &move
         }
         else
         {
-            result.z += movement.z / step;
+            result.z += movement.z / static_cast<float>(step);
         }
     }
     return result;

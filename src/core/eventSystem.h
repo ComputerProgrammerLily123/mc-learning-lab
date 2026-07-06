@@ -13,7 +13,9 @@ enum class Event
 class EventSystem
 {
 public:
-    EventSystem(const EventSystem &) = delete;
+    EventSystem(EventSystem&&) = delete;
+    EventSystem& operator=(EventSystem&&) = delete;
+    EventSystem(const EventSystem&) = delete;
     EventSystem &operator=(const EventSystem &) = delete;
     static EventSystem &GetInstance()
     {

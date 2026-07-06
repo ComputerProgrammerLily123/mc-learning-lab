@@ -3,11 +3,16 @@
 #include "resource/texture.h"
 #include <vector>
 #include <unordered_map>
+#include "core/sceneManager.h"
 class Camera;
 class World;
-class WorldRenderer
+class WorldRenderer : public SceneObject
 {
 public:
+    WorldRenderer(const WorldRenderer&) = default;
+    WorldRenderer(WorldRenderer&&) = delete;
+    WorldRenderer& operator=(const WorldRenderer&) = delete;
+    WorldRenderer& operator=(WorldRenderer&&) = delete;
     WorldRenderer(unsigned size);
     ~WorldRenderer();
     void Clear();

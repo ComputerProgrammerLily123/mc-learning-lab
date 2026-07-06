@@ -1,10 +1,10 @@
 #pragma once
 #include "uiElement.h"
 #include <string>
-#include "core/eventSystem.h"
+//include "core/eventSystem.h"
 #include <functional>
 #include <vector>
-enum class ButtonState
+enum class ButtonState : unsigned char
 {
     Normal,
     Highlight,
@@ -13,6 +13,11 @@ enum class ButtonState
 class Button : public UIElement
 {
 public:
+    Button(const Button&) = delete;
+    ~Button() = default;
+    Button(Button&&) = delete;
+    Button& operator=(const Button&) = delete;
+    Button& operator=(Button&&) = delete;
     Button(PivotType pivotType, FlexType flexType, float x, float y, float width, float height, glm::vec4 normalUV, glm::vec4 highlightUV, std::string textureID);
     void AddListener(std::function<void()> listener);
     glm::vec4 GetUV() override;

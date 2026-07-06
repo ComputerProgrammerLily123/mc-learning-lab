@@ -1,6 +1,5 @@
 #include "worldGenerator.h"
 #include "world.h"
-#include <iostream>
 WorldGenerator::WorldGenerator(World *world) : world(world)
 {
     surfaceNoise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2S);

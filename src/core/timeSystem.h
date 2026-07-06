@@ -2,7 +2,9 @@
 class TimeSystem
 {
 public:
-    TimeSystem(const TimeSystem &) = delete;
+    TimeSystem(TimeSystem&&) = delete;
+    TimeSystem& operator=(TimeSystem&&) = delete;
+    TimeSystem(const TimeSystem&) = delete;
     TimeSystem &operator=(const TimeSystem &) = delete;
     static TimeSystem &GetInstance()
     {
@@ -22,7 +24,9 @@ private:
 class TickSystem
 {
 public:
-    TickSystem(const TickSystem &) = delete;
+    TickSystem(TickSystem&&) = delete;
+    TickSystem& operator=(TickSystem&&) = delete;
+    TickSystem(const TickSystem&) = delete;
     TickSystem &operator=(const TickSystem &) = delete;
     static TickSystem &GetInstance()
     {
@@ -32,7 +36,7 @@ public:
     void UpdateTimer();
     bool ShouldTick();
     void ConsumeTick();
-    float GetAlpha() const;
+    [[nodiscard]] float GetAlpha() const;
 
 private:
     TickSystem() = default;
@@ -41,6 +45,6 @@ private:
     static constexpr double TICK_RATE = 20.0;
     static constexpr double TICK_TIME = 1.0 / TICK_RATE;
 
-    float accumulator = 0.0f;
-    float lastTime = 0.0f;
+    double accumulator = 0.0;
+    double lastTime = 0.0;
 };

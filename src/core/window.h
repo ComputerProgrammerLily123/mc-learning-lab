@@ -4,9 +4,13 @@
 class Window
 {
 public:
-    Window(unsigned width, unsigned height, const std::string &title);
+    Window(const Window&) = default;
     ~Window();
-    GLFWwindow* GetNativeWindow() const;
+    Window(Window&&) = delete;
+    Window& operator=(const Window&) = default;
+    Window& operator=(Window&&) = delete;
+    Window(unsigned width, unsigned height, const std::string& title);
+    [[nodiscard]] GLFWwindow* GetNativeWindow() const;
     void SetCursorPosCallback(GLFWcursorposfun func);
     void SetCursorState(bool visibility);
     void SetFrameBufferSizeCallback(GLFWframebuffersizefun func);

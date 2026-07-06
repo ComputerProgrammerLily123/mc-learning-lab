@@ -1,14 +1,15 @@
 #pragma once
-#include <string>
 #include "texture.h"
-enum class AtlasType
+enum class AtlasType : unsigned char
 {
     Block,Item
 };
 class ResourceManager
 {
 public:
-    ResourceManager(const ResourceManager &) = delete;
+    ResourceManager(ResourceManager&&) = delete;
+    ResourceManager& operator=(ResourceManager&&) = delete;
+    ResourceManager(const ResourceManager&) = delete;
     ResourceManager &operator=(const ResourceManager &) = delete;
     static ResourceManager &GetInstance()
     {

@@ -1,22 +1,24 @@
 #include "application.h"
 
-#include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glad/glad.h>
+
 #include <iostream>
 
-#include "window.h"
-#include "render/outlineRenderer.h"
-#include "render/worldRenderer.h"
-#include "render/skyboxRenderer.h"
-#include "render/uiRenderer.h"
-#include "render/camera.h"
-#include "world/world.h"
-#include "player/player.h"
-#include "item/itemRegister.h"
-#include "util/jsonReader.h"
+#include "gui/button.h"
 #include "gui/canvas.h"
 #include "gui/quad.h"
-#include "gui/button.h"
+#include "gui/uiSystem.h"
+// #include "item/itemRegister.h"
+#include "player/player.h"
+#include "render/camera.h"
+#include "render/outlineRenderer.h"
+#include "render/skyboxRenderer.h"
+#include "render/worldRenderer.h"
+#include "util/jsonReader.h"
+#include "window.h"
+#include "world/world.h"
+
 Application::Application()
 {
     InitGLFW();
@@ -25,19 +27,15 @@ Application::Application()
     InitResource();
     InitScene();
 }
-Application::~Application()
-{
-    delete window;
-}
 void Application::InitGLFW()
 {
-    window = new Window(screenWidth, screenHeight, "Minecraft:Papyrus Edition");
+    window = std::make_unique<Window>(screenWidth, screenHeight, "Minecraft:Papyrus Edition");
 }
 void Application::InitGLAD()
 {
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
-        std::cout << "Failed to initialize GLAD" << std::endl;
+        std::cout << "Failed to initialize GLAD\n";
         return;
     }
 }
@@ -48,142 +46,123 @@ void Application::InitGLFWCallback()
     window->SetMouseButtonCallback(Input::GetInstance().MouseButtonCallback);
     window->SetScrollCallback(Input::GetInstance().ScrollCallback);
     window->SetWindowUserPointer(this);
-    window->SetFrameBufferSizeCallback([](GLFWwindow *win, int width, int height)
+    window->SetFrameBufferSizeCallback([](GLFWwindow* win, int width, int height)
                                        {      
-        Application* app = static_cast<Application*>(glfwGetWindowUserPointer(win));
+        auto app = static_cast<Application*>(glfwGetWindowUserPointer(win));
         if (app) app->OnWindowResize(width, height); });
 }
 void Application::InitScene()
 {
-    auto welcomeScene = sceneManager.CreateScene("Welcome");
-    auto mainScene = sceneManager.CreateScene("Main");
+    sceneManager.CreateScene("Welcome");
+    sceneManager.CreateScene("Main");
+
     // Welcome Scene
+    auto welcomeScene = sceneManager.GetScene("Welcome");
+    welcomeScene->onLoad = [this]
     {
-        // Scene Object definition
-        welcomeScene->sceneObject.emplace("Canvas", nullptr);
-        welcomeScene->sceneObject.emplace("Camera", nullptr);
-        welcomeScene->sceneObject.emplace("SkyboxRenderer", nullptr);
-        //========================
-        welcomeScene->onLoad = [this, welcomeScene]
-        {
-            auto canvas = new Canvas(PivotType::Center, FlexType::Full, INITIAL_SCREEN_WIDTH / 2, INITIAL_SCREEN_HEIGHT / 2);
-            auto camera = new Camera(screenWidth, screenHeight);
-            auto skyboxRenderer = new SkyboxRenderer();
+        auto canvas = std::make_unique<Canvas>();
+        auto camera = std::make_unique<Camera>(screenWidth, screenHeight);
+        auto skyboxRenderer = std::make_unique<SkyboxRenderer>();
 
-            camera->SetZoom(90.0f);
+        camera->SetZoom(90.0f);
 
-            auto titleA = new Quad(PivotType::Center, FlexType::None, -225, -215, 605.46875f, 171.875f, glm::vec4(0.0f, 1.0f, 0.60546875f, 0.828125f), "title/minecraft.png");
-            auto titleB = new Quad(PivotType::Center, FlexType::None, 305, -215, 464.84375f, 171.875f, glm::vec4(0.0f, 0.82421875f, 0.46484375f, 0.65234375f), "title/minecraft.png");
-            auto buttonA = new Button(PivotType::Center, FlexType::None, 0, 0, 728.0f, 88.0f, glm::vec4(0.0f, 0.7421875f, 0.78125f, 0.6640625f), glm::vec4(0.0f, 0.6640625f, 0.78125f, 0.5859375f), "widgets.png");
-            auto buttonB = new Button(PivotType::Center, FlexType::None, 0, 100, 728.0f, 88.0f, glm::vec4(0.0f, 0.7421875f, 0.78125f, 0.6640625f), glm::vec4(0.0f, 0.6640625f, 0.78125f, 0.5859375f), "widgets.png");
-            auto buttonC = new Button(PivotType::Center, FlexType::None, 0, 200, 728.0f, 88.0f, glm::vec4(0.0f, 0.7421875f, 0.78125f, 0.6640625f), glm::vec4(0.0f, 0.6640625f, 0.78125f, 0.5859375f), "widgets.png");
-            auto buttonD = new Button(PivotType::Center, FlexType::None, -450, 300, 88.0f, 88.0f, glm::vec4(0.0f, 0.5859375f, 0.078125f, 0.5078125f), glm::vec4(0.0f, 0.5078125f, 0.078125f, 0.4296875f), "widgets.png");
-            buttonA->AddListener([this]
-                                 { sceneManager.LoadScene("Main"); });
-            canvas->ClearElement();
-            canvas->AddElement(titleA);
-            canvas->AddElement(titleB);
-            canvas->AddElement(buttonA);
-            canvas->AddElement(buttonB);
-            canvas->AddElement(buttonC);
-            canvas->AddElement(buttonD);
-            UISystem::GetInstance().SetMainCanvas(canvas);
-            welcomeScene->sceneObject["Canvas"] = std::shared_ptr<Canvas>(canvas);
-            welcomeScene->sceneObject["Camera"] = std::shared_ptr<Camera>(camera);
-            welcomeScene->sceneObject["SkyboxRenderer"] = std::shared_ptr<SkyboxRenderer>(skyboxRenderer);
+        auto titleA = std::make_unique<Quad>(PivotType::Center, FlexType::None, -225, -215, 605.46875f, 171.875f, glm::vec4(0.0f, 1.0f, 0.60546875f, 0.828125f), "title/minecraft.png");
+        auto titleB = std::make_unique<Quad>(PivotType::Center, FlexType::None, 305, -215, 464.84375f, 171.875f, glm::vec4(0.0f, 0.82421875f, 0.46484375f, 0.65234375f), "title/minecraft.png");
+        auto buttonA = std::make_unique<Button>(PivotType::Center, FlexType::None, 0, 0, 728.0f, 88.0f, glm::vec4(0.0f, 0.7421875f, 0.78125f, 0.6640625f), glm::vec4(0.0f, 0.6640625f, 0.78125f, 0.5859375f), "widgets.png");
+        auto buttonB = std::make_unique<Button>(PivotType::Center, FlexType::None, 0, 100, 728.0f, 88.0f, glm::vec4(0.0f, 0.7421875f, 0.78125f, 0.6640625f), glm::vec4(0.0f, 0.6640625f, 0.78125f, 0.5859375f), "widgets.png");
+        auto buttonC = std::make_unique<Button>(PivotType::Center, FlexType::None, 0, 200, 728.0f, 88.0f, glm::vec4(0.0f, 0.7421875f, 0.78125f, 0.6640625f), glm::vec4(0.0f, 0.6640625f, 0.78125f, 0.5859375f), "widgets.png");
+        auto buttonD = std::make_unique<Button>(PivotType::Center, FlexType::None, -450, 300, 88.0f, 88.0f, glm::vec4(0.0f, 0.5859375f, 0.078125f, 0.5078125f), glm::vec4(0.0f, 0.5078125f, 0.078125f, 0.4296875f), "widgets.png");
+        buttonA->AddListener([this]
+                             { sceneManager.LoadScene("Main"); });
+        buttonC->AddListener([this]
+                             { Quit(); });
+        canvas->ClearElements();
+        canvas->AddElement(std::move(titleA));
+        canvas->AddElement(std::move(titleB));
+        canvas->AddElement(std::move(buttonA));
+        canvas->AddElement(std::move(buttonB));
+        canvas->AddElement(std::move(buttonC));
+        canvas->AddElement(std::move(buttonD));
+        UISystem::GetInstance().SetMainCanvas(canvas.get());
+        sceneManager.AddObject("Canvas", std::move(canvas));
+        sceneManager.AddObject("Camera", std::move(camera));
+        sceneManager.AddObject("SkyboxRenderer", std::move(skyboxRenderer));
 
-            window->SetCursorState(true);
-
-            welcomeScene->availableFlag = true;
-        };
-        welcomeScene->onUpdate = [this, welcomeScene]
-        {
-            if (welcomeScene->availableFlag)
-            {
-                auto camera = static_cast<Camera *>(welcomeScene->sceneObject["Camera"].get());
-                auto skyboxRenderer = static_cast<SkyboxRenderer *>(welcomeScene->sceneObject["SkyboxRenderer"].get());
-                camera->SetYaw(time.GetDeltaTime() * 10);
-                skyboxRenderer->Draw(camera);
-            }
-        };
-        welcomeScene->onUnLoad = [welcomeScene]
-        {
-            welcomeScene->availableFlag = false;
-            welcomeScene->sceneObject.clear();
-        };
-    }
+        window->SetCursorState(true);
+    };
+    welcomeScene->onUpdate = [this]
+    {
+        auto camera = sceneManager.GetObject<Camera>("Camera");
+        auto skyboxRenderer = sceneManager.GetObject<SkyboxRenderer>("SkyboxRenderer");
+        camera->SetYaw(time.GetDeltaTime() * 10);
+        skyboxRenderer->Draw(camera);
+    };
+    welcomeScene->onUnLoad = [this]
+    {
+        UISystem::GetInstance().SetMainCanvas(nullptr);
+        sceneManager.ClearObjects();
+    };
 
     // Main Scene
+    auto mainScene = sceneManager.GetScene("Main");
+    mainScene->onLoad = [this]
     {
-        // Scene Object definition
-        mainScene->sceneObject.emplace("Canvas", nullptr);
-        mainScene->sceneObject.emplace("Camera", nullptr);
-        mainScene->sceneObject.emplace("World", nullptr);
-        mainScene->sceneObject.emplace("OutlineRenderer", nullptr);
-        mainScene->sceneObject.emplace("WorldRenderer", nullptr);
-        mainScene->sceneObject.emplace("Player", nullptr);
-        //========================
-        mainScene->onLoad = [this, mainScene]
-        {
-            auto canvas = new Canvas(PivotType::Center, FlexType::Full, INITIAL_SCREEN_WIDTH / 2, INITIAL_SCREEN_HEIGHT / 2);
-            auto camera = new Camera(screenWidth, screenHeight);
-            auto world = new World();
-            auto outlineRenderer = new OutlineRenderer();
-            auto worldRenderer = new WorldRenderer(RENDER_RADIAN);
-            auto player = new Player(glm::vec3(10.0f, 100.0f, 10.0f), camera, world);
+        auto canvas = std::make_unique<Canvas>();
+        auto camera = std::make_unique<Camera>(screenWidth, screenHeight);
+        auto world = std::make_unique<World>();
+        auto outlineRenderer = std::make_unique<OutlineRenderer>();
+        auto worldRenderer = std::make_unique<WorldRenderer>(RENDER_RADIAN);
+        auto player = std::make_unique<Player>(glm::vec3(10.0f, 100.0f, 10.0f), camera.get(), world.get());
 
-            auto crosshair = new Quad(PivotType::Center, FlexType::None, 0, 0, 32.0f, 32.0f, glm::vec4(0.0f, 1.0f, 0.05859375f, 0.94140625f), "icons.png");
-            auto hotbar = new Quad(PivotType::BottomMiddle, FlexType::None, 0, 350, 728.0f, 88.0f, glm::vec4(0.0f, 1.0f, 0.7109375f, 0.9140625f), "widgets.png");
-            auto hotbarFrame = new Quad(PivotType::Center, FlexType::None, player->GetHotBar().GetHotBarSlot() * 80, 350, 88.0f, 88.0f, glm::vec4(0.0f, 0.9140625f, 0.09375f, 0.8203125f), "widgets.png");
-            canvas->AddElement(crosshair);
-            canvas->AddElement(hotbar);
-            canvas->AddElement(hotbarFrame);
-            UISystem::GetInstance().SetMainCanvas(canvas);
+        auto crosshair = std::make_unique<Quad>(PivotType::Center, FlexType::None, 0, 0, 32.0f, 32.0f, glm::vec4(0.0f, 1.0f, 0.05859375f, 0.94140625f), "icons.png");
+        auto hotbar = std::make_unique<Quad>(PivotType::BottomMiddle, FlexType::None, 0, 350, 728.0f, 88.0f, glm::vec4(0.0f, 1.0f, 0.7109375f, 0.9140625f), "widgets.png");
+        auto hotbarFrame = std::make_unique<Quad>(PivotType::Center, FlexType::None, player->GetHotBar().GetHotBarSlot() * 80, 350, 88.0f, 88.0f, glm::vec4(0.0f, 0.9140625f, 0.09375f, 0.8203125f), "widgets.png");
+        canvas->AddElement(std::move(crosshair));
+        canvas->AddElement(std::move(hotbar));
+        canvas->AddElement(std::move(hotbarFrame));
+        UISystem::GetInstance().SetMainCanvas(canvas.get());
 
-            mainScene->sceneObject["Canvas"] = std::shared_ptr<Canvas>(canvas);
-            mainScene->sceneObject["Camera"] = std::shared_ptr<Camera>(camera);
-            mainScene->sceneObject["World"] = std::shared_ptr<World>(world);
-            mainScene->sceneObject["OutlineRenderer"] = std::shared_ptr<OutlineRenderer>(outlineRenderer);
-            mainScene->sceneObject["WorldRenderer"] = std::shared_ptr<WorldRenderer>(worldRenderer);
-            mainScene->sceneObject["Player"] = std::shared_ptr<Player>(player);
+        sceneManager.AddObject("Canvas", std::move(canvas));
+        sceneManager.AddObject("Camera", std::move(camera));
+        sceneManager.AddObject("World", std::move(world));
+        sceneManager.AddObject("OutlineRenderer", std::move(outlineRenderer));
+        sceneManager.AddObject("WorldRenderer", std::move(worldRenderer));
+        sceneManager.AddObject("Player", std::move(player));
 
-            window->SetCursorState(false);
+        window->SetCursorState(false);
+    };
+    mainScene->onUpdate = [this]
+    {
+        auto canvas = sceneManager.GetObject<Canvas>("Canvas");
+        auto camera = sceneManager.GetObject<Camera>("Camera");
+        auto world = sceneManager.GetObject<World>("World");
+        auto outlineRenderer = sceneManager.GetObject<OutlineRenderer>("OutlineRenderer");
+        auto worldRenderer = sceneManager.GetObject<WorldRenderer>("WorldRenderer");
+        auto player = sceneManager.GetObject<Player>("Player");
+        camera->SetPosition((player->GetPreviousTickPosition() * (1 - tick.GetAlpha()) + player->GetPosition() * tick.GetAlpha()) + glm::vec3(0.0f, 1.62f, 0.0f));
+        glm::vec2 delta = input.GetMouseDeltaPosition();
+        camera->ProcessMouseMovement(delta.x, -delta.y);
+        input.UpdateMousePosition();
+        if (Input::GetInstance().GetDeltaScroll() > 0)
+            player->GetHotBar().SetHotBarSlot(player->GetHotBar().GetHotBarSlot() - 1);
+        if (Input::GetInstance().GetDeltaScroll() < 0)
+            player->GetHotBar().SetHotBarSlot(player->GetHotBar().GetHotBarSlot() + 1);
+        worldRenderer->Draw(world, camera, player->GetChunkPosition().x, player->GetChunkPosition().z);
+        outlineRenderer->DrawOutline(world, camera, player->GetLookAtPosition());
+        std::cout << player->GetBlockPosition().x << "," << player->GetBlockPosition().y << "," << player->GetBlockPosition().z << '\n';
+        std::cout << player->GetChunkPosition().x << "," << player->GetChunkPosition().y << "," << player->GetChunkPosition().z << '\n';
+    };
+    mainScene->onTickUpdate = [this]
+    {
+        auto player = sceneManager.GetObject<Player>("Player");
+        player->UpdateTick();
+    };
+    mainScene->onUnLoad = [this]
+    {
+        UISystem::GetInstance().SetMainCanvas(nullptr);
+        sceneManager.ClearObjects();
+    };
 
-            mainScene->availableFlag = true;
-        };
-        mainScene->onUpdate = [this, mainScene]
-        {
-            if (mainScene->availableFlag)
-            {
-                auto canvas = static_cast<Canvas *>(mainScene->sceneObject["Canvas"].get());
-                auto camera = static_cast<Camera *>(mainScene->sceneObject["Camera"].get());
-                auto world = static_cast<World *>(mainScene->sceneObject["World"].get());
-                auto outlineRenderer = static_cast<OutlineRenderer *>(mainScene->sceneObject["OutlineRenderer"].get());
-                auto worldRenderer = static_cast<WorldRenderer *>(mainScene->sceneObject["WorldRenderer"].get());
-                auto player = static_cast<Player *>(mainScene->sceneObject["Player"].get());
-                camera->SetPosition((player->GetPreviousTickPosition() * (1 - tick.GetAlpha()) + player->GetPosition() * tick.GetAlpha()) + glm::vec3(0.0f, 1.62f, 0.0f));
-                glm::vec2 delta = input.GetMouseDeltaPosition();
-                camera->ProcessMouseMovement(delta.x, -delta.y);
-                input.UpdateMousePosition();
-                if (Input::GetInstance().GetDeltaScroll() > 0)
-                    player->GetHotBar().SetHotBarSlot(player->GetHotBar().GetHotBarSlot() - 1);
-                if (Input::GetInstance().GetDeltaScroll() < 0)
-                    player->GetHotBar().SetHotBarSlot(player->GetHotBar().GetHotBarSlot() + 1);
-                worldRenderer->Draw(world, camera, player->GetChunkPosition().x, player->GetChunkPosition().z);
-                outlineRenderer->DrawOutline(world, camera, player->GetLookAtPosition());
-            }
-        };
-        mainScene->onTickUpdate = [mainScene]
-        {
-            auto player = static_cast<Player *>(mainScene->sceneObject["Player"].get());
-            player->UpdateTick();
-        };
-        mainScene->onUnLoad = [mainScene]
-        {
-            mainScene->availableFlag = false;
-            mainScene->sceneObject.clear();
-        };
-    }
     sceneManager.LoadScene("Welcome");
 }
 void Application::InitResource()
@@ -193,10 +172,10 @@ void Application::InitResource()
 }
 void Application::RegisterBlocks()
 {
-    auto &blockRegister = BlockRegister::GetInstance();
+    auto& blockRegister = BlockRegister::GetInstance();
 
     auto data = JsonReader::ReadJson("data/blocks.json")["blocks"];
-    for (auto &block : data)
+    for (auto& block : data)
     {
         blockRegister.RegisterBlock(block["name"], block["uv"], block["texture"], block["solid"]);
     }
@@ -221,9 +200,7 @@ void Application::Run()
 {
     while (!window->ShouldClose())
     {
-        // std::cout << "FPS:" << 1.0f / time.GetDeltaTime() << std::endl;
-        //  std::cout << player->GetBlockPosition().x << "," << player->GetBlockPosition().y << "," << player->GetBlockPosition().z << std::endl;
-        //  std::cout << player->GetChunkPosition().x << "," << player->GetChunkPosition().y << "," << player->GetChunkPosition().z << std::endl;
+        std::cout << "FPS:" << 1.0f / time.GetDeltaTime() << '\n';
         tick.UpdateTimer();
         if (tick.ShouldTick())
         {
@@ -246,5 +223,5 @@ void Application::Run()
 }
 void Application::Quit()
 {
-    glfwTerminate();
+    window->SetShouldClose();
 }

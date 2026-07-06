@@ -3,12 +3,9 @@
 #include "world/world.h"
 #include <GLFW/glfw3.h>
 #include "core/collision.h"
-Movement::Movement(World *world, float gravityFac) : collision(world)
+Movement::Movement(World *world, float gravityFac) : gravityFac(gravityFac), collision(world)
 {
-    this->gravityFac = gravityFac;
-}
-Movement::~Movement()
-{
+    
 }
 void Movement::Move(glm::vec3 &position, glm::vec3 front, glm::vec3 right)
 {

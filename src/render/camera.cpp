@@ -1,6 +1,5 @@
 #include "camera.h"
 
-#include <iostream>
 Camera::Camera(unsigned screenWidth, unsigned screenHeight) : screenWidth(screenWidth), screenHeight(screenHeight)
 {
     UpdateCameraVectors();

@@ -1,24 +1,51 @@
 #include "sceneManager.h"
-#include <iostream>
-Scene *SceneManager::CreateScene(std::string id)
+
+void SceneManager::CreateScene(const std::string& id)
 {
-    auto scene = new Scene();
-    scenes.emplace(id, scene);
-    return scene;
-}
-void SceneManager::LoadScene(std::string id)
-{
-    if (currentScene != nullptr)
-        currentScene->onUnLoad();
     auto result = scenes.find(id);
     if (result != scenes.end())
     {
-        currentScene = result->second;
+        std::cout << "[SceneManager] Scene(" << id << ") already exists.\n";
+        return;
+    }
+    scenes.emplace(id, std::make_unique<Scene>());
+    std::cout << "[SceneManager] Create Scene(" << id << ").\n";
+}
+Scene* SceneManager::GetCurrentScene() const
+{
+    return currentScene;
+}
+Scene* SceneManager::GetScene(const std::string& id) const
+{
+    auto result = scenes.find(id);
+    if (result != scenes.end())
+    {
+        return result->second.get();
+    }
+    return nullptr;
+}
+void SceneManager::LoadScene(const std::string& id)
+{
+    auto result = scenes.find(id);
+    if (result == scenes.end())
+    {
+        std::cout << "[SceneManager] Scene(" << id << ") not found!\n";
+        return;
+    }
+    if (currentScene != nullptr)
+    {
+        currentScene->onUnLoad();
+        std::cout << "[SceneManager] Scene unloaded.\n";
+    }
+    result = scenes.find(id);
+    if (result != scenes.end())
+    {
+        currentScene = result->second.get();
         currentScene->onLoad();
     }
     else
     {
-        std::cout << "Scene load failed." << std::endl;
+        std::cout << "[SceneManager] Scene load failed.\n";
     }
 }
 void SceneManager::Update()
@@ -30,4 +57,8 @@ void SceneManager::TickUpdate()
 {
     if (currentScene->onTickUpdate)
         currentScene->onTickUpdate();
+}
+void SceneManager::ClearObjects()
+{
+    currentScene->sceneObject.clear();
 }

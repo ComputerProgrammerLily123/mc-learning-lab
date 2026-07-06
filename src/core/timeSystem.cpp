@@ -19,8 +19,8 @@ void TickSystem::UpdateTimer()
 {
     double currentTime = glfwGetTime();
     double deltaTime = currentTime - lastTime;
-    if (deltaTime > 0.25f)
-        deltaTime = 0.25f;
+    if (deltaTime > 0.25)
+        deltaTime = 0.25;
     accumulator += deltaTime;
     lastTime = currentTime;
 }

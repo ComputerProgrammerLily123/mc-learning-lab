@@ -5,6 +5,8 @@ class JsonReader{
 public:
     JsonReader() = delete;
     ~JsonReader() = delete;
+    JsonReader(JsonReader&&) = delete;
+    JsonReader& operator=(JsonReader&&) = delete;
     JsonReader(const JsonReader&) = delete;
     JsonReader& operator=(const JsonReader&) = delete;
     static nlohmann::json ReadJson(const std::string& filePath);

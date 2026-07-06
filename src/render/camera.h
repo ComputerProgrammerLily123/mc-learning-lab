@@ -3,7 +3,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-enum Camera_Movement
+#include "core/sceneManager.h"
+
+enum Camera_Movement : unsigned char
 {
     FORWARD,
     BACKWARD,
@@ -11,7 +13,7 @@ enum Camera_Movement
     RIGHT
 };
 
-class Camera
+class Camera : public SceneObject
 {
 public:
     glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);

@@ -1,10 +1,4 @@
 #include "blockBase.h"
-BlockBase::BlockBase()
-{
-}
-BlockBase::~BlockBase()
-{
-}
 unsigned BlockBase::GetID() const
 {
     return id;
@@ -13,7 +7,7 @@ const std::string BlockBase::GetName() const
 {
     return name;
 }
-const std::array<int, 6> BlockBase::GetUVOffsets() const
+const std::array<int, FACE_COUNT> BlockBase::GetUVOffsets() const
 {
     return uvOffsets;
 }
@@ -33,7 +27,7 @@ void BlockBase::SetName(const std::string &name)
 {
     this->name = name;
 }
-void BlockBase::SetUVOffsets(const std::array<int, 6> &uvOffsets)
+void BlockBase::SetUVOffsets(const std::array<int, FACE_COUNT> &uvOffsets)
 {
     this->uvOffsets = uvOffsets;
 }

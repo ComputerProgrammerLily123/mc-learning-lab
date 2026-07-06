@@ -4,22 +4,22 @@ Window::Window(unsigned width, unsigned height, const std::string &title): width
 {
     if (!glfwInit())
     {
-        std::cout << "Failed to initialize GLFW" << std::endl;
+        std::cout << "Failed to initialize GLFW\n";
         return;
     }
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    nativeWindow = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
+    nativeWindow = glfwCreateWindow(static_cast<int>(width), static_cast<int>(height), title.c_str(), nullptr, nullptr);
     monitor = glfwGetPrimaryMonitor();
     mode = glfwGetVideoMode(monitor);
-    if (nativeWindow == NULL)
+    if (nativeWindow == nullptr)
     {
-        std::cout << "Failed to create GLFW window" << std::endl;
+        std::cout << "Failed to create GLFW window\n";
         glfwTerminate();
     }
     glfwMakeContextCurrent(nativeWindow);
-    glViewport(0, 0, width, height);
+    glViewport(0, 0, static_cast<int>(width), static_cast<int>(height));
     Center();
 }
 Window::~Window()
@@ -70,7 +70,7 @@ void Window::SetShouldClose()
 }
 void Window::Center()
 {
-    glfwSetWindowPos(nativeWindow, (mode->width - width) / 2, (mode->height - height) / 2);
+    glfwSetWindowPos(nativeWindow, static_cast<int>(mode->width - width) / 2, static_cast<int>(mode->height - height) / 2);
 }
 void Window::ToggleFullscreen()
 {
@@ -92,5 +92,5 @@ void Window::ResizeWindow(unsigned width, unsigned height)
 {
     this->width = width;
     this->height = height;
-    glViewport(0, 0, width, height);
+    glViewport(0, 0, static_cast<int>(width), static_cast<int>(height));
 }

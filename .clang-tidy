@@ -1,0 +1,9 @@
+---
+Checks: >
+  -*,
+  cppcoreguidelines-*,
+  -cppcoreguidelines-pro-type-union-access,
+  bugprone-*,
+  modernize-*,
+  -modernize-use-trailing-return-type,
+  performance-*,
