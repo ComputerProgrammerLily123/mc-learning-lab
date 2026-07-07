@@ -50,7 +50,13 @@ void SceneManager::LoadScene(const std::string& id)
 }
 void SceneManager::Update()
 {
-    if (currentScene->onUpdate)
+    if (!pendingScene.empty())
+    {
+        LoadScene(pendingScene);
+        pendingScene.clear();
+        return;
+    }
+    if (currentScene && currentScene->onUpdate)
         currentScene->onUpdate();
 }
 void SceneManager::TickUpdate()
@@ -61,4 +67,8 @@ void SceneManager::TickUpdate()
 void SceneManager::ClearObjects()
 {
     currentScene->sceneObject.clear();
+}
+void SceneManager::RequestLoadScene(const std::string& id)
+{
+    pendingScene = id;
 }

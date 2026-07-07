@@ -46,6 +46,7 @@ public:
     Scene* GetCurrentScene() const;
     Scene* GetScene(const std::string& id) const;
     void LoadScene(const std::string& id);
+    void RequestLoadScene(const std::string& id);
     template <typename T>
     T* GetObject(const std::string& id) const
     {
@@ -79,5 +80,6 @@ private:
     SceneManager() = default;
     ~SceneManager() = default;
     Scene* currentScene = nullptr;
+    std::string pendingScene;
     std::unordered_map<std::string, std::unique_ptr<Scene>> scenes;
 };

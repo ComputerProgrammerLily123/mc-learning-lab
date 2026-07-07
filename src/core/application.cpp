@@ -73,7 +73,7 @@ void Application::InitScene()
         auto buttonC = std::make_unique<Button>(PivotType::Center, FlexType::None, 0, 200, 728.0f, 88.0f, glm::vec4(0.0f, 0.7421875f, 0.78125f, 0.6640625f), glm::vec4(0.0f, 0.6640625f, 0.78125f, 0.5859375f), "widgets.png");
         auto buttonD = std::make_unique<Button>(PivotType::Center, FlexType::None, -450, 300, 88.0f, 88.0f, glm::vec4(0.0f, 0.5859375f, 0.078125f, 0.5078125f), glm::vec4(0.0f, 0.5078125f, 0.078125f, 0.4296875f), "widgets.png");
         buttonA->AddListener([this]
-                             { sceneManager.LoadScene("Main"); });
+                             { sceneManager.RequestLoadScene("Main"); });
         buttonC->AddListener([this]
                              { Quit(); });
         canvas->ClearElements();
