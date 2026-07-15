@@ -1,6 +1,5 @@
 #pragma once
 class Camera;
-class World;
 
 #include "shader.h"
 #include "resource/texture.h"
@@ -9,7 +8,7 @@ class SkyboxRenderer : public SceneObject
 {
 public:
     SkyboxRenderer();
-    SkyboxRenderer(const SkyboxRenderer&) = default;
+    SkyboxRenderer(const SkyboxRenderer&) = delete;
     SkyboxRenderer(SkyboxRenderer&&) = delete;
     SkyboxRenderer& operator=(const SkyboxRenderer&) = delete;
     SkyboxRenderer& operator=(SkyboxRenderer&&) = delete;
@@ -19,5 +18,5 @@ public:
 private:
     Shader skybox = Shader("shaders/skyboxVert.vert", "shaders/skyboxFrag.frag");
     Texture cubemap = Texture("textures/gui/title/background");
-    unsigned VAO,VBO,EBO;
+    unsigned VAO = 0,VBO = 0,EBO = 0;
 };

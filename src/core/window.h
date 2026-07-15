@@ -22,7 +22,10 @@ public:
     bool ShouldClose();
     void SetShouldClose();
     void ToggleFullscreen();
-    void ResizeWindow(unsigned width, unsigned height);
+    void ResizeViewport(unsigned width, unsigned height);
+
+    [[nodiscard]] unsigned GetWidth() const;
+    [[nodiscard]] unsigned GetHeight() const;
 private:
     GLFWwindow *nativeWindow;
     GLFWmonitor *monitor;

@@ -21,15 +21,21 @@
 
 Application::Application()
 {
+    std::cout<<"[Application] ========OpenGL init start========\n";
     InitGLFW();
     InitGLAD();
     InitGLFWCallback();
+    std::cout<<"[Application] ========OpenGL init finish========\n";
+    std::cout<<"[Application] ========Resource init start========\n";
     InitResource();
+    std::cout<<"[Application] ========Resource init finish========\n";
+    std::cout<<"[Application] ========Scene init start========\n";
     InitScene();
+    std::cout<<"[Application] ========Scene init finish========\n";
 }
 void Application::InitGLFW()
 {
-    window = std::make_unique<Window>(screenWidth, screenHeight, "Minecraft:Papyrus Edition");
+    window = std::make_unique<Window>(INITIAL_SCREEN_WIDTH, INITIAL_SCREEN_HEIGHT, "Minecraft:Papyrus Edition");
 }
 void Application::InitGLAD()
 {
@@ -51,6 +57,11 @@ void Application::InitGLFWCallback()
         auto app = static_cast<Application*>(glfwGetWindowUserPointer(win));
         if (app) app->OnWindowResize(width, height); });
 }
+void Application::InitResource()
+{
+    RegisterBlocks();
+    resourceManager.LoadTexture();
+}
 void Application::InitScene()
 {
     sceneManager.CreateScene("Welcome");
@@ -60,8 +71,8 @@ void Application::InitScene()
     auto welcomeScene = sceneManager.GetScene("Welcome");
     welcomeScene->onLoad = [this]
     {
-        auto canvas = std::make_unique<Canvas>();
-        auto camera = std::make_unique<Camera>(screenWidth, screenHeight);
+        auto canvas = std::make_unique<Canvas>(INITIAL_SCREEN_WIDTH,INITIAL_SCREEN_HEIGHT);
+        auto camera = std::make_unique<Camera>(window->GetWidth(), window->GetHeight());
         auto skyboxRenderer = std::make_unique<SkyboxRenderer>();
 
         camera->SetZoom(90.0f);
@@ -107,8 +118,8 @@ void Application::InitScene()
     auto mainScene = sceneManager.GetScene("Main");
     mainScene->onLoad = [this]
     {
-        auto canvas = std::make_unique<Canvas>();
-        auto camera = std::make_unique<Camera>(screenWidth, screenHeight);
+        auto canvas = std::make_unique<Canvas>(INITIAL_SCREEN_WIDTH,INITIAL_SCREEN_HEIGHT);
+        auto camera = std::make_unique<Camera>(window->GetWidth(), window->GetHeight());
         auto world = std::make_unique<World>();
         auto outlineRenderer = std::make_unique<OutlineRenderer>();
         auto worldRenderer = std::make_unique<WorldRenderer>(RENDER_RADIAN);
@@ -165,11 +176,6 @@ void Application::InitScene()
 
     sceneManager.LoadScene("Welcome");
 }
-void Application::InitResource()
-{
-    RegisterBlocks();
-    resourceManager.LoadTexture();
-}
 void Application::RegisterBlocks()
 {
     auto& blockRegister = BlockRegister::GetInstance();
@@ -189,18 +195,18 @@ void Application::RegisterItems()
     itemRegister.RegisterItem(3, "stone", "");
     */
 }
-void Application::OnWindowResize(unsigned width, unsigned height)
+void Application::OnWindowResize(unsigned newWidth, unsigned newHeight)
 {
-    window->ResizeWindow(width, height);
-    glfwGetFramebufferSize(window->GetNativeWindow(), &screenWidth, &screenHeight);
-    // camera->ResizeScreen(screenWidth, screenHeight);
-    UISystem::GetInstance().ResizeScreen(screenWidth, screenHeight);
+    window->ResizeViewport(newWidth, newHeight);
+    UISystem::GetInstance().ResizeScreen(newWidth, newHeight);
+    sceneManager.GetObject<Camera>("Camera")->ResizeScreen(newWidth, newHeight);
 }
 void Application::Run()
 {
+    std::cout<<"[Application] ========Main loop start========\n";
     while (!window->ShouldClose())
     {
-        std::cout << "FPS:" << 1.0f / time.GetDeltaTime() << '\n';
+        //std::cout << "FPS:" << 1.0f / time.GetDeltaTime() << '\n';
         tick.UpdateTimer();
         if (tick.ShouldTick())
         {
@@ -220,6 +226,7 @@ void Application::Run()
         glfwSwapBuffers(window->GetNativeWindow());
         glfwPollEvents();
     }
+    std::cout<<"[Application] ========Main loop end========\n";
 }
 void Application::Quit()
 {

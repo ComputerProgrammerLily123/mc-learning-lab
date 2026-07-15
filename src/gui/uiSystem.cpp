@@ -3,9 +3,9 @@
 #include "GLFW/glfw3.h"
 #include "core/input.h"
 
-#include <iostream>
 void UISystem::ResizeScreen(unsigned width, unsigned height)
 {
+    mainCanvas->Resize(width, height);
     uiRenderer.ResizeScreen(width, height);
 }
 void UISystem::RenderAll()
@@ -15,7 +15,7 @@ void UISystem::RenderAll()
         auto pos = element->GetStartPointPosition() + mainCanvas->GetCenterPosition();
         auto size = element->GetSize();
         auto uv = element->GetUV();
-        uiRenderer.DrawQuad(pos.x, pos.y, size.x, size.y, uv.x, uv.y, uv.z - uv.x, uv.y - uv.w, element->GetTextureID());
+        uiRenderer.AddRenderQueue(pos.x, pos.y, size.x, size.y, uv.x, uv.y, uv.z - uv.x, uv.y - uv.w);
     }
 }
 void UISystem::SetMainCanvas(Canvas* canvas)
@@ -25,14 +25,6 @@ void UISystem::SetMainCanvas(Canvas* canvas)
 Canvas* UISystem::GetMainCanvas() const
 {
     return mainCanvas;
-}
-void UISystem::CreateButton(int startX, int startY, int width, int height, float u, float v, float uvWidth, float uvHeight, std::string textureID)
-{
-    uiRenderer.DrawQuad(startX, startY, width, height, u, v, uvWidth, uvHeight, textureID);
-}
-void UISystem::CreateQuad(int startX, int startY, int width, int height, float u, float v, float uvWidth, float uvHeight, std::string textureID)
-{
-    uiRenderer.DrawQuad(startX, startY, width, height, u, v, uvWidth, uvHeight, textureID);
 }
 void UISystem::OnUpdate()
 {

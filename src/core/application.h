@@ -22,8 +22,6 @@ public:
     void Quit();
 
 private:
-    int screenWidth = INITIAL_SCREEN_WIDTH;
-    int screenHeight = INITIAL_SCREEN_HEIGHT;
 
     std::unique_ptr<Window> window;
 
@@ -41,5 +39,5 @@ private:
     
     void RegisterBlocks();
     void RegisterItems();
-    void OnWindowResize(unsigned width, unsigned height);
+    void OnWindowResize(unsigned newWidth, unsigned newHeight);
 };

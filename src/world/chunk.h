@@ -11,7 +11,11 @@
 class World;
 class Chunk{
 public:
-    Chunk(int x,int z,World* world);
+    Chunk(const Chunk&) = default;
+    Chunk(Chunk&&) = delete;
+    Chunk& operator=(const Chunk&) = delete;
+    Chunk& operator=(Chunk&&) = delete;
+    Chunk(int x, int z, World* world);
     ~Chunk();
     bool isDirty = true;
     void UpdateMesh();
@@ -29,6 +33,6 @@ private:
     BlockRegister& blockRegister = BlockRegister::GetInstance();
     ResourceManager& resourceManager = ResourceManager::GetInstance();
     World* world;
-    void AddVertices(int x,int y,int z,const int* const uvOffset, float blockId);
+    void AddVertices(int x,int y,int z, float blockId);
     bool ShouldRenderFace(int x,int y,int z, Face face);
 };

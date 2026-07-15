@@ -1,14 +1,15 @@
 #include "chunk.h"
+
 #include <glad/glad.h>
 
 #include "world.h"
-Chunk::Chunk(int x, int z, World *world) : chunkX(x), chunkZ(z), world(world) {}
+
+Chunk::Chunk(int x, int z, World* world) : chunkX(x), chunkZ(z), world(world) {}
 Chunk::~Chunk() {}
 void Chunk::UpdateMesh()
 {
     vertices.clear();
     indices.clear();
-    auto& uvMap = resourceManager.GetAtlas(AtlasType::Block).GetUVMap();
     for (unsigned i = 0; i < CHUNK_WIDTH * CHUNK_WIDTH * CHUNK_HEIGHT; i++)
     {
         if (blockIDs[i])
@@ -16,16 +17,13 @@ void Chunk::UpdateMesh()
             int x = i % CHUNK_WIDTH;
             int z = (i / CHUNK_WIDTH) % CHUNK_WIDTH;
             int y = i / (CHUNK_WIDTH * CHUNK_WIDTH);
-            //auto uv = uvMap.at(blockRegister.GetBlock(blockIDs[i]).GetName());
-            
-            AddVertices(x, y, z, blockRegister.GetBlock(blockIDs[i]).GetUVOffsets().data(), blockIDs[i]);
+            AddVertices(x, y, z, blockIDs[i]);
         }
     }
     isDirty = true;
 }
 int Chunk::GetBlock(glm::u8vec3 position)
 {
-
     return blockIDs[(position.y * CHUNK_WIDTH + position.z) * CHUNK_WIDTH + position.x];
 }
 int Chunk::GetBlock(unsigned x, unsigned y, unsigned z)
@@ -42,7 +40,7 @@ void Chunk::SetBlock(unsigned x, unsigned y, unsigned z, unsigned id)
 {
     blockIDs[(y * CHUNK_WIDTH + z) * CHUNK_WIDTH + x] = id;
 }
-void Chunk::AddVertices(int x, int y, int z, const int *const uvOffset, float blockId)
+void Chunk::AddVertices(int x, int y, int z, float blockId)
 {
     float fx = static_cast<float>(x + chunkX * 16);
     float fy = static_cast<float>(y);
@@ -56,10 +54,11 @@ void Chunk::AddVertices(int x, int y, int z, const int *const uvOffset, float bl
     if (ShouldRenderFace(x, y, z, Face::front))
     {
         startIndex = vertices.size() / 9;
-        vertices.insert(vertices.end(), {fx - 0.5f, fy - 0.5f, fz + 0.5f, u1 + uvOffset[static_cast<int>(Face::front)] % cellCount * cellSize, v1 + uvOffset[static_cast<int>(Face::front)] / cellCount * cellSize, 0, 0, 1, blockId,
-                                         fx + 0.5f, fy - 0.5f, fz + 0.5f, u2 + uvOffset[static_cast<int>(Face::front)] % cellCount * cellSize, v1 + uvOffset[static_cast<int>(Face::front)] / cellCount * cellSize, 0, 0, 1, blockId,
-                                         fx + 0.5f, fy + 0.5f, fz + 0.5f, u2 + uvOffset[static_cast<int>(Face::front)] % cellCount * cellSize, v2 + uvOffset[static_cast<int>(Face::front)] / cellCount * cellSize, 0, 0, 1, blockId,
-                                         fx - 0.5f, fy + 0.5f, fz + 0.5f, u1 + uvOffset[static_cast<int>(Face::front)] % cellCount * cellSize, v2 + uvOffset[static_cast<int>(Face::front)] / cellCount * cellSize, 0, 0, 1, blockId});
+        const auto& uv = resourceManager.GetUVRegion(blockRegister.GetBlock(blockId).GetName());
+        vertices.insert(vertices.end(), {fx - 0.5f, fy - 0.5f, fz + 0.5f, u1 + uv.u1, v1 + uv.v1, 0, 0, 1, blockId,
+                                         fx + 0.5f, fy - 0.5f, fz + 0.5f, u2 + uv.u2, v1 + uv.v1, 0, 0, 1, blockId,
+                                         fx + 0.5f, fy + 0.5f, fz + 0.5f, u2 + uv.u2, v2 + uv.v2, 0, 0, 1, blockId,
+                                         fx - 0.5f, fy + 0.5f, fz + 0.5f, u1 + uv.u1, v2 + uv.v2, 0, 0, 1, blockId});
         indices.insert(indices.end(), {startIndex, startIndex + 1, startIndex + 2,
                                        startIndex, startIndex + 2, startIndex + 3});
     }
@@ -67,10 +66,11 @@ void Chunk::AddVertices(int x, int y, int z, const int *const uvOffset, float bl
     if (ShouldRenderFace(x, y, z, Face::back))
     {
         startIndex = vertices.size() / 9;
-        vertices.insert(vertices.end(), {fx + 0.5f, fy - 0.5f, fz - 0.5f, u1 + uvOffset[static_cast<int>(Face::back)] % cellCount * cellSize, v1 + uvOffset[static_cast<int>(Face::back)] / cellCount * cellSize, 0, 0, -1, blockId,
-                                         fx - 0.5f, fy - 0.5f, fz - 0.5f, u2 + uvOffset[static_cast<int>(Face::back)] % cellCount * cellSize, v1 + uvOffset[static_cast<int>(Face::back)] / cellCount * cellSize, 0, 0, -1, blockId,
-                                         fx - 0.5f, fy + 0.5f, fz - 0.5f, u2 + uvOffset[static_cast<int>(Face::back)] % cellCount * cellSize, v2 + uvOffset[static_cast<int>(Face::back)] / cellCount * cellSize, 0, 0, -1, blockId,
-                                         fx + 0.5f, fy + 0.5f, fz - 0.5f, u1 + uvOffset[static_cast<int>(Face::back)] % cellCount * cellSize, v2 + uvOffset[static_cast<int>(Face::back)] / cellCount * cellSize, 0, 0, -1, blockId});
+        const auto& uv = resourceManager.GetUVRegion(blockRegister.GetBlock(blockId).GetName());
+        vertices.insert(vertices.end(), {fx + 0.5f, fy - 0.5f, fz - 0.5f, u1 + uv.u1, v1 + uv.v1, 0, 0, -1, blockId,
+                                         fx - 0.5f, fy - 0.5f, fz - 0.5f, u2 + uv.u2, v1 + uv.v1, 0, 0, -1, blockId,
+                                         fx - 0.5f, fy + 0.5f, fz - 0.5f, u2 + uv.u2, v2 + uv.v2, 0, 0, -1, blockId,
+                                         fx + 0.5f, fy + 0.5f, fz - 0.5f, u1 + uv.u1, v2 + uv.v2, 0, 0, -1, blockId});
         indices.insert(indices.end(), {startIndex, startIndex + 1, startIndex + 2,
                                        startIndex, startIndex + 2, startIndex + 3});
     }
@@ -78,10 +78,11 @@ void Chunk::AddVertices(int x, int y, int z, const int *const uvOffset, float bl
     if (ShouldRenderFace(x, y, z, Face::left))
     {
         startIndex = vertices.size() / 9;
-        vertices.insert(vertices.end(), {fx - 0.5f, fy - 0.5f, fz - 0.5f, u1 + uvOffset[static_cast<int>(Face::left)] % cellCount * cellSize, v1 + uvOffset[static_cast<int>(Face::left)] / cellCount * cellSize, -1, 0, 0, blockId,
-                                         fx - 0.5f, fy - 0.5f, fz + 0.5f, u2 + uvOffset[static_cast<int>(Face::left)] % cellCount * cellSize, v1 + uvOffset[static_cast<int>(Face::left)] / cellCount * cellSize, -1, 0, 0, blockId,
-                                         fx - 0.5f, fy + 0.5f, fz + 0.5f, u2 + uvOffset[static_cast<int>(Face::left)] % cellCount * cellSize, v2 + uvOffset[static_cast<int>(Face::left)] / cellCount * cellSize, -1, 0, 0, blockId,
-                                         fx - 0.5f, fy + 0.5f, fz - 0.5f, u1 + uvOffset[static_cast<int>(Face::left)] % cellCount * cellSize, v2 + uvOffset[static_cast<int>(Face::left)] / cellCount * cellSize, -1, 0, 0, blockId});
+        const auto& uv = resourceManager.GetUVRegion(blockRegister.GetBlock(blockId).GetName());
+        vertices.insert(vertices.end(), {fx - 0.5f, fy - 0.5f, fz - 0.5f, u1 + uv.u1, v1 + uv.v1, -1, 0, 0, blockId,
+                                         fx - 0.5f, fy - 0.5f, fz + 0.5f, u2 + uv.u2, v1 + uv.v1, -1, 0, 0, blockId,
+                                         fx - 0.5f, fy + 0.5f, fz + 0.5f, u2 + uv.u2, v2 + uv.v2, -1, 0, 0, blockId,
+                                         fx - 0.5f, fy + 0.5f, fz - 0.5f, u1 + uv.u1, v2 + uv.v2, -1, 0, 0, blockId});
         indices.insert(indices.end(), {startIndex, startIndex + 1, startIndex + 2,
                                        startIndex, startIndex + 2, startIndex + 3});
     }
@@ -89,10 +90,11 @@ void Chunk::AddVertices(int x, int y, int z, const int *const uvOffset, float bl
     if (ShouldRenderFace(x, y, z, Face::right))
     {
         startIndex = vertices.size() / 9;
-        vertices.insert(vertices.end(), {fx + 0.5f, fy - 0.5f, fz + 0.5f, u1 + uvOffset[static_cast<int>(Face::right)] % cellCount * cellSize, v1 + uvOffset[static_cast<int>(Face::right)] / cellCount * cellSize, 1, 0, 0, blockId,
-                                         fx + 0.5f, fy - 0.5f, fz - 0.5f, u2 + uvOffset[static_cast<int>(Face::right)] % cellCount * cellSize, v1 + uvOffset[static_cast<int>(Face::right)] / cellCount * cellSize, 1, 0, 0, blockId,
-                                         fx + 0.5f, fy + 0.5f, fz - 0.5f, u2 + uvOffset[static_cast<int>(Face::right)] % cellCount * cellSize, v2 + uvOffset[static_cast<int>(Face::right)] / cellCount * cellSize, 1, 0, 0, blockId,
-                                         fx + 0.5f, fy + 0.5f, fz + 0.5f, u1 + uvOffset[static_cast<int>(Face::right)] % cellCount * cellSize, v2 + uvOffset[static_cast<int>(Face::right)] / cellCount * cellSize, 1, 0, 0, blockId});
+        const auto& uv = resourceManager.GetUVRegion(blockRegister.GetBlock(blockId).GetName());
+        vertices.insert(vertices.end(), {fx + 0.5f, fy - 0.5f, fz + 0.5f, u1 + uv.u1, v1 + uv.v1, 1, 0, 0, blockId,
+                                         fx + 0.5f, fy - 0.5f, fz - 0.5f, u2 + uv.u2, v1 + uv.v1, 1, 0, 0, blockId,
+                                         fx + 0.5f, fy + 0.5f, fz - 0.5f, u2 + uv.u2, v2 + uv.v2, 1, 0, 0, blockId,
+                                         fx + 0.5f, fy + 0.5f, fz + 0.5f, u1 + uv.u1, v2 + uv.v2, 1, 0, 0, blockId});
         indices.insert(indices.end(), {startIndex, startIndex + 1, startIndex + 2,
                                        startIndex, startIndex + 2, startIndex + 3});
     }
@@ -100,10 +102,11 @@ void Chunk::AddVertices(int x, int y, int z, const int *const uvOffset, float bl
     if (ShouldRenderFace(x, y, z, Face::top))
     {
         startIndex = vertices.size() / 9;
-        vertices.insert(vertices.end(), {fx - 0.5f, fy + 0.5f, fz - 0.5f, u1 + uvOffset[static_cast<int>(Face::top)] % cellCount * cellSize, v1 + uvOffset[static_cast<int>(Face::top)] / cellCount * cellSize, 0, 1, 0, blockId,
-                                         fx - 0.5f, fy + 0.5f, fz + 0.5f, u1 + uvOffset[static_cast<int>(Face::top)] % cellCount * cellSize, v2 + uvOffset[static_cast<int>(Face::top)] / cellCount * cellSize, 0, 1, 0, blockId,
-                                         fx + 0.5f, fy + 0.5f, fz + 0.5f, u2 + uvOffset[static_cast<int>(Face::top)] % cellCount * cellSize, v2 + uvOffset[static_cast<int>(Face::top)] / cellCount * cellSize, 0, 1, 0, blockId,
-                                         fx + 0.5f, fy + 0.5f, fz - 0.5f, u2 + uvOffset[static_cast<int>(Face::top)] % cellCount * cellSize, v1 + uvOffset[static_cast<int>(Face::top)] / cellCount * cellSize, 0, 1, 0, blockId});
+        const auto& uv = resourceManager.GetUVRegion(blockRegister.GetBlock(blockId).GetName());
+        vertices.insert(vertices.end(), {fx - 0.5f, fy + 0.5f, fz - 0.5f, u1 + uv.u1, v1 + uv.v1, 0, 1, 0, blockId,
+                                         fx - 0.5f, fy + 0.5f, fz + 0.5f, u1 + uv.u1, v2 + uv.v2, 0, 1, 0, blockId,
+                                         fx + 0.5f, fy + 0.5f, fz + 0.5f, u2 + uv.u2, v2 + uv.v2, 0, 1, 0, blockId,
+                                         fx + 0.5f, fy + 0.5f, fz - 0.5f, u2 + uv.u2, v1 + uv.v1, 0, 1, 0, blockId});
         indices.insert(indices.end(), {startIndex, startIndex + 1, startIndex + 2,
                                        startIndex, startIndex + 2, startIndex + 3});
     }
@@ -111,10 +114,11 @@ void Chunk::AddVertices(int x, int y, int z, const int *const uvOffset, float bl
     if (ShouldRenderFace(x, y, z, Face::bottom))
     {
         startIndex = vertices.size() / 9;
-        vertices.insert(vertices.end(), {fx - 0.5f, fy - 0.5f, fz - 0.5f, u1 + uvOffset[static_cast<int>(Face::bottom)] % cellCount * cellSize, v1 + uvOffset[static_cast<int>(Face::bottom)] / cellCount * cellSize, 0, -1, 0, blockId,
-                                         fx + 0.5f, fy - 0.5f, fz - 0.5f, u2 + uvOffset[static_cast<int>(Face::bottom)] % cellCount * cellSize, v1 + uvOffset[static_cast<int>(Face::bottom)] / cellCount * cellSize, 0, -1, 0, blockId,
-                                         fx + 0.5f, fy - 0.5f, fz + 0.5f, u2 + uvOffset[static_cast<int>(Face::bottom)] % cellCount * cellSize, v2 + uvOffset[static_cast<int>(Face::bottom)] / cellCount * cellSize, 0, -1, 0, blockId,
-                                         fx - 0.5f, fy - 0.5f, fz + 0.5f, u1 + uvOffset[static_cast<int>(Face::bottom)] % cellCount * cellSize, v2 + uvOffset[static_cast<int>(Face::bottom)] / cellCount * cellSize, 0, -1, 0, blockId});
+        const auto& uv = resourceManager.GetUVRegion(blockRegister.GetBlock(blockId).GetName());
+        vertices.insert(vertices.end(), {fx - 0.5f, fy - 0.5f, fz - 0.5f, u1 + uv.u1, v1 + uv.v1, 0, -1, 0, blockId,
+                                         fx + 0.5f, fy - 0.5f, fz - 0.5f, u2 + uv.u2, v1 + uv.v1, 0, -1, 0, blockId,
+                                         fx + 0.5f, fy - 0.5f, fz + 0.5f, u2 + uv.u2, v2 + uv.v2, 0, -1, 0, blockId,
+                                         fx - 0.5f, fy - 0.5f, fz + 0.5f, u1 + uv.u1, v2 + uv.v2, 0, -1, 0, blockId});
         indices.insert(indices.end(), {startIndex, startIndex + 1, startIndex + 2,
                                        startIndex, startIndex + 2, startIndex + 3});
     }
@@ -147,11 +151,11 @@ bool Chunk::ShouldRenderFace(int x, int y, int z, Face face)
     }
     return true;
 }
-const std::vector<float> &Chunk::GetVertices()
+const std::vector<float>& Chunk::GetVertices()
 {
     return vertices;
 }
-const std::vector<unsigned> &Chunk::GetIndices()
+const std::vector<unsigned>& Chunk::GetIndices()
 {
     return indices;
 }

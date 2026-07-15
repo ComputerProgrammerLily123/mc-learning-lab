@@ -88,9 +88,17 @@ void Window::ToggleFullscreen()
     }
     isFullscreen = !isFullscreen;
 }
-void Window::ResizeWindow(unsigned width, unsigned height)
+void Window::ResizeViewport(unsigned width, unsigned height)
 {
     this->width = width;
     this->height = height;
     glViewport(0, 0, static_cast<int>(width), static_cast<int>(height));
+}
+unsigned Window::GetWidth() const
+{
+    return width;
+}
+unsigned Window::GetHeight() const
+{
+    return height;
 }

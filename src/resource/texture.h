@@ -6,9 +6,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "config/gameConstant.h"
-
-using namespace GameConstant;
 enum class TextureType : unsigned char
 {
     SingleSprite,
@@ -19,15 +16,21 @@ struct UVRegion
 {
     float u1, v1, u2, v2;
 };
+struct TextureData
+{
+    unsigned char* data;
+    GLsizei width,height;
+    GLint nrChannels;
+};
 class Texture
 {
 public:
     Texture() = default;
+    Texture(const std::string& path);
     Texture(const Texture&) = default;
     Texture(Texture&&) = delete;
     Texture& operator=(const Texture&) = default;
     Texture& operator=(Texture&&) = delete;
-    Texture(const std::string& path);
     ~Texture();
     void SetLoadPath(const std::string& path);
     void Bind(unsigned slot = 0) const;
@@ -39,7 +42,6 @@ public:
 private:
     std::string loadPath;
     unsigned ID{0};
-    void LoadSingleTexture(const std::string& filename);
-    void LoadMultipleTexture(const std::string& filename, unsigned x, unsigned y, unsigned targetWidth, unsigned targetHeight);
+    TextureData LoadTexture(const std::string& filename,bool flip);
     std::unordered_map<std::string, UVRegion> uvMap;
 };

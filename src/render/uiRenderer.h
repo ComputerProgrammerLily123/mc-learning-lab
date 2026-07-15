@@ -6,10 +6,16 @@
 #include <vector>
 class UIRenderer{
 public:
+    UIRenderer(const UIRenderer&) = default;
+    UIRenderer(UIRenderer&&) = delete;
+    UIRenderer& operator=(const UIRenderer&) = default;
+    UIRenderer& operator=(UIRenderer&&) = delete;
     UIRenderer(unsigned screenWidth, unsigned screenHeight);
     ~UIRenderer();
     void ResizeScreen(unsigned screenWidth, unsigned screenHeight);
-    void DrawQuad(int startX, int startY, int width, int height, float u, float v, float uvWidth, float uvHeight, std::string textureID);
+    void ClearRenderQueue();
+    void AddRenderQueue(int startX, int startY, int width, int height, float u1, float v1, float u2, float v2);
+    void Draw();
 private:
     Shader shader = Shader("shaders/uiVertex.vert", "shaders/uiFragment.frag");
     Texture texture = Texture("textures/gui");
@@ -17,7 +23,7 @@ private:
     unsigned screenWidth;
     unsigned screenHeight;
 
-    unsigned VAO,VBO,EBO;
+    unsigned VAO = 0,VBO = 0,EBO = 0;
 
     std::vector<float> vertices;
     std::vector<unsigned> indices;

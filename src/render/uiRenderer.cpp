@@ -1,8 +1,10 @@
 #include "uiRenderer.h"
 
 #include <glad/glad.h>
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+
 UIRenderer::UIRenderer(unsigned screenWidth, unsigned scrrenHeight) : screenWidth(screenWidth), screenHeight(scrrenHeight)
 {
     glGenVertexArrays(1, &VAO);
@@ -14,8 +16,8 @@ UIRenderer::UIRenderer(unsigned screenWidth, unsigned scrrenHeight) : screenWidt
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)(3 * sizeof(float)));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
     glBindVertexArray(0);
@@ -31,24 +33,28 @@ void UIRenderer::ResizeScreen(unsigned screenWidth, unsigned screenHeight)
     this->screenWidth = screenWidth;
     this->screenHeight = screenHeight;
 }
-void UIRenderer::DrawQuad(int startX, int startY, int width, int height, float u, float v, float uvWidth, float uvHeight, std::string textureID)
+void UIRenderer::ClearRenderQueue()
 {
-    float x = static_cast<float>(startX);
-    float y = static_cast<float>(startY);
-
     vertices.clear();
     indices.clear();
+}
+void UIRenderer::AddRenderQueue(int startX, int startY, int width, int height, float u1, float v1, float u2, float v2)
+{
+    auto x = static_cast<float>(startX);
+    auto y = static_cast<float>(startY);
 
     unsigned startIndex = vertices.size() / 5;
     vertices.insert(vertices.end(),
-                    {x, y, 0.0f, u, v,
-                     x, y + height, 0.0f, u, v - uvHeight,
-                     x + width, y + height, 0.0f, uvWidth, v - uvHeight,
-                     x + width, y, 0.0f, uvWidth, v});
+                    {x, y, 0.0f, u1, v1,
+                     x, y + height, 0.0f, u1, v2,
+                     x + width, y + height, 0.0f, u2, v2,
+                     x + width, y, 0.0f, u2, v1});
     indices.insert(indices.end(),
                    {startIndex, startIndex + 1, startIndex + 2,
                     startIndex, startIndex + 2, startIndex + 3});
-
+}
+void UIRenderer::Draw()
+{
     glDisable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -64,7 +70,7 @@ void UIRenderer::DrawQuad(int startX, int startY, int width, int height, float u
     shader.Use();
     shader.setValue("textureIn", 1);
     texture.Bind(1);
-    texture.CreateTexture(textureID);
+    texture.CreateTexture("widgets.png");
     glm::mat4 projection = glm::ortho(0.0f, (float)screenWidth, (float)screenHeight, 0.0f, -1.0f, 1.0f);
     shader.setValue("projection", projection);
 

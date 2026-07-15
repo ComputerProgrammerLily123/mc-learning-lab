@@ -10,7 +10,7 @@ class World : public SceneObject
 {
 public:
     World();
-    World(const World&) = default;
+    World(const World&) = delete;
     World(World&&) = delete;
     World& operator=(const World&) = delete;
     World& operator=(World&&) = delete;

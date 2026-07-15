@@ -21,8 +21,6 @@ public:
     void RenderAll();
     void SetMainCanvas(Canvas* canvas);
     Canvas* GetMainCanvas() const;
-    void CreateButton(int startX, int startY, int width, int height, float u, float v, float uvWidth, float uvHeight, std::string textureID);
-    void CreateQuad(int startX, int startY, int width, int height, float u, float v, float uvWidth, float uvHeight, std::string textureID);
     void OnUpdate();
 
 private:

@@ -4,12 +4,11 @@
 
 #include <iostream>
 
+#include "config/gameConstant.h"
 #include "stbImage/stb_image.h"
 
-Texture::Texture(const std::string& path) : loadPath(path)
-{
-    glGenTextures(1, &ID);
-}
+using namespace GameConstant;
+Texture::Texture(const std::string& path) : loadPath(path) {}
 Texture::~Texture()
 {
     if (ID)
@@ -28,14 +27,21 @@ void Texture::Bind(unsigned slot) const
 }
 void Texture::CreateTexture(const std::string& filename)
 {
+    if (!ID) glGenTextures(1, &ID);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    LoadSingleTexture(filename);
+
+    auto data = LoadTexture(filename, true);
+    if (data.data == nullptr) return;
+    std::cout << "[Texture] Successfully load:" << filename << '\n';
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, data.width, data.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.data);
+    stbi_image_free(data.data);
 }
 void Texture::CreateAtlas(const std::vector<std::string>& filename)
 {
+    if (!ID) glGenTextures(1, &ID);
     glBindTexture(GL_TEXTURE_2D, ID);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, ATLAS_SIZE, ATLAS_SIZE, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -49,14 +55,32 @@ void Texture::CreateAtlas(const std::vector<std::string>& filename)
     {
         if (file != "")
         {
-            LoadMultipleTexture(file, offsetX, offsetY, ATLAS_CELL, ATLAS_CELL);
-
-            offsetX += ATLAS_CELL;
-            if (offsetX == ATLAS_SIZE)
+            auto data = LoadTexture(file, true);
+            if (data.data == nullptr) return;
+            if (data.width % ATLAS_CELL != 0 || data.height % ATLAS_CELL != 0)
             {
-                offsetY += ATLAS_CELL;
-                offsetX = 0;
+                std::cout << "[Texture] Invalid size:" << loadPath << "/" << file << '\n';
+                return;
             }
+            std::cout << "[Texture] Successfully load:" << file << '\n';
+            unsigned row = data.height / ATLAS_CELL;
+            unsigned column = data.width / ATLAS_CELL;
+            for (unsigned i = 0; i < row; i++)
+            {
+                for (unsigned j = 0; j < column; j++)
+                {
+                    int byteOffset = (i * data.width + j) * data.nrChannels * sizeof(unsigned char);
+                    glTexSubImage2D(GL_TEXTURE_2D, 0, static_cast<int>(offsetX), static_cast<int>(offsetY), static_cast<int>(ATLAS_CELL), static_cast<int>(ATLAS_CELL), GL_RGBA, GL_UNSIGNED_BYTE, data.data + byteOffset);
+                    offsetX += ATLAS_CELL;
+                    if (offsetX == ATLAS_SIZE)
+                    {
+                        offsetY += ATLAS_CELL;
+                        offsetX = 0;
+                    }
+                }
+            }
+            stbi_image_free(data.data);
+            // TODO:注意这里的UV待改正
             UVRegion region{static_cast<float>(offsetX) / ATLAS_SIZE, static_cast<float>(offsetY) / ATLAS_SIZE, (static_cast<float>(offsetX) + ATLAS_CELL) / ATLAS_SIZE, (static_cast<float>(offsetY) + ATLAS_CELL) / ATLAS_SIZE};
             uvMap.emplace(file, region);
         }
@@ -72,56 +96,30 @@ void Texture::CreateCubemap(const std::vector<std::string>& filename)
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    int width = 0, height = 0, nrChannels = 0;
     for (unsigned int i = 0; i < filename.size(); i++)
     {
-        unsigned char* data = stbi_load((loadPath + '/' + filename[i]).c_str(), &width, &height, &nrChannels, 0);
-        if (data)
+        auto data = LoadTexture(filename[i], false);
+        if (data.data != nullptr)
         {
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-            stbi_image_free(data);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, data.width, data.height, 0, GL_RGB, GL_UNSIGNED_BYTE, data.data);
+            stbi_image_free(data.data);
         }
         else
         {
-            std::cout << "Cubemap texture failed to load at path: " << loadPath << '/' << filename[i] << '\n';
+            std::cout << "[Texture] Cubemap texture failed to load at path: " << loadPath << '/' << filename[i] << '\n';
         }
     }
 }
-void Texture::LoadSingleTexture(const std::string& filename)
+TextureData Texture::LoadTexture(const std::string& filename, bool flip)
 {
-    if (!ID)
+    TextureData data = {};
+    stbi_set_flip_vertically_on_load(flip);
+    data.data = stbi_load((loadPath + "/" + filename).c_str(), &data.width, &data.height, &data.nrChannels, 0);
+    if (data.data == nullptr)
     {
-        std::cout << "binding failed when loading:" << filename << '\n';
-        return;
+        std::cout << "[Texture] Loading failed:" << loadPath << "/" << filename << '\n';
     }
-    stbi_set_flip_vertically_on_load(true);
-    int width = 0, height = 0, nrChannels = 0;
-    unsigned char* data = stbi_load((loadPath + "/" + filename).c_str(), &width, &height, &nrChannels, 0);
-    if (!data)
-    {
-        std::cout << "loading failed:" << loadPath << "/" << filename << '\n';
-        return;
-    }
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-    stbi_image_free(data);
-}
-void Texture::LoadMultipleTexture(const std::string& filename, unsigned x, unsigned y, unsigned targetWidth, unsigned targetHeight)
-{
-    if (!ID)
-    {
-        std::cout << "binding failed when loading:" << filename << '\n';
-        return;
-    }
-    stbi_set_flip_vertically_on_load(true);
-    int width = 0, height = 0, nrChannels = 0;
-    unsigned char* data = stbi_load((loadPath + "/" + filename).c_str(), &width, &height, &nrChannels, 0);
-    if (!data || width != targetWidth || height != targetHeight)
-    {
-        std::cout << "loading failed:" << loadPath << "/" << filename << '\n';
-        return;
-    }
-    glTexSubImage2D(GL_TEXTURE_2D, 0, static_cast<int>(x), static_cast<int>(y), static_cast<int>(targetWidth), static_cast<int>(targetHeight), GL_RGBA, GL_UNSIGNED_BYTE, data);
-    stbi_image_free(data);
+    return data;
 }
 const std::unordered_map<std::string, UVRegion>& Texture::GetUVMap()
 {

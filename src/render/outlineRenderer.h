@@ -9,7 +9,7 @@ class OutlineRenderer : public SceneObject
 {
 public:
     OutlineRenderer();
-    OutlineRenderer(const OutlineRenderer&) = default;
+    OutlineRenderer(const OutlineRenderer&) = delete;
     OutlineRenderer(OutlineRenderer&&) = delete;
     OutlineRenderer& operator=(const OutlineRenderer&) = delete;
     OutlineRenderer& operator=(OutlineRenderer&&) = delete;
@@ -18,5 +18,5 @@ public:
 private:
     Shader outline = Shader("shaders/outlineVert.vert", "shaders/outlineFrag.frag");
 
-    unsigned VAO, VBO, EBO;
+    unsigned VAO = 0, VBO = 0, EBO = 0;
 };

@@ -1,6 +1,8 @@
 #include "button.h"
+#include "text.h"
 Button::Button(PivotType pivotType, FlexType flexType, float x, float y, float width, float height, glm::vec4 normalUV, glm::vec4 highlightUV, std::string textureID) : UIElement(pivotType, flexType, x, y, width, height), uv(normalUV), normalUV(normalUV), highlightUV(highlightUV), textureID(textureID)
 {
+    childElements.push_back(std::make_unique<Text>(pivotType,flexType,x,y,width,height,uv,textureID));
 }
 void Button::AddListener(std::function<void()> listener)
 {
