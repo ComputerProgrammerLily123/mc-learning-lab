@@ -1,7 +1,6 @@
 #pragma once
 
 #include "shader.h"
-#include "resource/texture.h"
 
 #include <vector>
 class UIRenderer{
@@ -18,7 +17,6 @@ public:
     void Draw();
 private:
     Shader shader = Shader("shaders/uiVertex.vert", "shaders/uiFragment.frag");
-    Texture texture = Texture("textures/gui");
 
     unsigned screenWidth;
     unsigned screenHeight;

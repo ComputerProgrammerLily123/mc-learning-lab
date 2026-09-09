@@ -1,15 +1,11 @@
 #pragma once
 #include <filesystem>
 
-#include "texture.h"
+#include <unordered_map>
+#include "textureCreator.h"
+#include <glm/glm.hpp>
+#include "stbImage/stb_image.h"
 
-enum class AtlasType : unsigned char
-{
-    Block,
-    Item,
-    Text,
-    GUI
-};
 class ResourceManager
 {
 public:
@@ -22,22 +18,22 @@ public:
         static ResourceManager instance;
         return instance;
     }
-
-    void LoadTexture();
+    void RegisterTextureRegion(const std::string& id, const std::string& textureId);
+    void RegisterTextureRegion(const std::string& id, const std::string& textureId, const glm::vec4& uv);
     void LoadModel();
-    Texture GetAtlas(AtlasType type);
-    const UVRegion& GetUVRegion(const std::string& id);
-
-private:
+    [[nodiscard]] std::shared_ptr<TextureRegion> GetTextureRegion(const std::string& id);
+    
+    
+    private:
     ResourceManager();
     ~ResourceManager() = default;
+    
+    std::filesystem::path assetRoot;
+    
+    std::unordered_map<std::string, std::shared_ptr<TextureRegion>> textureRegions;
+    
+    std::shared_ptr<TextureRegion> LoadTexture(const std::string& loadPath, bool flip);
+    std::shared_ptr<TextureRegion> LoadPartialTexture(const std::string& loadPath, bool flip, const glm::vec4& uv);
 
-    std::unordered_map<std::string, UVRegion> uvMap;
-
-    std::filesystem::path basePath;
-
-    Texture blockAtlas;
-    Texture itemAtlas;
-    Texture textAtlas;
-    Texture guiAtlas;
+    std::filesystem::path GetExecutableDirectory();
 };

@@ -1,20 +1,12 @@
 #include "button.h"
 #include "text.h"
-Button::Button(PivotType pivotType, FlexType flexType, float x, float y, float width, float height, glm::vec4 normalUV, glm::vec4 highlightUV, std::string textureID) : UIElement(pivotType, flexType, x, y, width, height), uv(normalUV), normalUV(normalUV), highlightUV(highlightUV), textureID(textureID)
+Button::Button(PivotType pivotType, FlexType flexType, float x, float y, float width, float height, const std::string& normalTextureId, const std::string& highlightedTextureId) : UIElement(pivotType, flexType, x, y, width, height), normalTextureId(normalTextureId), highlightedTextureId(highlightedTextureId)
 {
-    childElements.push_back(std::make_unique<Text>(pivotType,flexType,x,y,width,height,uv,textureID));
+    //childElements.push_back(std::make_unique<Text>(pivotType, flexType, x, y, width, height, normalTextureId, highlightedTextureId));
 }
 void Button::AddListener(std::function<void()> listener)
 {
     onClick.push_back(listener);
-}
-glm::vec4 Button::GetUV()
-{
-    return uv;
-}
-std::string Button::GetTextureID()
-{
-    return textureID;
 }
 void Button::OnPointerEnter()
 {
@@ -35,10 +27,10 @@ void Button::SetButtonState(ButtonState state)
     switch (state)
     {
     case ButtonState::Normal:
-        uv = normalUV;
+        //uv = normalUV;
         break;
     case ButtonState::Highlight:
-        uv = highlightUV;
+        //uv = highlightUV;
         break;
     }
 }

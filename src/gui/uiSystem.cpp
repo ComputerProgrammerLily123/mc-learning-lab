@@ -2,6 +2,7 @@
 
 #include "GLFW/glfw3.h"
 #include "core/input.h"
+#include "resource/resourceManager.h"
 
 void UISystem::ResizeScreen(unsigned width, unsigned height)
 {
@@ -14,9 +15,11 @@ void UISystem::RenderAll()
     {
         auto pos = element->GetStartPointPosition() + mainCanvas->GetCenterPosition();
         auto size = element->GetSize();
-        auto uv = element->GetUV();
-        uiRenderer.AddRenderQueue(pos.x, pos.y, size.x, size.y, uv.x, uv.y, uv.z - uv.x, uv.y - uv.w);
+        auto region = ResourceManager::GetInstance().GetTextureRegion(element->GetTextureId());
+        //uiRenderer.AddRenderQueue(pos.x, pos.y, size.x, size.y, uv.x, uv.y, uv.z - uv.x, uv.y - uv.w);
+        uiRenderer.AddRenderQueue(pos.x, pos.y, size.x, size.y, region->GetU1(), region->GetV1(), region->GetU2(), region->GetV2());
     }
+    uiRenderer.Draw();
 }
 void UISystem::SetMainCanvas(Canvas* canvas)
 {

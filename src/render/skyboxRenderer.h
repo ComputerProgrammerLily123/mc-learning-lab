@@ -17,6 +17,5 @@ public:
 
 private:
     Shader skybox = Shader("shaders/skyboxVert.vert", "shaders/skyboxFrag.frag");
-    Texture cubemap = Texture("textures/gui/title/background");
     unsigned VAO = 0,VBO = 0,EBO = 0;
 };

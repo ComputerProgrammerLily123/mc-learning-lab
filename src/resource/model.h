@@ -1,52 +1,82 @@
 #pragma once
+
+#include <cstdint>
 #include <glm/glm.hpp>
+#include <optional>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
-struct Rotation
+namespace model
 {
-    glm::vec3 origin;
-    bool rescale;
+enum class Direction : std::uint8_t
+{
+    Down,
+    Up,
+    North,
+    South,
+    West,
+    East,
+    Count
+};
 
-    // TODO:axis
-};
-struct Display
+enum class Axis : std::uint8_t
 {
-    glm::vec3 scale;
-    glm::vec3 rotation;
-    glm::vec3 translation;
+    X,
+    Y,
+    Z
 };
-struct Face
+
+enum class DisplayContext : std::uint8_t
 {
-    std::string face;
-    glm::vec4 uv;
-    int rotation;
-    int tintindex;
-    std::string cullface;
+    ThirdPersonRightHand,
+    ThirdPersonLeftHand,
+    FirstPersonRightHand,
+    FirstPersonLeftHand,
+    Head,
+    Gui,
+    Ground,
+    Fixed,
+    Count
+};
+struct ModelFace
+{
+    std::string texture;
+    std::optional<glm::vec4> uv;
+    std::optional<int> rotation{0};
+    std::optional<int> tintIndex{-1};
+    std::optional<std::string> cullFace;
+};
+struct ElementRotation
+{
+    glm::vec3 origin{};
+    Axis axis = Axis::Y;
+    float angle = 0.0f;
+    bool rescale = false;
 };
 struct ModelElement
 {
-    glm::vec3 from;
-    glm::vec3 to;
-    Rotation rotation;
-    bool shade;
-    int lightEmission;
-    std::unordered_map<std::string, Face> faces;
+    glm::vec3 from{};
+    glm::vec3 to{};
+    std::optional<ElementRotation> rotation;
+    bool shade{true};
+    ModelFace faces;
 };
-struct ModelFormat
+struct DisplayTransform
 {
-    std::string parent;
-    bool ambientOcclusion;
-    std::unordered_map<std::string, std::string> textures;
-    std::vector<ModelElement> elements;
-    Display display;
-    std::string guiLight;
+    glm::vec3 scale{1.0f};
+    glm::vec3 rotation{0.0f};
+    glm::vec3 translation{0.0f};
 };
-class Model
+struct Texture
 {
-public:
-    
-private:
-    ModelFormat modelFormat;
 };
+struct RawModel
+{
+    std::optional<std::string> parent;
+    std::optional<bool> ambientOcclusion;
+    std::optional<Texture> textures;
+    std::optional<std::vector<ModelElement>> elements;
+    std::optional<DisplayTransform> display;
+    std::optional<std::string> guiLight;
+};
+}  // namespace model

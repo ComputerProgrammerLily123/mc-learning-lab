@@ -9,7 +9,7 @@
 #include "gui/canvas.h"
 #include "gui/quad.h"
 #include "gui/uiSystem.h"
-// #include "item/itemRegister.h"
+#include "item/itemRegister.h"
 #include "player/player.h"
 #include "render/camera.h"
 #include "render/outlineRenderer.h"
@@ -60,7 +60,16 @@ void Application::InitGLFWCallback()
 void Application::InitResource()
 {
     RegisterBlocks();
-    resourceManager.LoadTexture();
+    RegisterItems();
+    resourceManager.RegisterTextureRegion("title_left", "gui/title/minecraft.png", glm::vec4(0.0f, 1.0f, 0.60546875f, 0.828125f));
+    resourceManager.RegisterTextureRegion("title_right", "gui/title/minecraft.png", glm::vec4(0.0f, 0.82421875f, 0.46484375f, 0.65234375f));
+    resourceManager.RegisterTextureRegion("button_normal", "gui/widgets.png", glm::vec4(0.0f, 0.7421875f, 0.78125f, 0.6640625f));
+    resourceManager.RegisterTextureRegion("button_highlighted", "gui/widgets.png", glm::vec4(0.0f, 0.6640625f, 0.78125f, 0.5859375f));
+    resourceManager.RegisterTextureRegion("lang_button_normal", "gui/widgets.png", glm::vec4(0.0f, 0.5859375f, 0.078125f, 0.5078125f));
+    resourceManager.RegisterTextureRegion("lang_button_highlighted", "gui/widgets.png", glm::vec4(0.0f, 0.5078125f, 0.078125f, 0.4296875f));
+    resourceManager.RegisterTextureRegion("crosshair", "gui/icons.png", glm::vec4(0.0f, 1.0f, 0.05859375f, 0.94140625f));
+    resourceManager.RegisterTextureRegion("hotbar", "gui/widgets.png", glm::vec4(0.0f, 1.0f, 0.7109375f, 0.9140625f));
+    resourceManager.RegisterTextureRegion("hotbar_frame", "gui/widgets.png", glm::vec4(0.0f, 0.9140625f, 0.09375f, 0.8203125f));
 }
 void Application::InitScene()
 {
@@ -77,12 +86,12 @@ void Application::InitScene()
 
         camera->SetZoom(90.0f);
 
-        auto titleA = std::make_unique<Quad>(PivotType::Center, FlexType::None, -225, -215, 605.46875f, 171.875f, glm::vec4(0.0f, 1.0f, 0.60546875f, 0.828125f), "title/minecraft.png");
-        auto titleB = std::make_unique<Quad>(PivotType::Center, FlexType::None, 305, -215, 464.84375f, 171.875f, glm::vec4(0.0f, 0.82421875f, 0.46484375f, 0.65234375f), "title/minecraft.png");
-        auto buttonA = std::make_unique<Button>(PivotType::Center, FlexType::None, 0, 0, 728.0f, 88.0f, glm::vec4(0.0f, 0.7421875f, 0.78125f, 0.6640625f), glm::vec4(0.0f, 0.6640625f, 0.78125f, 0.5859375f), "widgets.png");
-        auto buttonB = std::make_unique<Button>(PivotType::Center, FlexType::None, 0, 100, 728.0f, 88.0f, glm::vec4(0.0f, 0.7421875f, 0.78125f, 0.6640625f), glm::vec4(0.0f, 0.6640625f, 0.78125f, 0.5859375f), "widgets.png");
-        auto buttonC = std::make_unique<Button>(PivotType::Center, FlexType::None, 0, 200, 728.0f, 88.0f, glm::vec4(0.0f, 0.7421875f, 0.78125f, 0.6640625f), glm::vec4(0.0f, 0.6640625f, 0.78125f, 0.5859375f), "widgets.png");
-        auto buttonD = std::make_unique<Button>(PivotType::Center, FlexType::None, -450, 300, 88.0f, 88.0f, glm::vec4(0.0f, 0.5859375f, 0.078125f, 0.5078125f), glm::vec4(0.0f, 0.5078125f, 0.078125f, 0.4296875f), "widgets.png");
+        auto titleA = std::make_unique<Quad>(PivotType::Center, FlexType::None, -225, -215, 605.46875f, 171.875f, "title_left");
+        auto titleB = std::make_unique<Quad>(PivotType::Center, FlexType::None, 305, -215, 464.84375f, 171.875f, "title_right");
+        auto buttonA = std::make_unique<Button>(PivotType::Center, FlexType::None, 0, 0, 728.0f, 88.0f, "button_normal", "button_highlighted");
+        auto buttonB = std::make_unique<Button>(PivotType::Center, FlexType::None, 0, 100, 728.0f, 88.0f, "button_normal", "button_highlighted");
+        auto buttonC = std::make_unique<Button>(PivotType::Center, FlexType::None, 0, 200, 728.0f, 88.0f, "button_normal", "button_highlighted");
+        auto buttonD = std::make_unique<Button>(PivotType::Center, FlexType::None, -450, 300, 88.0f, 88.0f, "lang_button_normal", "lang_button_highlighted");
         buttonA->AddListener([this]
                              { sceneManager.RequestLoadScene("Main"); });
         buttonC->AddListener([this]
@@ -125,9 +134,9 @@ void Application::InitScene()
         auto worldRenderer = std::make_unique<WorldRenderer>(RENDER_RADIAN);
         auto player = std::make_unique<Player>(glm::vec3(10.0f, 100.0f, 10.0f), camera.get(), world.get());
 
-        auto crosshair = std::make_unique<Quad>(PivotType::Center, FlexType::None, 0, 0, 32.0f, 32.0f, glm::vec4(0.0f, 1.0f, 0.05859375f, 0.94140625f), "icons.png");
-        auto hotbar = std::make_unique<Quad>(PivotType::BottomMiddle, FlexType::None, 0, 350, 728.0f, 88.0f, glm::vec4(0.0f, 1.0f, 0.7109375f, 0.9140625f), "widgets.png");
-        auto hotbarFrame = std::make_unique<Quad>(PivotType::Center, FlexType::None, player->GetHotBar().GetHotBarSlot() * 80, 350, 88.0f, 88.0f, glm::vec4(0.0f, 0.9140625f, 0.09375f, 0.8203125f), "widgets.png");
+        auto crosshair = std::make_unique<Quad>(PivotType::Center, FlexType::None, 0, 0, 32.0f, 32.0f, "crosshair");
+        auto hotbar = std::make_unique<Quad>(PivotType::BottomMiddle, FlexType::None, 0, 350, 728.0f, 88.0f, "hotbar");
+        auto hotbarFrame = std::make_unique<Quad>(PivotType::Center, FlexType::None, player->GetHotBar().GetHotBarSlot() * 80, 350, 88.0f, 88.0f, "hotbar_frame");
         canvas->AddElement(std::move(crosshair));
         canvas->AddElement(std::move(hotbar));
         canvas->AddElement(std::move(hotbarFrame));
@@ -188,12 +197,12 @@ void Application::RegisterBlocks()
 }
 void Application::RegisterItems()
 {
-    /*
+    
     auto &itemRegister = ItemRegister::GetInstance();
-    itemRegister.RegisterItem(1, "grass", "");
-    itemRegister.RegisterItem(2, "dirt", "");
-    itemRegister.RegisterItem(3, "stone", "");
-    */
+    itemRegister.RegisterItem("grass");
+    itemRegister.RegisterItem("dirt");
+    itemRegister.RegisterItem("stone");
+    
 }
 void Application::OnWindowResize(unsigned newWidth, unsigned newHeight)
 {

@@ -68,8 +68,6 @@ void SkyboxRenderer::Draw(Camera *camera)
     skybox.setValue("projection", camera->GetPerspectiveMatrix());
     skybox.setValue("view", camera->GetViewMatrix());
     skybox.setValue("textureIn", 2);
-    cubemap.Bind(2);
-    cubemap.CreateCubemap({"panorama_1.png", "panorama_3.png", "panorama_4.png", "panorama_5.png", "panorama_0.png", "panorama_2.png"});
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
     glDepthMask(GL_TRUE);

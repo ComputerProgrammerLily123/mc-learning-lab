@@ -7,7 +7,12 @@ class Shader
 {
 public:
     unsigned ID;
-    Shader(const std::string &vertexPath, const std::string &fragmentPath);
+    Shader(const Shader&) = delete;
+    Shader(Shader&&) = default;
+    Shader& operator=(const Shader&) = delete;
+    Shader& operator=(Shader&&) = default;
+    Shader(const std::string& vertexPath, const std::string& fragmentPath);
+    ~Shader();
 
     void Use();
     void setValue(const std::string &name, bool value) const;

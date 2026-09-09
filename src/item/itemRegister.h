@@ -1,5 +1,6 @@
 #pragma once
 #include "itemBase.h"
+#include "resource/resourceLocation.h"
 #include <unordered_map>
 class ItemRegister
 {
@@ -9,13 +10,15 @@ public:
         static ItemRegister instance;
         return instance;
     }
-    ItemRegister(const ItemRegister &) = delete;
+    ItemRegister(ItemRegister&&) = delete;
+    ItemRegister& operator=(ItemRegister&&) = delete;
+    ItemRegister(const ItemRegister&) = delete;
     ItemRegister &operator=(const ItemRegister &) = delete;
-    void RegisterItem(int id, const std::string &name, const std::string &icon);
-    ItemBase GetItem(int id);
+    void RegisterItem(const std::string &nameSpace, const std::string &name);
+    void RegisterItem(const std::string &name);
 
 private:
     ItemRegister() = default;
     ~ItemRegister() = default;
-    std::unordered_map<int,ItemBase> items;
+    std::unordered_map<ResourceLocation, ItemBase> items;
 };

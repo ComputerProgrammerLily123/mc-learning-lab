@@ -4,6 +4,7 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include "resource/resourceManager.h"
 
 UIRenderer::UIRenderer(unsigned screenWidth, unsigned scrrenHeight) : screenWidth(screenWidth), screenHeight(scrrenHeight)
 {
@@ -69,10 +70,9 @@ void UIRenderer::Draw()
 
     shader.Use();
     shader.setValue("textureIn", 1);
-    texture.Bind(1);
-    texture.CreateTexture("widgets.png");
     glm::mat4 projection = glm::ortho(0.0f, (float)screenWidth, (float)screenHeight, 0.0f, -1.0f, 1.0f);
     shader.setValue("projection", projection);
+    ResourceManager::GetInstance().GetTextureRegion("title_left")->Bind(1);
 
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
     glEnable(GL_DEPTH_TEST);

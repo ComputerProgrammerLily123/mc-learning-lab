@@ -1,76 +1,89 @@
 #include "resourceManager.h"
 
 #include <windows.h>
+#include <iostream>
+#include <array>
 
-ResourceManager::ResourceManager()
+ResourceManager::ResourceManager() : assetRoot(GetExecutableDirectory()) {}
+std::shared_ptr<TextureRegion> ResourceManager::GetTextureRegion(const std::string& id)
 {
-    char buffer[MAX_PATH];
-    GetModuleFileNameA(nullptr, buffer, sizeof(buffer));
-    basePath = std::filesystem::path(buffer).parent_path() / "textures";
+    auto it = textureRegions.find(id);
+    if(it != textureRegions.end())
+    {
+        return it->second;
+    }else
+    {
+        return nullptr;
+    }
 }
-void ResourceManager::LoadTexture()
+void ResourceManager::RegisterTextureRegion(const std::string& id, const std::string& textureId)
 {
-    std::vector<std::string> files;
-    for (const auto& texture : std::filesystem::directory_iterator(basePath / "blocks"))
-    {
-        if (texture.path().extension().string() == ".png")
-        {
-            files.push_back(texture.path().filename().string());
-        }
-    }
-    blockAtlas.SetLoadPath((basePath / "blocks").string());
-    blockAtlas.CreateAtlas(files);
-    files.clear();
-
-    for (const auto& texture : std::filesystem::directory_iterator(basePath / "items"))
-    {
-        if (texture.path().extension().string() == ".png")
-        {
-            files.push_back(texture.path().filename().string());
-        }
-    }
-    itemAtlas.SetLoadPath((basePath / "items").string());
-    itemAtlas.CreateAtlas(files);
-    files.clear();
-
-    for (const auto& texture : std::filesystem::directory_iterator(basePath / "font"))
-    {
-        if (texture.path().extension().string() == ".png")
-        {
-            files.push_back(texture.path().filename().string());
-        }
-    }
-    textAtlas.SetLoadPath((basePath / "font").string());
-    textAtlas.CreateAtlas(files);
-    files.clear();
-
-    for (const auto& texture : std::filesystem::directory_iterator(basePath / "gui"))
-    {
-        if (texture.path().extension().string() == ".png")
-        {
-            files.push_back(texture.path().filename().string());
-        }
-    }
-    guiAtlas.SetLoadPath((basePath / "gui").string());
-    guiAtlas.CreateAtlas(files);
-    files.clear();
+    auto it = textureRegions.find(id);
+    if(it != textureRegions.end()) return;
+    auto region = LoadTexture(textureId, true);
+    textureRegions.emplace(id, region);
 }
-const UVRegion& ResourceManager::GetUVRegion(const std::string& id)
+void ResourceManager::RegisterTextureRegion(const std::string& id, const std::string& textureId, const glm::vec4& uv)
 {
-    return uvMap[id];
+    auto it = textureRegions.find(id);
+    if(it != textureRegions.end()) return;
+    auto region = LoadPartialTexture(textureId, true, uv);
+    textureRegions.emplace(id, region);
 }
-Texture ResourceManager::GetAtlas(AtlasType type)
+std::shared_ptr<TextureRegion> ResourceManager::LoadTexture(const std::string& loadPath, bool flip)
 {
-    switch (type)
+    TextureData data = {};
+    auto path = assetRoot / "minecraft" / "textures" / loadPath;
+    stbi_set_flip_vertically_on_load(flip);
+    data.data = stbi_load(path.u8string().c_str(), &data.width, &data.height, &data.channels, 0);
+    if (data.data == nullptr)
     {
-        case AtlasType::Block:
-            return blockAtlas;
-        case AtlasType::Item:
-            return itemAtlas;
-        case AtlasType::Text:
-            return textAtlas;
-        case AtlasType::GUI:
-            return guiAtlas;
+        std::cout << "[ResourceManager] Loading failed:" << path << '\n';
+        return nullptr;
     }
-    return Texture{};
+    std::cout << "[ResourceManager] Successfully load:" << path << '\n';
+    auto texturePtr = std::make_shared<Texture>();
+    texturePtr->Upload(data.width, data.height, data.data);
+    stbi_image_free(data.data);
+    auto region = std::make_shared<TextureRegion>(texturePtr);
+    return region;
+}
+std::shared_ptr<TextureRegion> ResourceManager::LoadPartialTexture(const std::string& loadPath, bool flip, const glm::vec4& uv)
+{
+    TextureData data = {};
+    auto path = assetRoot / "minecraft" / "textures" / loadPath;
+    stbi_set_flip_vertically_on_load(flip);
+    data.data = stbi_load(path.u8string().c_str(), &data.width, &data.height, &data.channels, 0);
+    if (data.data == nullptr)
+    {
+        std::cout << "[ResourceManager] Loading failed:" << path << '\n';
+        return nullptr;
+    }
+    std::cout << "[ResourceManager] Successfully load:" << path << '\n';
+    auto texturePtr = std::make_shared<Texture>();
+    texturePtr->Upload(data.width, data.height, data.data);
+    stbi_image_free(data.data);
+    auto region = std::make_shared<TextureRegion>(texturePtr, uv.x, uv.y, uv.z, uv.w, data.width, data.height);
+    return region;
+}
+std::filesystem::path ResourceManager::GetExecutableDirectory()
+{
+    std::array<wchar_t, MAX_PATH> buffer{};
+
+    const DWORD length = GetModuleFileNameW(nullptr, buffer.data(), MAX_PATH);
+
+    if (length == 0)
+    {
+        throw std::system_error(static_cast<int>(GetLastError()), std::system_category(), "GetModuleFileNameW failed");
+    }
+
+    auto assetRoot = std::filesystem::path(std::wstring(buffer.data(), length)).parent_path() / "assets";
+
+    const std::filesystem::path& rootMarker = assetRoot / ".mcassetsroot";
+    std::error_code error;
+    if (!std::filesystem::is_regular_file(rootMarker, error))
+    {
+        throw std::runtime_error("Missing asset marker: " + rootMarker.string());
+    }
+    return assetRoot;
 }

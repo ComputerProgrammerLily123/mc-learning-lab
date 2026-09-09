@@ -18,17 +18,15 @@ public:
     Button(Button&&) = delete;
     Button& operator=(const Button&) = delete;
     Button& operator=(Button&&) = delete;
-    Button(PivotType pivotType, FlexType flexType, float x, float y, float width, float height, glm::vec4 normalUV, glm::vec4 highlightUV, std::string textureID);
+    Button(PivotType pivotType, FlexType flexType, float x, float y, float width, float height, const std::string& normalTextureId, const std::string& highlightedTextureId);
     void AddListener(std::function<void()> listener);
-    glm::vec4 GetUV() override;
-    std::string GetTextureID() override;
+    std::string GetTextureId() override { return normalTextureId; };
     void OnPointerEnter() override;
     void OnPointerExit() override;
     void OnPointerClick() override;
 
 private:
-    glm::vec4 uv,normalUV, highlightUV;
-    std::string textureID;
+    std::string normalTextureId, highlightedTextureId;
     std::vector<std::function<void()>> onClick;
     void SetButtonState(ButtonState state);
 

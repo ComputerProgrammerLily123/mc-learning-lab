@@ -3,6 +3,7 @@
 #include <string>
 #include <memory>
 #include "rectTransform.h"
+#include "resource/textureRegion.h"
 
 class UIElement
 {
@@ -22,8 +23,7 @@ public:
     void ClearElements();
     [[nodiscard]] const std::vector<std::unique_ptr<UIElement>>& GetChildElements() const;
 
-    virtual glm::vec4 GetUV() { return {0, 0, 0, 0}; }
-    virtual std::string GetTextureID() { return ""; }
+    virtual std::string GetTextureId(){ return {};};
     virtual void OnPointerEnter() {}
     virtual void OnPointerExit() {}
     virtual void OnPointerClick() {}

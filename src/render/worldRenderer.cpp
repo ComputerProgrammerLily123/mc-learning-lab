@@ -30,7 +30,7 @@ void WorldRenderer::Draw(World *world, Camera *camera, int32_t centralX, int32_t
     glEnable(GL_CULL_FACE);
     Clear();
     shader.Use();
-    ResourceManager::GetInstance().GetAtlas(AtlasType::Block).Bind(0);
+    //ResourceManager::GetInstance().GetAtlas(AtlasType::Block).Bind(0);
     shader.setValue("textureIn", 0);
     shader.setValue("projection", camera->GetPerspectiveMatrix());
     shader.setValue("view", camera->GetViewMatrix());

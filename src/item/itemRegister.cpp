@@ -1,13 +1,9 @@
 #include "itemRegister.h"
-void ItemRegister::RegisterItem(int id, const std::string &name, const std::string &icon)
+void ItemRegister::RegisterItem(const std::string &nameSpace, const std::string &name)
 {
-    auto item = ItemBase();
-    item.SetID(id);
-    item.SetName(name);
-    item.SetIcon(icon);
-    items[id] = item;
+    items.emplace(ResourceLocation(nameSpace,name),ItemBase());
 }
-ItemBase ItemRegister::GetItem(int id)
+void ItemRegister::RegisterItem(const std::string &name)
 {
-    return items[id];
+    items.emplace(ResourceLocation(name),ItemBase());
 }

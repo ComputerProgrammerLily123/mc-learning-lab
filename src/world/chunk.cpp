@@ -54,11 +54,14 @@ void Chunk::AddVertices(int x, int y, int z, float blockId)
     if (ShouldRenderFace(x, y, z, Face::front))
     {
         startIndex = vertices.size() / 9;
-        const auto& uv = resourceManager.GetUVRegion(blockRegister.GetBlock(blockId).GetName());
-        vertices.insert(vertices.end(), {fx - 0.5f, fy - 0.5f, fz + 0.5f, u1 + uv.u1, v1 + uv.v1, 0, 0, 1, blockId,
-                                         fx + 0.5f, fy - 0.5f, fz + 0.5f, u2 + uv.u2, v1 + uv.v1, 0, 0, 1, blockId,
-                                         fx + 0.5f, fy + 0.5f, fz + 0.5f, u2 + uv.u2, v2 + uv.v2, 0, 0, 1, blockId,
-                                         fx - 0.5f, fy + 0.5f, fz + 0.5f, u1 + uv.u1, v2 + uv.v2, 0, 0, 1, blockId});
+        const auto& u1_ = resourceManager.GetTextureRegion(blockRegister.GetBlock(blockId).GetName())->GetU1();
+        const auto& v1_ = resourceManager.GetTextureRegion(blockRegister.GetBlock(blockId).GetName())->GetV1();
+        const auto& u2_ = resourceManager.GetTextureRegion(blockRegister.GetBlock(blockId).GetName())->GetU2();
+        const auto& v2_ = resourceManager.GetTextureRegion(blockRegister.GetBlock(blockId).GetName())->GetV2();
+        vertices.insert(vertices.end(), {fx - 0.5f, fy - 0.5f, fz + 0.5f, u1 + u1_, v1 + v1_, 0, 0, 1, blockId,
+                                         fx + 0.5f, fy - 0.5f, fz + 0.5f, u2 + u2_, v1 + v1_, 0, 0, 1, blockId,
+                                         fx + 0.5f, fy + 0.5f, fz + 0.5f, u2 + u2_, v2 + v2_, 0, 0, 1, blockId,
+                                         fx - 0.5f, fy + 0.5f, fz + 0.5f, u1 + u1_, v2 + v2_, 0, 0, 1, blockId});
         indices.insert(indices.end(), {startIndex, startIndex + 1, startIndex + 2,
                                        startIndex, startIndex + 2, startIndex + 3});
     }
@@ -66,11 +69,14 @@ void Chunk::AddVertices(int x, int y, int z, float blockId)
     if (ShouldRenderFace(x, y, z, Face::back))
     {
         startIndex = vertices.size() / 9;
-        const auto& uv = resourceManager.GetUVRegion(blockRegister.GetBlock(blockId).GetName());
-        vertices.insert(vertices.end(), {fx + 0.5f, fy - 0.5f, fz - 0.5f, u1 + uv.u1, v1 + uv.v1, 0, 0, -1, blockId,
-                                         fx - 0.5f, fy - 0.5f, fz - 0.5f, u2 + uv.u2, v1 + uv.v1, 0, 0, -1, blockId,
-                                         fx - 0.5f, fy + 0.5f, fz - 0.5f, u2 + uv.u2, v2 + uv.v2, 0, 0, -1, blockId,
-                                         fx + 0.5f, fy + 0.5f, fz - 0.5f, u1 + uv.u1, v2 + uv.v2, 0, 0, -1, blockId});
+        const auto& u1_ = resourceManager.GetTextureRegion(blockRegister.GetBlock(blockId).GetName())->GetU1();
+        const auto& v1_ = resourceManager.GetTextureRegion(blockRegister.GetBlock(blockId).GetName())->GetV1();
+        const auto& u2_ = resourceManager.GetTextureRegion(blockRegister.GetBlock(blockId).GetName())->GetU2();
+        const auto& v2_ = resourceManager.GetTextureRegion(blockRegister.GetBlock(blockId).GetName())->GetV2();
+        vertices.insert(vertices.end(), {fx + 0.5f, fy - 0.5f, fz - 0.5f, u1 + u1_, v1 + v1_, 0, 0, -1, blockId,
+                                         fx - 0.5f, fy - 0.5f, fz - 0.5f, u2 + u2_, v1 + v1_, 0, 0, -1, blockId,
+                                         fx - 0.5f, fy + 0.5f, fz - 0.5f, u2 + u2_, v2 + v2_, 0, 0, -1, blockId,
+                                         fx + 0.5f, fy + 0.5f, fz - 0.5f, u1 + u1_, v2 + v2_, 0, 0, -1, blockId});
         indices.insert(indices.end(), {startIndex, startIndex + 1, startIndex + 2,
                                        startIndex, startIndex + 2, startIndex + 3});
     }
@@ -78,11 +84,14 @@ void Chunk::AddVertices(int x, int y, int z, float blockId)
     if (ShouldRenderFace(x, y, z, Face::left))
     {
         startIndex = vertices.size() / 9;
-        const auto& uv = resourceManager.GetUVRegion(blockRegister.GetBlock(blockId).GetName());
-        vertices.insert(vertices.end(), {fx - 0.5f, fy - 0.5f, fz - 0.5f, u1 + uv.u1, v1 + uv.v1, -1, 0, 0, blockId,
-                                         fx - 0.5f, fy - 0.5f, fz + 0.5f, u2 + uv.u2, v1 + uv.v1, -1, 0, 0, blockId,
-                                         fx - 0.5f, fy + 0.5f, fz + 0.5f, u2 + uv.u2, v2 + uv.v2, -1, 0, 0, blockId,
-                                         fx - 0.5f, fy + 0.5f, fz - 0.5f, u1 + uv.u1, v2 + uv.v2, -1, 0, 0, blockId});
+        const auto& u1_ = resourceManager.GetTextureRegion(blockRegister.GetBlock(blockId).GetName())->GetU1();
+        const auto& v1_ = resourceManager.GetTextureRegion(blockRegister.GetBlock(blockId).GetName())->GetV1();
+        const auto& u2_ = resourceManager.GetTextureRegion(blockRegister.GetBlock(blockId).GetName())->GetU2();
+        const auto& v2_ = resourceManager.GetTextureRegion(blockRegister.GetBlock(blockId).GetName())->GetV2();
+        vertices.insert(vertices.end(), {fx - 0.5f, fy - 0.5f, fz - 0.5f, u1 + u1_, v1 + v1_, -1, 0, 0, blockId,
+                                         fx - 0.5f, fy - 0.5f, fz + 0.5f, u2 + u2_, v1 + v1_, -1, 0, 0, blockId,
+                                         fx - 0.5f, fy + 0.5f, fz + 0.5f, u2 + u2_, v2 + v2_, -1, 0, 0, blockId,
+                                         fx - 0.5f, fy + 0.5f, fz - 0.5f, u1 + u1_, v2 + v2_, -1, 0, 0, blockId});
         indices.insert(indices.end(), {startIndex, startIndex + 1, startIndex + 2,
                                        startIndex, startIndex + 2, startIndex + 3});
     }
@@ -90,11 +99,14 @@ void Chunk::AddVertices(int x, int y, int z, float blockId)
     if (ShouldRenderFace(x, y, z, Face::right))
     {
         startIndex = vertices.size() / 9;
-        const auto& uv = resourceManager.GetUVRegion(blockRegister.GetBlock(blockId).GetName());
-        vertices.insert(vertices.end(), {fx + 0.5f, fy - 0.5f, fz + 0.5f, u1 + uv.u1, v1 + uv.v1, 1, 0, 0, blockId,
-                                         fx + 0.5f, fy - 0.5f, fz - 0.5f, u2 + uv.u2, v1 + uv.v1, 1, 0, 0, blockId,
-                                         fx + 0.5f, fy + 0.5f, fz - 0.5f, u2 + uv.u2, v2 + uv.v2, 1, 0, 0, blockId,
-                                         fx + 0.5f, fy + 0.5f, fz + 0.5f, u1 + uv.u1, v2 + uv.v2, 1, 0, 0, blockId});
+        const auto& u1_ = resourceManager.GetTextureRegion(blockRegister.GetBlock(blockId).GetName())->GetU1();
+        const auto& v1_ = resourceManager.GetTextureRegion(blockRegister.GetBlock(blockId).GetName())->GetV1();
+        const auto& u2_ = resourceManager.GetTextureRegion(blockRegister.GetBlock(blockId).GetName())->GetU2();
+        const auto& v2_ = resourceManager.GetTextureRegion(blockRegister.GetBlock(blockId).GetName())->GetV2();
+        vertices.insert(vertices.end(), {fx + 0.5f, fy - 0.5f, fz + 0.5f, u1 + u1_, v1 + v1_, 1, 0, 0, blockId,
+                                         fx + 0.5f, fy - 0.5f, fz - 0.5f, u2 + u2_, v1 + v1_, 1, 0, 0, blockId,
+                                         fx + 0.5f, fy + 0.5f, fz - 0.5f, u2 + u2_, v2 + v2_, 1, 0, 0, blockId,
+                                         fx + 0.5f, fy + 0.5f, fz + 0.5f, u1 + u1_, v2 + v2_, 1, 0, 0, blockId});
         indices.insert(indices.end(), {startIndex, startIndex + 1, startIndex + 2,
                                        startIndex, startIndex + 2, startIndex + 3});
     }
@@ -102,11 +114,14 @@ void Chunk::AddVertices(int x, int y, int z, float blockId)
     if (ShouldRenderFace(x, y, z, Face::top))
     {
         startIndex = vertices.size() / 9;
-        const auto& uv = resourceManager.GetUVRegion(blockRegister.GetBlock(blockId).GetName());
-        vertices.insert(vertices.end(), {fx - 0.5f, fy + 0.5f, fz - 0.5f, u1 + uv.u1, v1 + uv.v1, 0, 1, 0, blockId,
-                                         fx - 0.5f, fy + 0.5f, fz + 0.5f, u1 + uv.u1, v2 + uv.v2, 0, 1, 0, blockId,
-                                         fx + 0.5f, fy + 0.5f, fz + 0.5f, u2 + uv.u2, v2 + uv.v2, 0, 1, 0, blockId,
-                                         fx + 0.5f, fy + 0.5f, fz - 0.5f, u2 + uv.u2, v1 + uv.v1, 0, 1, 0, blockId});
+        const auto& u1_ = resourceManager.GetTextureRegion(blockRegister.GetBlock(blockId).GetName())->GetU1();
+        const auto& v1_ = resourceManager.GetTextureRegion(blockRegister.GetBlock(blockId).GetName())->GetV1();
+        const auto& u2_ = resourceManager.GetTextureRegion(blockRegister.GetBlock(blockId).GetName())->GetU2();
+        const auto& v2_ = resourceManager.GetTextureRegion(blockRegister.GetBlock(blockId).GetName())->GetV2();
+        vertices.insert(vertices.end(), {fx - 0.5f, fy + 0.5f, fz - 0.5f, u1 + u1_, v1 + v1_, 0, 1, 0, blockId,
+                                         fx - 0.5f, fy + 0.5f, fz + 0.5f, u1 + u1_, v2 + v2_, 0, 1, 0, blockId,
+                                         fx + 0.5f, fy + 0.5f, fz + 0.5f, u2 + u2_, v2 + v2_, 0, 1, 0, blockId,
+                                         fx + 0.5f, fy + 0.5f, fz - 0.5f, u2 + u2_, v1 + v1_, 0, 1, 0, blockId});
         indices.insert(indices.end(), {startIndex, startIndex + 1, startIndex + 2,
                                        startIndex, startIndex + 2, startIndex + 3});
     }
@@ -114,11 +129,14 @@ void Chunk::AddVertices(int x, int y, int z, float blockId)
     if (ShouldRenderFace(x, y, z, Face::bottom))
     {
         startIndex = vertices.size() / 9;
-        const auto& uv = resourceManager.GetUVRegion(blockRegister.GetBlock(blockId).GetName());
-        vertices.insert(vertices.end(), {fx - 0.5f, fy - 0.5f, fz - 0.5f, u1 + uv.u1, v1 + uv.v1, 0, -1, 0, blockId,
-                                         fx + 0.5f, fy - 0.5f, fz - 0.5f, u2 + uv.u2, v1 + uv.v1, 0, -1, 0, blockId,
-                                         fx + 0.5f, fy - 0.5f, fz + 0.5f, u2 + uv.u2, v2 + uv.v2, 0, -1, 0, blockId,
-                                         fx - 0.5f, fy - 0.5f, fz + 0.5f, u1 + uv.u1, v2 + uv.v2, 0, -1, 0, blockId});
+        const auto& u1_ = resourceManager.GetTextureRegion(blockRegister.GetBlock(blockId).GetName())->GetU1();
+        const auto& v1_ = resourceManager.GetTextureRegion(blockRegister.GetBlock(blockId).GetName())->GetV1();
+        const auto& u2_ = resourceManager.GetTextureRegion(blockRegister.GetBlock(blockId).GetName())->GetU2();
+        const auto& v2_ = resourceManager.GetTextureRegion(blockRegister.GetBlock(blockId).GetName())->GetV2();
+        vertices.insert(vertices.end(), {fx - 0.5f, fy - 0.5f, fz - 0.5f, u1 + u1_, v1 + v1_, 0, -1, 0, blockId,
+                                         fx + 0.5f, fy - 0.5f, fz - 0.5f, u2 + u2_, v1 + v1_, 0, -1, 0, blockId,
+                                         fx + 0.5f, fy - 0.5f, fz + 0.5f, u2 + u2_, v2 + v2_, 0, -1, 0, blockId,
+                                         fx - 0.5f, fy - 0.5f, fz + 0.5f, u1 + u1_, v2 + v2_, 0, -1, 0, blockId});
         indices.insert(indices.end(), {startIndex, startIndex + 1, startIndex + 2,
                                        startIndex, startIndex + 2, startIndex + 3});
     }

@@ -2,46 +2,31 @@
 
 #include <glad/glad.h>
 
-#include <string>
-#include <unordered_map>
-#include <vector>
-
-enum class TextureType : unsigned char
-{
-    SingleSprite,
-    MultipleSprite,
-    Cubemap
-};
-struct UVRegion
-{
-    float u1, v1, u2, v2;
-};
-struct TextureData
-{
-    unsigned char* data;
-    GLsizei width,height;
-    GLint nrChannels;
-};
 class Texture
 {
 public:
     Texture() = default;
-    Texture(const std::string& path);
-    Texture(const Texture&) = default;
-    Texture(Texture&&) = delete;
-    Texture& operator=(const Texture&) = default;
-    Texture& operator=(Texture&&) = delete;
     ~Texture();
-    void SetLoadPath(const std::string& path);
+
+    Texture(const Texture&) = delete;
+    Texture& operator=(const Texture&) = delete;
+
+    Texture(Texture&& other) noexcept;
+    Texture& operator=(Texture&& other) noexcept;
+
     void Bind(unsigned slot = 0) const;
-    void CreateAtlas(const std::vector<std::string>& filename);
-    void CreateCubemap(const std::vector<std::string>& filename);
-    void CreateTexture(const std::string& filename);
-    const std::unordered_map<std::string, UVRegion>& GetUVMap();
+    void Upload(int width, int height, const unsigned char* data);
+    void Upload(int width, int height, GLenum internalFormat, GLenum format, GLenum type, const unsigned char* data);
+
+    Texture& SetFilter(GLenum minFilter = GL_NEAREST, GLenum magFilter = GL_NEAREST);
+    Texture& SetWrap(GLenum wrapS = GL_CLAMP_TO_EDGE, GLenum wrapT = GL_CLAMP_TO_EDGE);
+
+    [[nodiscard]] int GetWidth() const { return width; };
+    [[nodiscard]] int GetHeight() const { return height; };
+    [[nodiscard]] GLuint GetID() const { return ID; };
 
 private:
-    std::string loadPath;
-    unsigned ID{0};
-    TextureData LoadTexture(const std::string& filename,bool flip);
-    std::unordered_map<std::string, UVRegion> uvMap;
+    GLuint ID {0};
+    int width {0}, height {0};
+    GLenum internalFormat {GL_RGBA8}, format {GL_RGBA}, type {GL_UNSIGNED_BYTE};
 };
