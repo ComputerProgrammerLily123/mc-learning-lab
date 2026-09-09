@@ -5,8 +5,12 @@ TextureRegion::TextureRegion(std::shared_ptr<Texture> texture) : texturePtr(std:
         height = texturePtr->GetHeight();
     }
 }
-TextureRegion::TextureRegion(std::shared_ptr<Texture> texture, unsigned px1, unsigned py1, unsigned px2, unsigned py2, unsigned atlasWidth, unsigned atlasHeight) : texturePtr(std::move(texture)), u1(static_cast<float>(px1) / atlasWidth), v1(static_cast<float>(py1) / atlasHeight), u2(static_cast<float>(px2) / atlasWidth), v2(static_cast<float>(py2) / atlasHeight), width(width), height(height) 
-{ 
+TextureRegion::TextureRegion(std::shared_ptr<Texture> texture, unsigned px1, unsigned py1, unsigned px2, unsigned py2, unsigned atlasWidth, unsigned atlasHeight) : texturePtr(std::move(texture)), u1(static_cast<float>(px1) / atlasWidth), v1(static_cast<float>(py1) / atlasHeight), u2(static_cast<float>(px2) / atlasWidth), v2(static_cast<float>(py2) / atlasHeight)
+{
+    if (texturePtr) {
+        width = texturePtr->GetWidth();
+        height = texturePtr->GetHeight();
+    }
 }
 void TextureRegion::Bind(unsigned slot) const
 {

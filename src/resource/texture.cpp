@@ -37,7 +37,7 @@ Texture& Texture::operator=(Texture&& other) noexcept
 void Texture::Bind(unsigned slot) const
 {
     glActiveTexture(GL_TEXTURE0 + slot);
-    glBindTexture(GL_TEXTURE_2D, ID);
+    glBindTexture(target, ID);
 }
 void Texture::Upload(int width, int height, const unsigned char* data)
 {
@@ -55,6 +55,27 @@ void Texture::Upload(int width, int height, GLenum internalFormat, GLenum format
     this->type = type;
     SetFilter();
     SetWrap();
+}
+void Texture::UploadCube(int width, int height, const std::array<unsigned char*, 6>& data, GLenum internalFormat, GLenum format, GLenum type)
+{
+    if (!ID) glGenTextures(1, &ID);
+    this->target = GL_TEXTURE_CUBE_MAP;
+    Bind();
+    for (int i = 0; i < 6; i++) {
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internalFormat, width, height, 0, format, type, data[i]);
+    }
+    this->width = width;
+    this->height = height;
+    this->internalFormat = internalFormat;
+    this->format = format;
+    this->type = type;
+
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 }
 Texture& Texture::SetFilter(GLenum minFilter, GLenum magFilter)
 {

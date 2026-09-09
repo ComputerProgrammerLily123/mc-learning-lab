@@ -51,6 +51,8 @@ SkyboxRenderer::SkyboxRenderer()
     glEnableVertexAttribArray(0);
 
     glBindVertexArray(0);
+
+    cubemap = ResourceManager::GetInstance().GetCubemap("main_menu_skybox");
 }
 
 SkyboxRenderer::~SkyboxRenderer()
@@ -68,6 +70,9 @@ void SkyboxRenderer::Draw(Camera *camera)
     skybox.setValue("projection", camera->GetPerspectiveMatrix());
     skybox.setValue("view", camera->GetViewMatrix());
     skybox.setValue("textureIn", 2);
+
+    cubemap->Bind(2);
+
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
     glDepthMask(GL_TRUE);

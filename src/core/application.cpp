@@ -61,15 +61,16 @@ void Application::InitResource()
 {
     RegisterBlocks();
     RegisterItems();
-    resourceManager.RegisterTextureRegion("title_left", "gui/title/minecraft.png", glm::vec4(0.0f, 1.0f, 0.60546875f, 0.828125f));
-    resourceManager.RegisterTextureRegion("title_right", "gui/title/minecraft.png", glm::vec4(0.0f, 0.82421875f, 0.46484375f, 0.65234375f));
-    resourceManager.RegisterTextureRegion("button_normal", "gui/widgets.png", glm::vec4(0.0f, 0.7421875f, 0.78125f, 0.6640625f));
-    resourceManager.RegisterTextureRegion("button_highlighted", "gui/widgets.png", glm::vec4(0.0f, 0.6640625f, 0.78125f, 0.5859375f));
-    resourceManager.RegisterTextureRegion("lang_button_normal", "gui/widgets.png", glm::vec4(0.0f, 0.5859375f, 0.078125f, 0.5078125f));
-    resourceManager.RegisterTextureRegion("lang_button_highlighted", "gui/widgets.png", glm::vec4(0.0f, 0.5078125f, 0.078125f, 0.4296875f));
-    resourceManager.RegisterTextureRegion("crosshair", "gui/icons.png", glm::vec4(0.0f, 1.0f, 0.05859375f, 0.94140625f));
-    resourceManager.RegisterTextureRegion("hotbar", "gui/widgets.png", glm::vec4(0.0f, 1.0f, 0.7109375f, 0.9140625f));
-    resourceManager.RegisterTextureRegion("hotbar_frame", "gui/widgets.png", glm::vec4(0.0f, 0.9140625f, 0.09375f, 0.8203125f));
+    resourceManager.RegisterTextureRegion("title_left", "gui/title/minecraft.png", glm::i16vec4(0, 256, 155, 212));
+    resourceManager.RegisterTextureRegion("title_right", "gui/title/minecraft.png", glm::i16vec4(0, 211, 119, 167));
+    resourceManager.RegisterTextureRegion("button_normal", "gui/widgets.png", glm::i16vec4(0, 190, 200, 170));
+    resourceManager.RegisterTextureRegion("button_highlighted", "gui/widgets.png", glm::i16vec4(0, 170, 200, 150));
+    resourceManager.RegisterTextureRegion("lang_button_normal", "gui/widgets.png", glm::i16vec4(0, 150, 20, 130));
+    resourceManager.RegisterTextureRegion("lang_button_highlighted", "gui/widgets.png", glm::i16vec4(0, 130, 20, 110));
+    resourceManager.RegisterTextureRegion("crosshair", "gui/icons.png", glm::i16vec4(0, 256, 15, 241));
+    resourceManager.RegisterTextureRegion("hotbar", "gui/widgets.png", glm::i16vec4(0, 256, 182, 234));
+    resourceManager.RegisterTextureRegion("hotbar_frame", "gui/widgets.png", glm::i16vec4(0, 234, 24, 210));
+    resourceManager.RegisterCubemap("main_menu_skybox", {"gui/title/background/panorama_1.png", "gui/title/background/panorama_3.png", "gui/title/background/panorama_4.png", "gui/title/background/panorama_5.png", "gui/title/background/panorama_0.png", "gui/title/background/panorama_2.png"});
 }
 void Application::InitScene()
 {

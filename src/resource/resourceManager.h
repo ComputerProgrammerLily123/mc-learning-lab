@@ -19,10 +19,11 @@ public:
         return instance;
     }
     void RegisterTextureRegion(const std::string& id, const std::string& textureId);
-    void RegisterTextureRegion(const std::string& id, const std::string& textureId, const glm::vec4& uv);
+    void RegisterTextureRegion(const std::string& id, const std::string& textureId, const glm::i16vec4& rect);
+    void RegisterCubemap(const std::string& id, const std::array<std::string, 6>& textureId);
     void LoadModel();
     [[nodiscard]] std::shared_ptr<TextureRegion> GetTextureRegion(const std::string& id);
-    
+    [[nodiscard]] std::shared_ptr<Texture> GetCubemap(const std::string& id);   
     
     private:
     ResourceManager();
@@ -31,9 +32,11 @@ public:
     std::filesystem::path assetRoot;
     
     std::unordered_map<std::string, std::shared_ptr<TextureRegion>> textureRegions;
+    std::unordered_map<std::string, std::shared_ptr<Texture>> cubemaps;
     
     std::shared_ptr<TextureRegion> LoadTexture(const std::string& loadPath, bool flip);
-    std::shared_ptr<TextureRegion> LoadPartialTexture(const std::string& loadPath, bool flip, const glm::vec4& uv);
+    std::shared_ptr<TextureRegion> LoadPartialTexture(const std::string& loadPath, bool flip, const glm::i16vec4& rect);
+    std::shared_ptr<Texture> LoadCubemap(const std::array<std::string, 6>& loadPaths, bool flip);
 
     std::filesystem::path GetExecutableDirectory();
 };

@@ -2,8 +2,8 @@
 class Camera;
 
 #include "shader.h"
-#include "resource/texture.h"
 #include "core/sceneManager.h"
+#include "resource/resourceManager.h"
 class SkyboxRenderer : public SceneObject
 {
 public:
@@ -17,5 +17,6 @@ public:
 
 private:
     Shader skybox = Shader("shaders/skyboxVert.vert", "shaders/skyboxFrag.frag");
+    std::shared_ptr<Texture> cubemap;
     unsigned VAO = 0,VBO = 0,EBO = 0;
 };
