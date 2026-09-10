@@ -9,6 +9,7 @@
 #include "gui/canvas.h"
 #include "gui/quad.h"
 #include "gui/uiSystem.h"
+#include "gui/text.h"
 #include "item/itemRegister.h"
 #include "player/player.h"
 #include "render/camera.h"
@@ -61,6 +62,7 @@ void Application::InitResource()
 {
     RegisterBlocks();
     RegisterItems();
+    resourceManager.RegisterTextureRegion("font", "font/ascii.png", glm::i16vec4(0, 128, 8, 120));
     resourceManager.RegisterTextureRegion("title_left", "gui/title/minecraft.png", glm::i16vec4(0, 256, 155, 212));
     resourceManager.RegisterTextureRegion("title_right", "gui/title/minecraft.png", glm::i16vec4(0, 211, 119, 167));
     resourceManager.RegisterTextureRegion("button_normal", "gui/widgets.png", glm::i16vec4(0, 190, 200, 170));
@@ -89,10 +91,13 @@ void Application::InitScene()
 
         auto titleA = std::make_unique<Quad>(PivotType::Center, FlexType::None, -225, -215, 605.46875f, 171.875f, "title_left");
         auto titleB = std::make_unique<Quad>(PivotType::Center, FlexType::None, 305, -215, 464.84375f, 171.875f, "title_right");
-        auto buttonA = std::make_unique<Button>(PivotType::Center, FlexType::None, 0, 0, 728.0f, 88.0f, "button_normal", "button_highlighted");
+        auto buttonA = std::make_unique<Button>(PivotType::Center, FlexType::None, 0, 0, 728.0f, 88.0f, "button_normal", "button_highlighted", "Test");
         auto buttonB = std::make_unique<Button>(PivotType::Center, FlexType::None, 0, 100, 728.0f, 88.0f, "button_normal", "button_highlighted");
         auto buttonC = std::make_unique<Button>(PivotType::Center, FlexType::None, 0, 200, 728.0f, 88.0f, "button_normal", "button_highlighted");
         auto buttonD = std::make_unique<Button>(PivotType::Center, FlexType::None, -450, 300, 88.0f, 88.0f, "lang_button_normal", "lang_button_highlighted");
+
+        auto TextTest = std::make_unique<Text>(PivotType::Center, FlexType::None, -150, 300, 88.0f, 88.0f);
+        TextTest->SetText("Test");
         buttonA->AddListener([this]
                              { sceneManager.RequestLoadScene("Main"); });
         buttonC->AddListener([this]
@@ -104,6 +109,7 @@ void Application::InitScene()
         canvas->AddElement(std::move(buttonB));
         canvas->AddElement(std::move(buttonC));
         canvas->AddElement(std::move(buttonD));
+        canvas->AddElement(std::move(TextTest));
         UISystem::GetInstance().SetMainCanvas(canvas.get());
         sceneManager.AddObject("Canvas", std::move(canvas));
         sceneManager.AddObject("Camera", std::move(camera));

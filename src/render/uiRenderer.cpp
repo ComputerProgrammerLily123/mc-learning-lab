@@ -65,6 +65,30 @@ void UIRenderer::AddRenderQueue(int startX, int startY, int width, int height, c
                    {startIndex, startIndex + 1, startIndex + 2,
                     startIndex, startIndex + 2, startIndex + 3});
 }
+void UIRenderer::AddTextRenderQueue(int startX, int startY, int width, int height, const std::string& textureId, const std::vector<glm::vec4>& uv_list)
+{
+    auto x = static_cast<float>(startX);
+    auto y = static_cast<float>(startY);
+
+    auto& vertices = renderQueue[textureId].vertices;
+    auto& indices = renderQueue[textureId].indices;
+
+    unsigned xOffset = 0;
+
+    for(const auto& uv : uv_list)
+    {
+        unsigned startIndex = vertices.size() / 5;
+        vertices.insert(vertices.end(),
+                        {x + width * xOffset, y, 0.0f, uv.x, uv.y,
+                        x + width * xOffset, y + height, 0.0f, uv.x, uv.w,
+                        x + width * (1 + xOffset), y + height, 0.0f, uv.z, uv.w,
+                        x + width * (1 + xOffset), y, 0.0f, uv.z, uv.y});
+        indices.insert(indices.end(),
+                    {startIndex, startIndex + 1, startIndex + 2,
+                        startIndex, startIndex + 2, startIndex + 3});
+        xOffset++;
+    }
+}
 void UIRenderer::Draw()
 {
     glDisable(GL_DEPTH_TEST);

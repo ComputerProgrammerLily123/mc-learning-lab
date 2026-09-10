@@ -14,6 +14,7 @@ public:
     void ResizeScreen(unsigned screenWidth, unsigned screenHeight);
     void ClearRenderQueue();
     void AddRenderQueue(int startX, int startY, int width, int height, const std::string& textureId);
+    void AddTextRenderQueue(int startX, int startY, int width, int height, const std::string& textureId, const std::vector<glm::vec4>& uv_list);
     void Draw();
 private:
     Shader shader = Shader("shaders/uiVertex.vert", "shaders/uiFragment.frag");
