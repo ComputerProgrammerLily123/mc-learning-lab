@@ -9,7 +9,6 @@
 #include "gui/canvas.h"
 #include "gui/quad.h"
 #include "gui/uiSystem.h"
-#include "gui/text.h"
 #include "item/itemRegister.h"
 #include "player/player.h"
 #include "render/camera.h"
@@ -17,6 +16,7 @@
 #include "render/skyboxRenderer.h"
 #include "render/worldRenderer.h"
 #include "util/jsonReader.h"
+#include "resource/modelParser.h"
 #include "window.h"
 #include "world/world.h"
 
@@ -27,6 +27,9 @@ Application::Application()
     InitGLAD();
     InitGLFWCallback();
     std::cout<<"[Application] ========OpenGL init finish========\n";
+    std::cout<<"[Application] ========Registry init start========\n";
+    InitRegistry();
+    std::cout<<"[Application] ========Reggistry init finish========\n";
     std::cout<<"[Application] ========Resource init start========\n";
     InitResource();
     std::cout<<"[Application] ========Resource init finish========\n";
@@ -58,10 +61,24 @@ void Application::InitGLFWCallback()
         auto app = static_cast<Application*>(glfwGetWindowUserPointer(win));
         if (app) app->OnWindowResize(width, height); });
 }
+void Application::InitRegistry()
+{
+    BlockRegister::GetInstance().RegisterAll();
+    RegisterItems();
+}
 void Application::InitResource()
 {
-    RegisterBlocks();
-    RegisterItems();
+    for (int i = 0;i < BlockRegister::GetInstance().GetBlockCount();i++) 
+    {
+        auto model = resourceManager.LoadModel(BlockRegister::GetInstance().GetBlock(i).GetName());
+        if(!model->textures.has_value()) continue;
+        for (const auto& [id, content] : model->textures.value())
+        {
+            resourceManager.RegisterTextureRegionInAtlas(content, content + ".png");
+        }
+    }
+    std::cout<<resourceManager.GetModel("dirt")->elements->front().faces[Direction::Down].texture<<'\n';
+    resourceManager.UploadAtlas();
     resourceManager.RegisterTextureRegion("font", "font/ascii.png", glm::i16vec4(0, 128, 8, 120));
     resourceManager.RegisterTextureRegion("title_left", "gui/title/minecraft.png", glm::i16vec4(0, 256, 155, 212));
     resourceManager.RegisterTextureRegion("title_right", "gui/title/minecraft.png", glm::i16vec4(0, 211, 119, 167));
@@ -91,13 +108,11 @@ void Application::InitScene()
 
         auto titleA = std::make_unique<Quad>(PivotType::Center, FlexType::None, -225, -215, 605.46875f, 171.875f, "title_left");
         auto titleB = std::make_unique<Quad>(PivotType::Center, FlexType::None, 305, -215, 464.84375f, 171.875f, "title_right");
-        auto buttonA = std::make_unique<Button>(PivotType::Center, FlexType::None, 0, 0, 728.0f, 88.0f, "button_normal", "button_highlighted", "Test");
-        auto buttonB = std::make_unique<Button>(PivotType::Center, FlexType::None, 0, 100, 728.0f, 88.0f, "button_normal", "button_highlighted");
-        auto buttonC = std::make_unique<Button>(PivotType::Center, FlexType::None, 0, 200, 728.0f, 88.0f, "button_normal", "button_highlighted");
+        auto buttonA = std::make_unique<Button>(PivotType::Center, FlexType::None, 0, 0, 728.0f, 88.0f, "button_normal", "button_highlighted", "Singleplayer");
+        auto buttonB = std::make_unique<Button>(PivotType::Center, FlexType::None, 0, 100, 728.0f, 88.0f, "button_normal", "button_highlighted", "Multiplayer");
+        auto buttonC = std::make_unique<Button>(PivotType::Center, FlexType::None, 0, 200, 728.0f, 88.0f, "button_normal", "button_highlighted", "Quit");
         auto buttonD = std::make_unique<Button>(PivotType::Center, FlexType::None, -450, 300, 88.0f, 88.0f, "lang_button_normal", "lang_button_highlighted");
 
-        auto TextTest = std::make_unique<Text>(PivotType::Center, FlexType::None, -150, 300, 88.0f, 88.0f);
-        TextTest->SetText("Test");
         buttonA->AddListener([this]
                              { sceneManager.RequestLoadScene("Main"); });
         buttonC->AddListener([this]
@@ -109,7 +124,6 @@ void Application::InitScene()
         canvas->AddElement(std::move(buttonB));
         canvas->AddElement(std::move(buttonC));
         canvas->AddElement(std::move(buttonD));
-        canvas->AddElement(std::move(TextTest));
         UISystem::GetInstance().SetMainCanvas(canvas.get());
         sceneManager.AddObject("Canvas", std::move(canvas));
         sceneManager.AddObject("Camera", std::move(camera));
@@ -191,16 +205,6 @@ void Application::InitScene()
     };
 
     sceneManager.LoadScene("Welcome");
-}
-void Application::RegisterBlocks()
-{
-    auto& blockRegister = BlockRegister::GetInstance();
-
-    auto data = JsonReader::ReadJson("data/blocks.json")["blocks"];
-    for (auto& block : data)
-    {
-        blockRegister.RegisterBlock(block["name"], block["uv"], block["texture"], block["solid"]);
-    }
 }
 void Application::RegisterItems()
 {

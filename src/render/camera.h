@@ -35,6 +35,7 @@ public:
 
     glm::mat4 GetPerspectiveMatrix();
     glm::mat4 GetViewMatrix();
+    std::array<glm::vec4, 6> GetViewPlanes();
 
     void ProcessMouseMovement(float xoffset, float yoffset);
     void ResizeScreen(unsigned width, unsigned height);

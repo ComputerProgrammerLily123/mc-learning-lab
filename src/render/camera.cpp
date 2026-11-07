@@ -1,4 +1,5 @@
 #include "camera.h"
+#include <glm/gtc/matrix_access.hpp>
 
 Camera::Camera(unsigned screenWidth, unsigned screenHeight) : screenWidth(screenWidth), screenHeight(screenHeight)
 {
@@ -11,6 +12,24 @@ glm::mat4 Camera::GetPerspectiveMatrix()
 glm::mat4 Camera::GetViewMatrix()
 {
     return glm::lookAt(position, position + front, up);
+}
+std::array<glm::vec4, 6> Camera::GetViewPlanes()
+{
+    const auto& vp = GetPerspectiveMatrix() * GetViewMatrix();
+    std::array<glm::vec4, 6> planes {};
+    planes[0] = glm::row(vp, 3) + glm::row(vp, 0);
+    planes[1] = glm::row(vp, 3) - glm::row(vp, 0);
+    planes[2] = glm::row(vp, 3) + glm::row(vp, 1);
+    planes[3] = glm::row(vp, 3) - glm::row(vp, 1);
+    planes[4] = glm::row(vp, 3) + glm::row(vp, 2);
+    planes[5] = glm::row(vp, 3) - glm::row(vp, 2);
+    for (auto &p : planes)
+    {
+        float len = glm::length(glm::vec3(p));
+        if (len > 0)
+            p /= len;
+    }
+    return planes;
 }
 void Camera::ProcessMouseMovement(float xoffset, float yoffset)
 {

@@ -1,19 +1,11 @@
 #include "worldRenderer.h"
 #include <glad/glad.h>
-#include <glm/gtc/matrix_access.hpp>
 #include "world/world.h"
 #include "camera.h"
 #include "resource/resourceManager.h"
 WorldRenderer::WorldRenderer(unsigned size) : renderRadian(size)
 {
-    glClearColor(0.53f, 0.81f, 0.92f, 1.0f);
-    std::vector<std::string> names;
-    for (int i = 0; i < BlockRegister::GetInstance().GetBlockCount(); i++)
-    {
-        auto &textureList = BlockRegister::GetInstance().GetBlock(i).GetTextures();
-        names.insert(names.end(), textureList.begin(), textureList.end());
-    }
-    //texture.CreateAtlas(names);
+    glClearColor(skyColor.r, skyColor.g, skyColor.b, skyColor.a);
     glGenVertexArrays(1, &VAO);
 }
 WorldRenderer::~WorldRenderer()
@@ -30,17 +22,18 @@ void WorldRenderer::Draw(World *world, Camera *camera, int32_t centralX, int32_t
     glEnable(GL_CULL_FACE);
     Clear();
     shader.Use();
-    //ResourceManager::GetInstance().GetAtlas(AtlasType::Block).Bind(0);
-    shader.setValue("textureIn", 0);
+    shader.setValue("textureIn", 2);
     shader.setValue("projection", camera->GetPerspectiveMatrix());
     shader.setValue("view", camera->GetViewMatrix());
     shader.setValue("model", glm::mat4(1.0f));
+    ResourceManager::GetInstance().GetTextureRegion("blocks/dirt")->Bind(2);
     int drawCount = 0;
+    const auto& planes = camera->GetViewPlanes();
     for (int32_t i = -renderRadian; i < renderRadian; i++)
     {
         for (int32_t j = -renderRadian; j < renderRadian; j++)
         {
-            if (!IsChunkVisible(i + centralX, j + centralZ, camera->GetPerspectiveMatrix() * camera->GetViewMatrix()))
+            if (!IsChunkVisible(i + centralX, j + centralZ, planes))
                 continue;
             auto chunk = world->GetChunk(i + centralX, j + centralZ);
             if (!chunk)
@@ -86,25 +79,13 @@ void WorldRenderer::DrawMesh(int32_t chunkX, int32_t chunkZ, const std::vector<f
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 }
-bool WorldRenderer::IsChunkVisible(int32_t chunkX, int32_t chunkZ, const glm::mat4 &vp)
+bool WorldRenderer::IsChunkVisible(int32_t chunkX, int32_t chunkZ, const std::array<glm::vec4, 6>& planes)
 {
     float x = chunkX * 16.0f;
     float z = chunkZ * 16.0f;
-    glm::vec3 min(x, 0, z);
-    glm::vec3 max(x + 16, 256, z + 16);
-    glm::vec4 planes[6];
-    planes[0] = glm::row(vp, 3) + glm::row(vp, 0);
-    planes[1] = glm::row(vp, 3) - glm::row(vp, 0);
-    planes[2] = glm::row(vp, 3) + glm::row(vp, 1);
-    planes[3] = glm::row(vp, 3) - glm::row(vp, 1);
-    planes[4] = glm::row(vp, 3) + glm::row(vp, 2);
-    planes[5] = glm::row(vp, 3) - glm::row(vp, 2);
-    for (auto &p : planes)
-    {
-        float len = glm::length(glm::vec3(p));
-        if (len > 0)
-            p /= len;
-    }
+    const glm::vec3 min(x, 0, z);
+    const glm::vec3 max(x + 16, 256, z + 16);
+    
     for (const auto &p : planes)
     {
         glm::vec3 positive;

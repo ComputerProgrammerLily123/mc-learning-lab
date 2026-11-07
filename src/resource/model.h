@@ -15,8 +15,7 @@ enum class Direction : std::uint8_t
     North,
     South,
     West,
-    East,
-    Count
+    East
 };
 
 enum class Axis : std::uint8_t
@@ -35,8 +34,7 @@ enum class DisplayContext : std::uint8_t
     Head,
     Gui,
     Ground,
-    Fixed,
-    Count
+    Fixed
 };
 struct ModelFace
 {
@@ -57,9 +55,9 @@ struct ModelElement
 {
     glm::vec3 from{};
     glm::vec3 to{};
+    std::unordered_map<Direction, ModelFace> faces;
     std::optional<ElementRotation> rotation;
     bool shade{true};
-    ModelFace faces;
 };
 struct DisplayTransform
 {
@@ -67,16 +65,56 @@ struct DisplayTransform
     glm::vec3 rotation{0.0f};
     glm::vec3 translation{0.0f};
 };
-struct Texture
-{
-};
 struct RawModel
 {
     std::optional<std::string> parent;
     std::optional<bool> ambientOcclusion;
-    std::optional<Texture> textures;
+    std::optional<std::unordered_map<std::string, std::string>> textures;
     std::optional<std::vector<ModelElement>> elements;
     std::optional<DisplayTransform> display;
     std::optional<std::string> guiLight;
 };
+struct ResolvedModel
+{
+    std::optional<bool> ambientOcclusion;
+    std::optional<std::unordered_map<std::string, std::string>> textures;
+    std::optional<std::vector<ModelElement>> elements;
+    std::optional<DisplayTransform> display;
+    std::optional<std::string> guiLight;
+};
+inline std::string DirectionToString(const Direction& direction)
+{
+    std::array<std::string, 6> tags = {"down", "up","north","south","west","east"};
+    return tags.at(static_cast<int>(direction));
+}
+inline Direction StringToDirection(const std::string& tag)
+{
+    if(tag == "down"){
+        return Direction::Down;
+    }
+    if(tag == "up"){
+        return Direction::Up;
+    }
+    if(tag == "north"){
+        return Direction::North;
+    }
+    if(tag == "south"){
+        return Direction::South;
+    }
+    if(tag == "west"){
+        return Direction::West;
+    }
+    if(tag == "east"){
+        return Direction::East;
+    }
+    return static_cast<Direction>(-1);
+}
+inline Axis ParseRotationAxis(const std::string& value)
+{
+    if (value == "x") return Axis::X;
+    if (value == "y") return Axis::Y;
+    if (value == "z") return Axis::Z;
+
+    return static_cast<Axis>(-1);
+}
 }  // namespace model

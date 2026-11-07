@@ -39,11 +39,7 @@ void Texture::Bind(unsigned slot) const
     glActiveTexture(GL_TEXTURE0 + slot);
     glBindTexture(target, ID);
 }
-void Texture::Upload(int width, int height, const unsigned char* data)
-{
-    Upload(width, height, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, data);
-}
-void Texture::Upload(int width, int height, GLenum internalFormat, GLenum format, GLenum type, const unsigned char* data)
+void Texture::Upload(int width, int height, const unsigned char* data, GLenum internalFormat, GLenum format, GLenum type)
 {
     if (!ID) glGenTextures(1, &ID);
     Bind();

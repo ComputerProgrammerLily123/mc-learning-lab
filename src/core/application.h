@@ -34,10 +34,10 @@ private:
     void InitGLFW();
     void InitGLAD();
     void InitGLFWCallback();
+    void InitRegistry();
     void InitResource();
     void InitScene();
     
-    void RegisterBlocks();
     void RegisterItems();
     void OnWindowResize(unsigned newWidth, unsigned newHeight);
 };

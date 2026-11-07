@@ -5,16 +5,16 @@
 #include <vector>
 class UIRenderer{
 public:
-    UIRenderer(const UIRenderer&) = default;
+    UIRenderer(const UIRenderer&) = delete;
     UIRenderer(UIRenderer&&) = delete;
-    UIRenderer& operator=(const UIRenderer&) = default;
+    UIRenderer& operator=(const UIRenderer&) = delete;
     UIRenderer& operator=(UIRenderer&&) = delete;
     UIRenderer(unsigned screenWidth, unsigned screenHeight);
     ~UIRenderer();
     void ResizeScreen(unsigned screenWidth, unsigned screenHeight);
     void ClearRenderQueue();
     void AddRenderQueue(int startX, int startY, int width, int height, const std::string& textureId);
-    void AddTextRenderQueue(int startX, int startY, int width, int height, const std::string& textureId, const std::vector<glm::vec4>& uv_list);
+    void AddTextRenderQueue(int startX, int startY, int glyphWidth, int glyphHeight, const std::string& textureId, const std::string& text);
     void Draw();
 private:
     Shader shader = Shader("shaders/uiVertex.vert", "shaders/uiFragment.frag");
@@ -28,9 +28,10 @@ private:
     {
         std::vector<float> vertices;
         std::vector<unsigned> indices;
+        std::string textureId;
     };
 
-    std::unordered_map<std::string, RenderQueueEntry> renderQueue;
+    std::vector<RenderQueueEntry> renderQueue;
 
     std::vector<float> vertices_buffer;
     std::vector<unsigned> indices_buffer;

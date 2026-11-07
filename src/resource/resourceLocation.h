@@ -16,8 +16,8 @@ private:
     std::string namespace_;
     std::string path_;
 
-    bool IsValidNamespace(const std::string& value);
-    bool IsValidPath(const std::string& value);
+    static bool IsValidNamespace(const std::string& value);
+    static bool IsValidPath(const std::string& value);
 };
 
 namespace std {

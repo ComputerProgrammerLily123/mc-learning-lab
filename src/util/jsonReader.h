@@ -3,6 +3,8 @@
 
 #include "nlohmann/json.hpp"
 
+using Json = nlohmann::json;
+
 class JsonReader
 {
 public:

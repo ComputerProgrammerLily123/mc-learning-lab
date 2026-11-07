@@ -1,11 +1,11 @@
 #include "button.h"
 #include "text.h"
-Button::Button(PivotType pivotType, FlexType flexType, float x, float y, float width, float height, const std::string& normalTextureId, const std::string& highlightedTextureId) : UIElement(pivotType, flexType, x, y, width, height), normalTextureId(normalTextureId), highlightedTextureId(highlightedTextureId)
+Button::Button(PivotType pivotType, FlexType flexType, float x, float y, float width, float height, const std::string& normalTextureId, const std::string& highlightedTextureId) : UIElement(pivotType, flexType, x, y, width, height), currentTextureId(normalTextureId), normalTextureId(normalTextureId), highlightedTextureId(highlightedTextureId)
 {
 }
-Button::Button(PivotType pivotType, FlexType flexType, float x, float y, float width, float height, const std::string& normalTextureId, const std::string& highlightedTextureId, const std::string& text) : UIElement(pivotType, flexType, x, y, width, height), normalTextureId(normalTextureId), highlightedTextureId(highlightedTextureId)
+Button::Button(PivotType pivotType, FlexType flexType, float x, float y, float width, float height, const std::string& normalTextureId, const std::string& highlightedTextureId, const std::string& text) : UIElement(pivotType, flexType, x, y, width, height), currentTextureId(normalTextureId), normalTextureId(normalTextureId), highlightedTextureId(highlightedTextureId)
 {
-    auto textObj = std::make_unique<Text>(pivotType, flexType, x, y, width, height);
+    auto textObj = std::make_unique<Text>(PivotType::Center, FlexType::None, width / 2.0f, height / 2.0f, 32.0f, 32.0f);
     textObj->SetText(text);
     childElements.push_back(std::move(textObj));
 }

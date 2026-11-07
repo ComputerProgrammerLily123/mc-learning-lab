@@ -57,15 +57,7 @@ void UISystem::CollectRenderInfo(const std::unique_ptr<UIElement>& element, cons
     auto textureId = element->GetTextureId();
     if(textureId == "font")
     {
-        const std::string& text = element->GetText();
-        std::vector<glm::vec4> uv_list = {};
-        for(const auto& word : text)
-        {
-            auto u1 = word * 8 % 128;
-            auto v1 = 128 - word / 16 * 8;
-            uv_list.emplace_back(u1 / 128.0f, v1 / 128.0f, (u1 + 8) / 128.0f, (v1 - 8) / 128.0f);
-        }
-        uiRenderer.AddTextRenderQueue(pos.x, pos.y, size.x, size.y, textureId, uv_list);
+        uiRenderer.AddTextRenderQueue(pos.x, pos.y, size.x, size.y, textureId, element->GetText());
     }
     else
     {
@@ -73,6 +65,6 @@ void UISystem::CollectRenderInfo(const std::unique_ptr<UIElement>& element, cons
     }
     for (const auto& childElement : element->GetChildElements())
     {
-        CollectRenderInfo(childElement, glm::vec2(0,0));
+        CollectRenderInfo(childElement, pos);
     }
 }

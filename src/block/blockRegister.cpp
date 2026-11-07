@@ -1,14 +1,27 @@
 #include "blockRegister.h"
-void BlockRegister::RegisterBlock(const std::string &name, const std::array<int, FACE_COUNT> &uvOffsets, const std::vector<std::string> &textures, bool solid)
+void BlockRegister::RegisterAll()
+{
+    RegisterBlock("air", false);
+    RegisterBlock("grass_normal");
+    RegisterBlock("dirt");
+    RegisterBlock("stone");
+    RegisterBlock("oak_log");
+    RegisterBlock("birch_bark");
+    RegisterBlock("beacon");
+    RegisterBlock("birch_log");
+    RegisterBlock("blue_wool");
+    RegisterBlock("clay");
+    RegisterBlock("oak_leaves", false);
+}
+BlockBase BlockRegister::RegisterBlock(const std::string &name, bool isSolid)
 {
     auto block = BlockBase();
     block.SetID(blockCount);
     block.SetName(name);
-    block.SetUVOffsets(uvOffsets);
-    block.SetTextures(textures);
-    block.SetSolid(solid);
+    block.SetSolid(isSolid);
     blocks[blockCount] = block;
     blockCount++;
+    return block;
 }
 BlockBase BlockRegister::GetBlock(int id)
 {
