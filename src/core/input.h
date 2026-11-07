@@ -32,6 +32,7 @@ public:
     [[nodiscard]] bool IsKeyUp(int key) const;
     [[nodiscard]] double GetDeltaScroll() const;
     void UpdateMousePosition();
+    void UpdateMouseButton();
     void UpdateKey();
     void UpdateScroll();
 
@@ -52,6 +53,8 @@ private:
     std::array<bool,KEY_COUNT> m_previousKeys = {false};
 
     std::array<int,MOUSE_BUTTON_COUNT> mouseButtonState = {0};
+    std::array<bool, MOUSE_BUTTON_COUNT> currentMouseButtons{};
+    std::array<bool, MOUSE_BUTTON_COUNT> previousMouseButtons{};
 
     double lastScrollPos{0.0};
     double currentScrollPos{0.0};

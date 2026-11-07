@@ -63,14 +63,14 @@ void UIRenderer::AddRenderQueue(int startX, int startY, int width, int height, c
 
     vertices.insert(vertices.end(),
                     {x, y, 0.0f, u1, v1,
-                     x, y + height, 0.0f, u1, v2,
-                     x + width, y + height, 0.0f, u2, v2,
-                     x + width, y, 0.0f, u2, v1});
+                     x, y + static_cast<float>(height), 0.0f, u1, v2,
+                     x + static_cast<float>(width), y + static_cast<float>(height), 0.0f, u2, v2,
+                     x + static_cast<float>(width), y, 0.0f, u2, v1});
     indices.insert(indices.end(),
                    {startIndex, startIndex + 1, startIndex + 2,
                     startIndex, startIndex + 2, startIndex + 3});
 }
-void UIRenderer::AddTextRenderQueue(int startX, int startY, int glyphWidth, int glyphHeight, const ResourceLocation& location, const std::string& text)
+void UIRenderer::AddTextRenderQueue(int startX, int startY, int width, int height, const ResourceLocation& location, const std::string& text)
 {
     if (text.empty()) return;
     auto region = ResourceManager::GetInstance().GetTextureRegion(location);
@@ -86,10 +86,24 @@ void UIRenderer::AddTextRenderQueue(int startX, int startY, int glyphWidth, int 
     constexpr float atlasSize = 128.0f;
     constexpr float cellSize  = 8.0f;
     constexpr unsigned columns = 16;
+    const float scale = static_cast<float>(height) / cellSize;
 
-    float x = static_cast<float>(startX) - static_cast<float>(text.size() - 1) * glyphWidth * 0.5f;
+    const auto bitmapFont = ResourceManager::GetInstance().GetBitmapFont();
 
-    float y = static_cast<float>(startY);
+    if (!bitmapFont) return;
+
+    float textWidth = 0.0f;
+
+    for (unsigned char character : text)
+    {
+        const auto& metrics = bitmapFont->GetGlyph(character);
+        textWidth += static_cast<float>(metrics.advance) * scale;
+    }
+
+    const float alignmentCenter = static_cast<float>(startX) + static_cast<float>(width) * 0.5f;
+
+    auto x = alignmentCenter - textWidth * 0.5f;
+    auto y = static_cast<float>(startY);
 
     vertices.reserve(vertices.size() + text.size() * 4 * 5);
     indices.reserve(indices.size() + text.size() * 6);
@@ -97,27 +111,37 @@ void UIRenderer::AddTextRenderQueue(int startX, int startY, int glyphWidth, int 
     for (unsigned char character : text)
     {
         const unsigned code = character;
-
         const unsigned column = code % columns;
         const unsigned row = code / columns;
 
-        const float u1 = column * cellSize / atlasSize;
-        const float u2 = (column + 1) * cellSize / atlasSize;
+        const auto& metrics = bitmapFont->GetGlyph(character);
 
-        const float v1 = 1.0f - row * cellSize / atlasSize;
-        const float v2 = 1.0f - (row + 1) * cellSize / atlasSize;
+        const float advance = static_cast<float>(metrics.advance) * scale;
 
+        if (metrics.width == 0)
+        {
+            x += advance;
+            continue;
+        }
+
+        const float drawWidth = static_cast<float>(metrics.width) * scale;
+        const float u1 = (static_cast<float>(column) * cellSize + static_cast<float>(metrics.left)) / atlasSize;
+        const float u2 = (static_cast<float>(column) * cellSize + static_cast<float>(metrics.left) + static_cast<float>(metrics.width)) / atlasSize;
+        const float v1 = 1.0f - static_cast<float>(row) * cellSize / atlasSize;
+        const float v2 = 1.0f - (static_cast<float>(row) + 1) * cellSize / atlasSize;
         const auto startIndex = static_cast<unsigned>(vertices.size() / 5);
 
         vertices.insert(vertices.end(),
         {
             x, y, 0.0f, u1, v1,
-            x, y + glyphHeight, 0.0f, u1, v2,
-            x + glyphWidth, y + glyphHeight, 0.0f, u2, v2,
-            x + glyphWidth, y, 0.0f, u2, v1
+            x, y + static_cast<float>(height), 0.0f, u1, v2,
+            x + drawWidth, y + static_cast<float>(height), 0.0f, u2, v2,
+            x + drawWidth, y, 0.0f, u2, v1
         });
-        indices.insert(indices.end(),{startIndex,startIndex + 1,startIndex + 2,startIndex,startIndex + 2,startIndex + 3});
-        x += glyphWidth;
+
+        indices.insert(indices.end(),
+        {startIndex, startIndex + 1, startIndex + 2, startIndex, startIndex + 2, startIndex + 3});
+        x += advance;
     }
 }
 void UIRenderer::Draw()

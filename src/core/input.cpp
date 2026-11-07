@@ -1,6 +1,6 @@
 #include "input.h"
-
 #include <GLFW/glfw3.h>
+
 void Input::MouseMoveCallback(GLFWwindow *window, double xpos, double ypos)
 {
     Input::GetInstance().ProcessMousePosition(xpos, ypos);
@@ -30,7 +30,13 @@ void Input::ProcessMousePosition(double xposIn, double yposIn)
 }
 void Input::ProcessMouseButton(int button, int action, int mods)
 {
-    mouseButtonState[button] = action;
+    if (button < 0 || button >= currentMouseButtons.size()) return;
+
+    currentMouseButtons[button] = action == GLFW_PRESS;
+}
+void Input::UpdateMouseButton()
+{
+    previousMouseButtons = currentMouseButtons;
 }
 void Input::KeyboardCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
@@ -43,15 +49,23 @@ void Input::UpdateMousePosition()
 }
 bool Input::IsMouseButtonDown(int button) const
 {
-    return mouseButtonState[button] == GLFW_PRESS;
+    if (button < 0 || button >= currentMouseButtons.size()) return false;
+
+    return currentMouseButtons[button] && !previousMouseButtons[button];
 }
+
 bool Input::IsMouseButtonPressed(int button) const
 {
-    return mouseButtonState[button] == GLFW_REPEAT;
+    if (button < 0 || button >= currentMouseButtons.size()) return false;
+
+    return currentMouseButtons[button];
 }
+
 bool Input::IsMouseButtonUp(int button) const
 {
-    return mouseButtonState[button] == GLFW_RELEASE;
+    if (button < 0 || button >= currentMouseButtons.size()) return false;
+
+    return !currentMouseButtons[button] && previousMouseButtons[button];
 }
 void Input::UpdateKey()
 {

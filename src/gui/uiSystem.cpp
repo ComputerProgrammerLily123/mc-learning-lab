@@ -33,21 +33,25 @@ void UISystem::OnUpdate()
     const auto& childElements = mainCanvas->GetChildElements();
     for (const auto& element : childElements)
     {
-        if (element == nullptr) continue;
-        auto pos = element->GetStartPointPosition() + mainCanvas->GetCenterPosition();
-        auto size = element->GetSize();
-        if (mousePos.x > pos.x && mousePos.y > pos.y && mousePos.x < pos.x + size.x && mousePos.y < pos.y + size.y)
+        ProcessPointerEvent(element, mousePos);
+    }
+}
+void UISystem::ProcessPointerEvent(const std::unique_ptr<UIElement>& element, const glm::vec2& mousePos)
+{
+    if (element == nullptr) return;
+    auto pos = element->GetStartPointPosition() + mainCanvas->GetCenterPosition();
+    auto size = element->GetSize();
+    if (mousePos.x > pos.x && mousePos.y > pos.y && mousePos.x < pos.x + size.x && mousePos.y < pos.y + size.y)
+    {
+        element->OnPointerEnter();
+        if (Input::GetInstance().IsMouseButtonDown(GLFW_MOUSE_BUTTON_LEFT))
         {
-            element->OnPointerEnter();
-            if (Input::GetInstance().IsMouseButtonDown(GLFW_MOUSE_BUTTON_1))
-            {
-                element->OnPointerClick();
-            }
+            element->OnPointerClick();
         }
-        else
-        {
-            element->OnPointerExit();
-        }
+    }
+    else
+    {
+        element->OnPointerExit();
     }
 }
 void UISystem::CollectRenderInfo(const std::unique_ptr<UIElement>& element, const glm::vec2& origin)
@@ -55,7 +59,7 @@ void UISystem::CollectRenderInfo(const std::unique_ptr<UIElement>& element, cons
     auto pos = element->GetStartPointPosition() + origin;
     auto size = element->GetSize();
     auto textureId = element->GetTextureId();
-    if(textureId == "font/ascii")
+    if(textureId == ResourceLocation("font/ascii"))
     {
         uiRenderer.AddTextRenderQueue(pos.x, pos.y, size.x, size.y, ResourceLocation(textureId), element->GetText());
     }

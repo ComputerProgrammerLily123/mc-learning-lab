@@ -3,6 +3,7 @@
 #include <string>
 #include <memory>
 #include "rectTransform.h"
+#include "resource/resourceLocation.h"
 
 class UIElement
 {
@@ -22,8 +23,8 @@ public:
     void ClearElements();
     [[nodiscard]] const std::vector<std::unique_ptr<UIElement>>& GetChildElements() const;
 
-    virtual std::string GetTextureId() { return {}; };
-    [[nodiscard]] virtual std::string GetText() const { return {}; };
+    virtual ResourceLocation GetTextureId() { return ResourceLocation(""); };
+    [[nodiscard]] virtual const std::string GetText() const { return {}; };
     virtual void OnPointerEnter() {}
     virtual void OnPointerExit() {}
     virtual void OnPointerClick() {}

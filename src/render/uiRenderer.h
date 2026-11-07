@@ -15,7 +15,7 @@ public:
     void ResizeScreen(unsigned screenWidth, unsigned screenHeight);
     void ClearRenderQueue();
     void AddRenderQueue(int startX, int startY, int width, int height, const ResourceLocation& location);
-    void AddTextRenderQueue(int startX, int startY, int glyphWidth, int glyphHeight, const ResourceLocation& location, const std::string& text);
+    void AddTextRenderQueue(int startX, int startY, int width, int height, const ResourceLocation& location, const std::string& text);
     void Draw();
 private:
     Shader shader = Shader("shaders/uiVertex.vert", "shaders/uiFragment.frag");

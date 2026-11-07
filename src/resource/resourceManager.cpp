@@ -16,7 +16,19 @@ const std::filesystem::path ResourceManager::GetModelPath(const ResourceLocation
     path += ".json";
     return path;
 }
-std::shared_ptr<TextureRegion> ResourceManager::GetTextureRegion(const ResourceLocation& location)
+std::shared_ptr<ResolvedModel> ResourceManager::GetModel(const ResourceLocation& location) const
+{
+    auto it = models.find(location);
+    if(it != models.end())
+    {
+        return it->second;
+    }
+    else
+    {
+        return nullptr;
+    }
+}
+std::shared_ptr<TextureRegion> ResourceManager::GetTextureRegion(const ResourceLocation& location) const
 {
     auto it = textureRegions.find(location);
     if(it != textureRegions.end())
@@ -27,7 +39,7 @@ std::shared_ptr<TextureRegion> ResourceManager::GetTextureRegion(const ResourceL
         return nullptr;
     }
 }
-std::shared_ptr<Texture> ResourceManager::GetCubemap(const ResourceLocation& mapId)
+std::shared_ptr<Texture> ResourceManager::GetCubemap(const ResourceLocation& mapId) const
 {
     auto it = cubemaps.find(mapId);
     if(it != cubemaps.end())
@@ -38,6 +50,10 @@ std::shared_ptr<Texture> ResourceManager::GetCubemap(const ResourceLocation& map
     {
         return nullptr;
     }
+}
+std::shared_ptr<BitmapFont> ResourceManager::GetBitmapFont() const
+{
+    return bitmapFont;
 }
 void ResourceManager::RegisterTextureRegion(const ResourceLocation& location)
 {
@@ -61,6 +77,38 @@ void ResourceManager::RegisterTextureRegionInAtlas(const ResourceLocation& locat
     if (regions.empty()) return;
     textureRegions.emplace(location, regions.front()); //TODO:这里暂时假设图片都是16 * 16，只有一张
 }
+void ResourceManager::RegisterBitmapFont(const ResourceLocation& location)
+{
+    auto path = assetRoot / location.GetNamespace() / "textures" / location.GetPath();
+    path += ".png";
+
+    stbi_set_flip_vertically_on_load(true);
+
+    int width = 0;
+    int height = 0;
+    int sourceChannels = 0;
+
+    unsigned char* pixels = stbi_load(path.u8string().c_str(), &width, &height, &sourceChannels, STBI_rgb_alpha);
+
+    if (pixels == nullptr)
+    {
+        std::cout<< "[ResourceManager] Font loading failed: " << path << '\n';
+        return;
+    }
+
+    constexpr int channels = 4;
+
+    bitmapFont = std::make_shared<BitmapFont>(pixels,width,height,channels,true);
+
+    auto texture = std::make_shared<Texture>();
+    texture->Upload(width, height, pixels);
+
+    auto region = std::make_shared<TextureRegion>(texture);
+
+    textureRegions.insert_or_assign(location, region);
+
+    stbi_image_free(pixels);
+}
 void ResourceManager::RegisterCubemap(const ResourceLocation& mapId, const std::array<ResourceLocation, 6>& locations)
 {
     auto it = cubemaps.find(mapId);
@@ -75,18 +123,6 @@ std::shared_ptr<ResolvedModel> ResourceManager::LoadModel(const ResourceLocation
     auto model = std::make_shared<ResolvedModel>(ModelParser::Resolve(rawModel));
     models.emplace(location, model);
     return model;
-}
-std::shared_ptr<ResolvedModel> ResourceManager::GetModel(const ResourceLocation& location)
-{
-    auto it = models.find(location);
-    if(it != models.end())
-    {
-        return it->second;
-    }
-    else
-    {
-        return nullptr;
-    }
 }
 std::shared_ptr<TextureRegion> ResourceManager::LoadTexture(const ResourceLocation& location, bool flip)
 {

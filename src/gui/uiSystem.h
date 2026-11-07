@@ -29,5 +29,6 @@ private:
     UIRenderer uiRenderer = UIRenderer(INITIAL_SCREEN_WIDTH, INITIAL_SCREEN_HEIGHT);
     Canvas* mainCanvas = nullptr;
 
+    void ProcessPointerEvent(const std::unique_ptr<UIElement>& element, const glm::vec2& mousePos);
     void CollectRenderInfo(const std::unique_ptr<UIElement>& element, const glm::vec2& origin);
 };

@@ -18,16 +18,16 @@ public:
     Button(Button&&) = delete;
     Button& operator=(const Button&) = delete;
     Button& operator=(Button&&) = delete;
-    Button(PivotType pivotType, FlexType flexType, float x, float y, float width, float height, const std::string& normalTextureId, const std::string& highlightedTextureId);
-    Button(PivotType pivotType, FlexType flexType, float x, float y, float width, float height, const std::string& normalTextureId, const std::string& highlightedTextureId, const std::string& text);
+    Button(PivotType pivotType, FlexType flexType, float x, float y, float width, float height, const ResourceLocation& normalTextureId, const ResourceLocation& highlightedTextureId);
+    Button(PivotType pivotType, FlexType flexType, float x, float y, float width, float height, const ResourceLocation& normalTextureId, const ResourceLocation& highlightedTextureId, const std::string& text);
     void AddListener(std::function<void()> listener);
-    std::string GetTextureId() override { return currentTextureId; };
+    ResourceLocation GetTextureId() override { return currentTextureId; };
     void OnPointerEnter() override;
     void OnPointerExit() override;
     void OnPointerClick() override;
 
 private:
-    std::string currentTextureId, normalTextureId, highlightedTextureId;
+    ResourceLocation currentTextureId, normalTextureId, highlightedTextureId;
     std::vector<std::function<void()>> onClick;
     void SetButtonState(ButtonState state);
 

@@ -15,8 +15,6 @@
 #include "render/outlineRenderer.h"
 #include "render/skyboxRenderer.h"
 #include "render/worldRenderer.h"
-#include "util/jsonReader.h"
-#include "resource/modelParser.h"
 #include "window.h"
 #include "world/world.h"
 
@@ -78,7 +76,7 @@ void Application::InitResource()
         }
     }
     resourceManager.UploadAtlas();
-    resourceManager.RegisterTextureRegion(ResourceLocation("font/ascii"), ResourceLocation("font/ascii"), glm::i16vec4(0, 128, 8, 120));
+    resourceManager.RegisterBitmapFont(ResourceLocation("font/ascii"));
     resourceManager.RegisterTextureRegion(ResourceLocation("gui/title_left"), ResourceLocation("gui/title/minecraft"), glm::i16vec4(0, 256, 155, 212));
     resourceManager.RegisterTextureRegion(ResourceLocation("gui/title_right"), ResourceLocation("gui/title/minecraft"), glm::i16vec4(0, 211, 119, 167));
     resourceManager.RegisterTextureRegion(ResourceLocation("gui/button_normal"), ResourceLocation("gui/widgets"), glm::i16vec4(0, 190, 200, 170));
@@ -105,12 +103,12 @@ void Application::InitScene()
 
         camera->SetZoom(90.0f);
 
-        auto titleA = std::make_unique<Quad>(PivotType::Center, FlexType::None, -225, -215, 605.46875f, 171.875f, "gui/title_left");
-        auto titleB = std::make_unique<Quad>(PivotType::Center, FlexType::None, 305, -215, 464.84375f, 171.875f, "gui/title_right");
-        auto buttonA = std::make_unique<Button>(PivotType::Center, FlexType::None, 0, 0, 728.0f, 88.0f, "gui/button_normal", "gui/button_highlighted", "Singleplayer");
-        auto buttonB = std::make_unique<Button>(PivotType::Center, FlexType::None, 0, 100, 728.0f, 88.0f, "gui/button_normal", "gui/button_highlighted", "Multiplayer");
-        auto buttonC = std::make_unique<Button>(PivotType::Center, FlexType::None, 0, 200, 728.0f, 88.0f, "gui/button_normal", "gui/button_highlighted", "Quit");
-        auto buttonD = std::make_unique<Button>(PivotType::Center, FlexType::None, -450, 300, 88.0f, 88.0f, "gui/lang_button_normal", "gui/lang_button_highlighted");
+        auto titleA = std::make_unique<Quad>(PivotType::Center, FlexType::None, -225, -215, 605.46875f, 171.875f, ResourceLocation("gui/title_left"));
+        auto titleB = std::make_unique<Quad>(PivotType::Center, FlexType::None, 305, -215, 464.84375f, 171.875f, ResourceLocation("gui/title_right"));
+        auto buttonA = std::make_unique<Button>(PivotType::Center, FlexType::None, 0, 0, 728.0f, 88.0f, ResourceLocation("gui/button_normal"), ResourceLocation("gui/button_highlighted"), "Singleplayer");
+        auto buttonB = std::make_unique<Button>(PivotType::Center, FlexType::None, 0, 100, 728.0f, 88.0f, ResourceLocation("gui/button_normal"), ResourceLocation("gui/button_highlighted"), "Multiplayer");
+        auto buttonC = std::make_unique<Button>(PivotType::Center, FlexType::None, 0, 200, 728.0f, 88.0f, ResourceLocation("gui/button_normal"), ResourceLocation("gui/button_highlighted"), "Quit");
+        auto buttonD = std::make_unique<Button>(PivotType::Center, FlexType::None, -450, 300, 88.0f, 88.0f, ResourceLocation("gui/lang_button_normal"), ResourceLocation("gui/lang_button_highlighted"));
 
         buttonA->AddListener([this]
                              { sceneManager.RequestLoadScene("Main"); });
@@ -154,9 +152,9 @@ void Application::InitScene()
         auto worldRenderer = std::make_unique<WorldRenderer>(RENDER_RADIAN);
         auto player = std::make_unique<Player>(glm::vec3(10.0f, 100.0f, 10.0f), camera.get(), world.get());
 
-        auto crosshair = std::make_unique<Quad>(PivotType::Center, FlexType::None, 0, 0, 32.0f, 32.0f, "gui/crosshair");
-        auto hotbar = std::make_unique<Quad>(PivotType::BottomMiddle, FlexType::None, 0, 350, 728.0f, 88.0f, "gui/hotbar");
-        auto hotbarFrame = std::make_unique<Quad>(PivotType::Center, FlexType::None, player->GetHotBar().GetHotBarSlot() * 80, 350, 88.0f, 88.0f, "gui/hotbar_frame");
+        auto crosshair = std::make_unique<Quad>(PivotType::Center, FlexType::None, 0, 0, 32.0f, 32.0f, ResourceLocation("gui/crosshair"));
+        auto hotbar = std::make_unique<Quad>(PivotType::BottomMiddle, FlexType::None, 0, 350, 728.0f, 88.0f, ResourceLocation("gui/hotbar"));
+        auto hotbarFrame = std::make_unique<Quad>(PivotType::Center, FlexType::None, player->GetHotBar().GetHotBarSlot() * 80, 350, 88.0f, 88.0f, ResourceLocation("gui/hotbar_frame"));
         canvas->AddElement(std::move(crosshair));
         canvas->AddElement(std::move(hotbar));
         canvas->AddElement(std::move(hotbarFrame));
@@ -173,7 +171,6 @@ void Application::InitScene()
     };
     mainScene->onUpdate = [this]
     {
-        auto canvas = sceneManager.GetObject<Canvas>("Canvas");
         auto camera = sceneManager.GetObject<Camera>("Camera");
         auto world = sceneManager.GetObject<World>("World");
         auto outlineRenderer = sceneManager.GetObject<OutlineRenderer>("OutlineRenderer");
@@ -183,6 +180,7 @@ void Application::InitScene()
         glm::vec2 delta = input.GetMouseDeltaPosition();
         camera->ProcessMouseMovement(delta.x, -delta.y);
         input.UpdateMousePosition();
+        input.UpdateMouseButton();
         if (Input::GetInstance().GetDeltaScroll() > 0)
             player->GetHotBar().SetHotBarSlot(player->GetHotBar().GetHotBarSlot() - 1);
         if (Input::GetInstance().GetDeltaScroll() < 0)

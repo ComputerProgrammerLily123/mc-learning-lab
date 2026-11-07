@@ -3,12 +3,12 @@
 class Text : public UIElement
 {
 public:
-    Text(PivotType pivotType, FlexType flexType, float x, float y, float width, float height, const std::string& textureId = "font/ascii");
+    Text(PivotType pivotType, FlexType flexType, float x, float y, float width, float height, const ResourceLocation& textureId = ResourceLocation("font/ascii"));
     void SetText(const std::string& content) { this->content = content; };
-    [[nodiscard]] std::string GetText() const override { return content; };
+    [[nodiscard]] const std::string GetText() const override { return content; };
 
-    std::string GetTextureId() override { return textureId; };
+    ResourceLocation GetTextureId() override { return textureId; };
 private:
-    std::string textureId;
+    ResourceLocation textureId;
     std::string content;
 };
