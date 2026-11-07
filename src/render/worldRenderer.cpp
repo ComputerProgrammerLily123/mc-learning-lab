@@ -26,7 +26,7 @@ void WorldRenderer::Draw(World *world, Camera *camera, int32_t centralX, int32_t
     shader.setValue("projection", camera->GetPerspectiveMatrix());
     shader.setValue("view", camera->GetViewMatrix());
     shader.setValue("model", glm::mat4(1.0f));
-    ResourceManager::GetInstance().GetTextureRegion("blocks/dirt")->Bind(2);
+    ResourceManager::GetInstance().GetTextureRegion(ResourceLocation("blocks/dirt"))->Bind(2);
     int drawCount = 0;
     const auto& planes = camera->GetViewPlanes();
     for (int32_t i = -renderRadian; i < renderRadian; i++)

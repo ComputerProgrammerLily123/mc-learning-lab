@@ -1,16 +1,19 @@
 #pragma once
 #include <string>
+#include <functional>
+#include <cstddef>
 
 class ResourceLocation
 {
 public:
     ResourceLocation(const std::string& namespace_, const std::string& path_);
-    ResourceLocation(const std::string& path_);
+    explicit ResourceLocation(const std::string& path_);
 
     [[nodiscard]] const std::string& GetNamespace() const noexcept;
     [[nodiscard]] const std::string& GetPath() const noexcept;
 
     bool operator==(const ResourceLocation& other) const;
+    bool operator!=(const ResourceLocation& other) const;
 
 private:
     std::string namespace_;

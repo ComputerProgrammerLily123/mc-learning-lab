@@ -48,7 +48,7 @@ void TextRenderer::AddRenderQueue(int startX, int startY, int width, int height,
 
     unsigned startIndex = vertices.size() / 5;
 
-    auto region = ResourceManager::GetInstance().GetTextureRegion(textureId);
+    auto region = ResourceManager::GetInstance().GetTextureRegion(ResourceLocation(textureId));
     if(!region) return;
 
     float u1 = region->GetU1();
@@ -100,7 +100,7 @@ void TextRenderer::Draw()
     int groupIndex = 0;
     for(const auto& pairs : renderQueue)
     {
-        auto region = ResourceManager::GetInstance().GetTextureRegion(pairs.first);
+        auto region = ResourceManager::GetInstance().GetTextureRegion(ResourceLocation(pairs.first));
         if(region)
         {
             region->Bind(1);

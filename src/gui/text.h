@@ -3,7 +3,7 @@
 class Text : public UIElement
 {
 public:
-    Text(PivotType pivotType, FlexType flexType, float x, float y, float width, float height, const std::string& textureId = "font");
+    Text(PivotType pivotType, FlexType flexType, float x, float y, float width, float height, const std::string& textureId = "font/ascii");
     void SetText(const std::string& content) { this->content = content; };
     [[nodiscard]] std::string GetText() const override { return content; };
 

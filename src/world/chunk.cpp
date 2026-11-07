@@ -52,11 +52,11 @@ void Chunk::AddVertices(int x, int y, int z, float blockId)
     auto fy = static_cast<float>(y);
     auto fz = static_cast<float>(z + chunkZ * CHUNK_WIDTH);
     unsigned startIndex = 0;
-    auto& faces = resourceManager.GetModel(blockRegister.GetBlock(blockId).GetName())->elements->front().faces;
+    auto& faces = resourceManager.GetModel(ResourceLocation("block/" + blockRegister.GetBlock(blockId).GetName()))->elements->front().faces;
     if (ShouldRenderFace(x, y, z, Face::front))
     {
         startIndex = vertices.size() / 9;
-        const auto& textureRegion = resourceManager.GetTextureRegion(faces[Direction::South].texture);
+        const auto& textureRegion = resourceManager.GetTextureRegion(ResourceLocation(faces[Direction::South].texture));
         if(textureRegion != nullptr)
         {
             const auto& u1 = textureRegion->GetU1();
@@ -75,7 +75,7 @@ void Chunk::AddVertices(int x, int y, int z, float blockId)
     if (ShouldRenderFace(x, y, z, Face::back))
     {
         startIndex = vertices.size() / 9;
-        const auto& textureRegion = resourceManager.GetTextureRegion(faces[Direction::North].texture);
+        const auto& textureRegion = resourceManager.GetTextureRegion(ResourceLocation(faces[Direction::North].texture));
         if(textureRegion != nullptr)
         {
             const auto& u1 = textureRegion->GetU1();
@@ -94,7 +94,7 @@ void Chunk::AddVertices(int x, int y, int z, float blockId)
     if (ShouldRenderFace(x, y, z, Face::left))
     {
         startIndex = vertices.size() / 9;
-        const auto& textureRegion = resourceManager.GetTextureRegion(faces[Direction::West].texture);
+        const auto& textureRegion = resourceManager.GetTextureRegion(ResourceLocation(faces[Direction::West].texture));
         if(textureRegion != nullptr)
         {
             const auto& u1 = textureRegion->GetU1();
@@ -113,7 +113,7 @@ void Chunk::AddVertices(int x, int y, int z, float blockId)
     if (ShouldRenderFace(x, y, z, Face::right))
     {
         startIndex = vertices.size() / 9;
-        const auto& textureRegion = resourceManager.GetTextureRegion(faces[Direction::East].texture);
+        const auto& textureRegion = resourceManager.GetTextureRegion(ResourceLocation(faces[Direction::East].texture));
         if(textureRegion != nullptr)
         {
             const auto& u1 = textureRegion->GetU1();
@@ -132,7 +132,7 @@ void Chunk::AddVertices(int x, int y, int z, float blockId)
     if (ShouldRenderFace(x, y, z, Face::top))
     {
         startIndex = vertices.size() / 9;
-        const auto& textureRegion = resourceManager.GetTextureRegion(faces[Direction::Up].texture);
+        const auto& textureRegion = resourceManager.GetTextureRegion(ResourceLocation(faces[Direction::Up].texture));
         if(textureRegion != nullptr)
         {
             const auto& u1 = textureRegion->GetU1();
@@ -151,7 +151,7 @@ void Chunk::AddVertices(int x, int y, int z, float blockId)
     if (ShouldRenderFace(x, y, z, Face::bottom))
     {
         startIndex = vertices.size() / 9;
-        const auto& textureRegion = resourceManager.GetTextureRegion(faces[Direction::Down].texture);
+        const auto& textureRegion = resourceManager.GetTextureRegion(ResourceLocation(faces[Direction::Down].texture));
         if(textureRegion != nullptr)
         {
             const auto& u1 = textureRegion->GetU1();

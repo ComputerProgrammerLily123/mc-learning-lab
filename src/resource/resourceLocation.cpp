@@ -13,6 +13,18 @@ ResourceLocation::ResourceLocation(const std::string& namespace_, const std::str
 }
 ResourceLocation::ResourceLocation(const std::string& path_)
 {
+    auto pos = path_.find_first_of(':');
+    if(pos != path_.npos)
+    {
+        this->namespace_ = path_.substr(0, pos);
+        this->path_ = path_.substr(pos + 1);
+        if(!IsValidNamespace(this->namespace_) || !IsValidPath(this->path_))
+        {
+            this->namespace_ = "minecraft";
+            this->path_ = "none";
+        }
+        return;
+    }
     if(!IsValidPath(path_))
     {
         this->namespace_ = "minecraft";
@@ -34,7 +46,10 @@ bool ResourceLocation::operator==(const ResourceLocation& other) const
 {
     return namespace_ == other.GetNamespace() && path_ == other.GetPath();
 }
-
+bool ResourceLocation::operator!=(const ResourceLocation& other) const
+{
+    return namespace_ != other.GetNamespace() || path_ != other.GetPath();
+}
 bool ResourceLocation::IsValidNamespace(const std::string& value)
 {
     if (value.empty())

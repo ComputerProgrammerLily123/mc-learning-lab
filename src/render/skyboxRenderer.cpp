@@ -52,7 +52,7 @@ SkyboxRenderer::SkyboxRenderer()
 
     glBindVertexArray(0);
 
-    cubemap = ResourceManager::GetInstance().GetCubemap("main_menu_skybox");
+    cubemap = ResourceManager::GetInstance().GetCubemap(ResourceLocation("gui/main_menu_skybox"));
 }
 
 SkyboxRenderer::~SkyboxRenderer()

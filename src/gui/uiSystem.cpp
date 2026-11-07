@@ -55,13 +55,13 @@ void UISystem::CollectRenderInfo(const std::unique_ptr<UIElement>& element, cons
     auto pos = element->GetStartPointPosition() + origin;
     auto size = element->GetSize();
     auto textureId = element->GetTextureId();
-    if(textureId == "font")
+    if(textureId == "font/ascii")
     {
-        uiRenderer.AddTextRenderQueue(pos.x, pos.y, size.x, size.y, textureId, element->GetText());
+        uiRenderer.AddTextRenderQueue(pos.x, pos.y, size.x, size.y, ResourceLocation(textureId), element->GetText());
     }
     else
     {
-        uiRenderer.AddRenderQueue(pos.x, pos.y, size.x, size.y, textureId);
+        uiRenderer.AddRenderQueue(pos.x, pos.y, size.x, size.y, ResourceLocation(textureId));
     }
     for (const auto& childElement : element->GetChildElements())
     {

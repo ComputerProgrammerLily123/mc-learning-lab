@@ -3,6 +3,7 @@
 #include "shader.h"
 
 #include <vector>
+#include "resource/resourceLocation.h"
 class UIRenderer{
 public:
     UIRenderer(const UIRenderer&) = delete;
@@ -13,8 +14,8 @@ public:
     ~UIRenderer();
     void ResizeScreen(unsigned screenWidth, unsigned screenHeight);
     void ClearRenderQueue();
-    void AddRenderQueue(int startX, int startY, int width, int height, const std::string& textureId);
-    void AddTextRenderQueue(int startX, int startY, int glyphWidth, int glyphHeight, const std::string& textureId, const std::string& text);
+    void AddRenderQueue(int startX, int startY, int width, int height, const ResourceLocation& location);
+    void AddTextRenderQueue(int startX, int startY, int glyphWidth, int glyphHeight, const ResourceLocation& location, const std::string& text);
     void Draw();
 private:
     Shader shader = Shader("shaders/uiVertex.vert", "shaders/uiFragment.frag");
@@ -28,7 +29,7 @@ private:
     {
         std::vector<float> vertices;
         std::vector<unsigned> indices;
-        std::string textureId;
+        ResourceLocation textureLocation;
     };
 
     std::vector<RenderQueueEntry> renderQueue;

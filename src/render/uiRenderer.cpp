@@ -38,15 +38,14 @@ void UIRenderer::ClearRenderQueue()
 {
     renderQueue.clear();
 }
-void UIRenderer::AddRenderQueue(int startX, int startY, int width, int height, const std::string& textureId)
+void UIRenderer::AddRenderQueue(int startX, int startY, int width, int height, const ResourceLocation& location)
 {
     auto x = static_cast<float>(startX);
     auto y = static_cast<float>(startY);
 
-    if(renderQueue.empty() || textureId != renderQueue.back().textureId)
+    if(renderQueue.empty() || location != renderQueue.back().textureLocation)
     {
-        RenderQueueEntry newEntry;
-        newEntry.textureId = textureId;
+        RenderQueueEntry newEntry = {{},{},location};
         renderQueue.push_back(newEntry);
     }
     auto& vertices = renderQueue.back().vertices;
@@ -54,7 +53,7 @@ void UIRenderer::AddRenderQueue(int startX, int startY, int width, int height, c
 
     unsigned startIndex = vertices.size() / 5;
 
-    auto region = ResourceManager::GetInstance().GetTextureRegion(textureId);
+    auto region = ResourceManager::GetInstance().GetTextureRegion(location);
     if(!region) return;
 
     float u1 = region->GetU1();
@@ -71,15 +70,14 @@ void UIRenderer::AddRenderQueue(int startX, int startY, int width, int height, c
                    {startIndex, startIndex + 1, startIndex + 2,
                     startIndex, startIndex + 2, startIndex + 3});
 }
-void UIRenderer::AddTextRenderQueue(int startX, int startY, int glyphWidth, int glyphHeight, const std::string& textureId, const std::string& text)
+void UIRenderer::AddTextRenderQueue(int startX, int startY, int glyphWidth, int glyphHeight, const ResourceLocation& location, const std::string& text)
 {
     if (text.empty()) return;
-    auto region = ResourceManager::GetInstance().GetTextureRegion(textureId);
+    auto region = ResourceManager::GetInstance().GetTextureRegion(location);
     if (!region) return;
-    if (renderQueue.empty() || textureId != renderQueue.back().textureId)
+    if (renderQueue.empty() || location != renderQueue.back().textureLocation)
     {
-        RenderQueueEntry entry;
-        entry.textureId = textureId;
+        RenderQueueEntry entry = {{},{},location};
         renderQueue.push_back(std::move(entry));
     }
     auto& vertices = renderQueue.back().vertices;
@@ -157,7 +155,7 @@ void UIRenderer::Draw()
     int groupIndex = 0;
     for(const auto& entry : renderQueue)
     {
-        auto region = ResourceManager::GetInstance().GetTextureRegion(entry.textureId);
+        auto region = ResourceManager::GetInstance().GetTextureRegion(ResourceLocation(entry.textureLocation));
         if(region)
         {
             region->Bind(1);

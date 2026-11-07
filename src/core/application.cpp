@@ -70,26 +70,25 @@ void Application::InitResource()
 {
     for (int i = 0;i < BlockRegister::GetInstance().GetBlockCount();i++) 
     {
-        auto model = resourceManager.LoadModel(BlockRegister::GetInstance().GetBlock(i).GetName());
+        auto model = resourceManager.LoadModel(ResourceLocation("block/" + BlockRegister::GetInstance().GetBlock(i).GetName()));
         if(!model->textures.has_value()) continue;
         for (const auto& [id, content] : model->textures.value())
         {
-            resourceManager.RegisterTextureRegionInAtlas(content, content + ".png");
+            resourceManager.RegisterTextureRegionInAtlas(ResourceLocation(content));
         }
     }
-    std::cout<<resourceManager.GetModel("dirt")->elements->front().faces[Direction::Down].texture<<'\n';
     resourceManager.UploadAtlas();
-    resourceManager.RegisterTextureRegion("font", "font/ascii.png", glm::i16vec4(0, 128, 8, 120));
-    resourceManager.RegisterTextureRegion("title_left", "gui/title/minecraft.png", glm::i16vec4(0, 256, 155, 212));
-    resourceManager.RegisterTextureRegion("title_right", "gui/title/minecraft.png", glm::i16vec4(0, 211, 119, 167));
-    resourceManager.RegisterTextureRegion("button_normal", "gui/widgets.png", glm::i16vec4(0, 190, 200, 170));
-    resourceManager.RegisterTextureRegion("button_highlighted", "gui/widgets.png", glm::i16vec4(0, 170, 200, 150));
-    resourceManager.RegisterTextureRegion("lang_button_normal", "gui/widgets.png", glm::i16vec4(0, 150, 20, 130));
-    resourceManager.RegisterTextureRegion("lang_button_highlighted", "gui/widgets.png", glm::i16vec4(0, 130, 20, 110));
-    resourceManager.RegisterTextureRegion("crosshair", "gui/icons.png", glm::i16vec4(0, 256, 15, 241));
-    resourceManager.RegisterTextureRegion("hotbar", "gui/widgets.png", glm::i16vec4(0, 256, 182, 234));
-    resourceManager.RegisterTextureRegion("hotbar_frame", "gui/widgets.png", glm::i16vec4(0, 234, 24, 210));
-    resourceManager.RegisterCubemap("main_menu_skybox", {"gui/title/background/panorama_1.png", "gui/title/background/panorama_3.png", "gui/title/background/panorama_4.png", "gui/title/background/panorama_5.png", "gui/title/background/panorama_0.png", "gui/title/background/panorama_2.png"});
+    resourceManager.RegisterTextureRegion(ResourceLocation("font/ascii"), ResourceLocation("font/ascii"), glm::i16vec4(0, 128, 8, 120));
+    resourceManager.RegisterTextureRegion(ResourceLocation("gui/title_left"), ResourceLocation("gui/title/minecraft"), glm::i16vec4(0, 256, 155, 212));
+    resourceManager.RegisterTextureRegion(ResourceLocation("gui/title_right"), ResourceLocation("gui/title/minecraft"), glm::i16vec4(0, 211, 119, 167));
+    resourceManager.RegisterTextureRegion(ResourceLocation("gui/button_normal"), ResourceLocation("gui/widgets"), glm::i16vec4(0, 190, 200, 170));
+    resourceManager.RegisterTextureRegion(ResourceLocation("gui/button_highlighted"), ResourceLocation("gui/widgets"), glm::i16vec4(0, 170, 200, 150));
+    resourceManager.RegisterTextureRegion(ResourceLocation("gui/lang_button_normal"), ResourceLocation("gui/widgets"), glm::i16vec4(0, 150, 20, 130));
+    resourceManager.RegisterTextureRegion(ResourceLocation("gui/lang_button_highlighted"), ResourceLocation("gui/widgets"), glm::i16vec4(0, 130, 20, 110));
+    resourceManager.RegisterTextureRegion(ResourceLocation("gui/crosshair"), ResourceLocation("gui/icons"), glm::i16vec4(0, 256, 15, 241));
+    resourceManager.RegisterTextureRegion(ResourceLocation("gui/hotbar"), ResourceLocation("gui/widgets"), glm::i16vec4(0, 256, 182, 234));
+    resourceManager.RegisterTextureRegion(ResourceLocation("gui/hotbar_frame"), ResourceLocation("gui/widgets"), glm::i16vec4(0, 234, 24, 210));
+    resourceManager.RegisterCubemap(ResourceLocation("gui/main_menu_skybox"), {ResourceLocation("gui/title/background/panorama_1"), ResourceLocation("gui/title/background/panorama_3"), ResourceLocation("gui/title/background/panorama_4"), ResourceLocation("gui/title/background/panorama_5"), ResourceLocation("gui/title/background/panorama_0"), ResourceLocation("gui/title/background/panorama_2")});
 }
 void Application::InitScene()
 {
@@ -106,12 +105,12 @@ void Application::InitScene()
 
         camera->SetZoom(90.0f);
 
-        auto titleA = std::make_unique<Quad>(PivotType::Center, FlexType::None, -225, -215, 605.46875f, 171.875f, "title_left");
-        auto titleB = std::make_unique<Quad>(PivotType::Center, FlexType::None, 305, -215, 464.84375f, 171.875f, "title_right");
-        auto buttonA = std::make_unique<Button>(PivotType::Center, FlexType::None, 0, 0, 728.0f, 88.0f, "button_normal", "button_highlighted", "Singleplayer");
-        auto buttonB = std::make_unique<Button>(PivotType::Center, FlexType::None, 0, 100, 728.0f, 88.0f, "button_normal", "button_highlighted", "Multiplayer");
-        auto buttonC = std::make_unique<Button>(PivotType::Center, FlexType::None, 0, 200, 728.0f, 88.0f, "button_normal", "button_highlighted", "Quit");
-        auto buttonD = std::make_unique<Button>(PivotType::Center, FlexType::None, -450, 300, 88.0f, 88.0f, "lang_button_normal", "lang_button_highlighted");
+        auto titleA = std::make_unique<Quad>(PivotType::Center, FlexType::None, -225, -215, 605.46875f, 171.875f, "gui/title_left");
+        auto titleB = std::make_unique<Quad>(PivotType::Center, FlexType::None, 305, -215, 464.84375f, 171.875f, "gui/title_right");
+        auto buttonA = std::make_unique<Button>(PivotType::Center, FlexType::None, 0, 0, 728.0f, 88.0f, "gui/button_normal", "gui/button_highlighted", "Singleplayer");
+        auto buttonB = std::make_unique<Button>(PivotType::Center, FlexType::None, 0, 100, 728.0f, 88.0f, "gui/button_normal", "gui/button_highlighted", "Multiplayer");
+        auto buttonC = std::make_unique<Button>(PivotType::Center, FlexType::None, 0, 200, 728.0f, 88.0f, "gui/button_normal", "gui/button_highlighted", "Quit");
+        auto buttonD = std::make_unique<Button>(PivotType::Center, FlexType::None, -450, 300, 88.0f, 88.0f, "gui/lang_button_normal", "gui/lang_button_highlighted");
 
         buttonA->AddListener([this]
                              { sceneManager.RequestLoadScene("Main"); });
@@ -155,9 +154,9 @@ void Application::InitScene()
         auto worldRenderer = std::make_unique<WorldRenderer>(RENDER_RADIAN);
         auto player = std::make_unique<Player>(glm::vec3(10.0f, 100.0f, 10.0f), camera.get(), world.get());
 
-        auto crosshair = std::make_unique<Quad>(PivotType::Center, FlexType::None, 0, 0, 32.0f, 32.0f, "crosshair");
-        auto hotbar = std::make_unique<Quad>(PivotType::BottomMiddle, FlexType::None, 0, 350, 728.0f, 88.0f, "hotbar");
-        auto hotbarFrame = std::make_unique<Quad>(PivotType::Center, FlexType::None, player->GetHotBar().GetHotBarSlot() * 80, 350, 88.0f, 88.0f, "hotbar_frame");
+        auto crosshair = std::make_unique<Quad>(PivotType::Center, FlexType::None, 0, 0, 32.0f, 32.0f, "gui/crosshair");
+        auto hotbar = std::make_unique<Quad>(PivotType::BottomMiddle, FlexType::None, 0, 350, 728.0f, 88.0f, "gui/hotbar");
+        auto hotbarFrame = std::make_unique<Quad>(PivotType::Center, FlexType::None, player->GetHotBar().GetHotBarSlot() * 80, 350, 88.0f, 88.0f, "gui/hotbar_frame");
         canvas->AddElement(std::move(crosshair));
         canvas->AddElement(std::move(hotbar));
         canvas->AddElement(std::move(hotbarFrame));

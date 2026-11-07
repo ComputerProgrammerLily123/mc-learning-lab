@@ -10,9 +10,15 @@
 using namespace GameConstant;
 
 ResourceManager::ResourceManager() : assetRoot(GetExecutableDirectory()), blockAtlas(ATLAS_SIZE * ATLAS_SIZE * 4, 0) {}
-std::shared_ptr<TextureRegion> ResourceManager::GetTextureRegion(const std::string& id)
+const std::filesystem::path ResourceManager::GetModelPath(const ResourceLocation& location)
 {
-    auto it = textureRegions.find(id);
+    auto path = assetRoot / location.GetNamespace() / "models" / location.GetPath();
+    path += ".json";
+    return path;
+}
+std::shared_ptr<TextureRegion> ResourceManager::GetTextureRegion(const ResourceLocation& location)
+{
+    auto it = textureRegions.find(location);
     if(it != textureRegions.end())
     {
         return it->second;
@@ -21,9 +27,9 @@ std::shared_ptr<TextureRegion> ResourceManager::GetTextureRegion(const std::stri
         return nullptr;
     }
 }
-std::shared_ptr<Texture> ResourceManager::GetCubemap(const std::string& id)
+std::shared_ptr<Texture> ResourceManager::GetCubemap(const ResourceLocation& mapId)
 {
-    auto it = cubemaps.find(id);
+    auto it = cubemaps.find(mapId);
     if(it != cubemaps.end())
     {
         return it->second;
@@ -33,46 +39,46 @@ std::shared_ptr<Texture> ResourceManager::GetCubemap(const std::string& id)
         return nullptr;
     }
 }
-void ResourceManager::RegisterTextureRegion(const std::string& id, const std::string& textureId)
+void ResourceManager::RegisterTextureRegion(const ResourceLocation& location)
 {
-    auto it = textureRegions.find(id);
+    auto it = textureRegions.find(location);
     if(it != textureRegions.end()) return;
-    auto region = LoadTexture(textureId, true);
-    textureRegions.emplace(id, region);
+    auto region = LoadTexture(location, true);
+    if(region != nullptr) textureRegions.emplace(location, region);
 }
-void ResourceManager::RegisterTextureRegion(const std::string& id, const std::string& textureId, const glm::i16vec4& rect)
+void ResourceManager::RegisterTextureRegion(const ResourceLocation& location, const ResourceLocation& fileLocation, const glm::i16vec4& rect)
 {
-    auto it = textureRegions.find(id);
+    auto it = textureRegions.find(location);
     if(it != textureRegions.end()) return;
-    auto region = LoadTexture(textureId, true, rect);
-    textureRegions.emplace(id, region);
+    auto region = LoadTexture(fileLocation, true, rect);
+    if(region != nullptr) textureRegions.emplace(location, region);
 }
-void ResourceManager::RegisterTextureRegionInAtlas(const std::string& id, const std::string& textureId)
+void ResourceManager::RegisterTextureRegionInAtlas(const ResourceLocation& location)
 {
-    auto it = textureRegions.find(id);
+    auto it = textureRegions.find(location);
     if(it != textureRegions.end()) return;
-    auto regions = LoadPartialTexture(textureId, true);
+    auto regions = LoadPartialTexture(location, true);
     if (regions.empty()) return;
-    textureRegions.emplace(id, regions.front()); //TODO:这里暂时假设图片都是16 * 16，只有一张
+    textureRegions.emplace(location, regions.front()); //TODO:这里暂时假设图片都是16 * 16，只有一张
 }
-void ResourceManager::RegisterCubemap(const std::string& id, const std::array<std::string, 6>& textureId)
+void ResourceManager::RegisterCubemap(const ResourceLocation& mapId, const std::array<ResourceLocation, 6>& locations)
 {
-    auto it = cubemaps.find(id);
+    auto it = cubemaps.find(mapId);
     if(it != cubemaps.end()) return;
-    auto cubemap = LoadCubemap(textureId, false);
-    cubemaps.emplace(id, cubemap);
+    auto cubemap = LoadCubemap(locations, false);
+    if(cubemap != nullptr) cubemaps.emplace(mapId, cubemap);
 }
-std::shared_ptr<ResolvedModel> ResourceManager::LoadModel(const std::string& id)
+std::shared_ptr<ResolvedModel> ResourceManager::LoadModel(const ResourceLocation& location)
 {
-    auto json = JsonReader::ReadJson("assets/minecraft/models/block/" + id + ".json");
+    auto json = JsonReader::ReadJson("assets/"  + location.GetNamespace() + "/models/" + location.GetPath() + ".json");
     auto rawModel = ModelParser::Parse(json);
     auto model = std::make_shared<ResolvedModel>(ModelParser::Resolve(rawModel));
-    models.emplace("block/" + id, model);
+    models.emplace(location, model);
     return model;
 }
-std::shared_ptr<ResolvedModel> ResourceManager::GetModel(const std::string& id)
+std::shared_ptr<ResolvedModel> ResourceManager::GetModel(const ResourceLocation& location)
 {
-    auto it = models.find("block/" + id);
+    auto it = models.find(location);
     if(it != models.end())
     {
         return it->second;
@@ -82,10 +88,11 @@ std::shared_ptr<ResolvedModel> ResourceManager::GetModel(const std::string& id)
         return nullptr;
     }
 }
-std::shared_ptr<TextureRegion> ResourceManager::LoadTexture(const std::string& loadPath, bool flip)
+std::shared_ptr<TextureRegion> ResourceManager::LoadTexture(const ResourceLocation& location, bool flip)
 {
     TextureData data = {};
-    auto path = assetRoot / "minecraft" / "textures" / loadPath;
+    auto path = assetRoot / location.GetNamespace() / "textures" / location.GetPath();
+    path += ".png";
     stbi_set_flip_vertically_on_load(flip);
     data.data = stbi_load(path.u8string().c_str(), &data.width, &data.height, &data.channels, 0);
     if (data.data == nullptr)
@@ -100,10 +107,11 @@ std::shared_ptr<TextureRegion> ResourceManager::LoadTexture(const std::string& l
     auto region = std::make_shared<TextureRegion>(texturePtr);
     return region;
 }
-std::shared_ptr<TextureRegion> ResourceManager::LoadTexture(const std::string& loadPath, bool flip, const glm::i16vec4& rect)
+std::shared_ptr<TextureRegion> ResourceManager::LoadTexture(const ResourceLocation& location, bool flip, const glm::i16vec4& rect)
 {
     TextureData data = {};
-    auto path = assetRoot / "minecraft" / "textures" / loadPath;
+    auto path = assetRoot / location.GetNamespace() / "textures" / location.GetPath();
+    path += ".png";
     stbi_set_flip_vertically_on_load(flip);
     data.data = stbi_load(path.u8string().c_str(), &data.width, &data.height, &data.channels, 0);
     if (data.data == nullptr)
@@ -118,12 +126,13 @@ std::shared_ptr<TextureRegion> ResourceManager::LoadTexture(const std::string& l
     auto region = std::make_shared<TextureRegion>(texturePtr, rect.x, rect.y, rect.z, rect.w, data.width, data.height);
     return region;
 }
-std::vector<std::shared_ptr<TextureRegion>> ResourceManager::LoadPartialTexture(const std::string& loadPath, bool flip)
+std::vector<std::shared_ptr<TextureRegion>> ResourceManager::LoadPartialTexture(const ResourceLocation& location, bool flip)
 {
     std::vector<std::shared_ptr<TextureRegion>> regions;
 
     TextureData data = {};
-    auto path = assetRoot / "minecraft" / "textures" / loadPath;
+    auto path = assetRoot / location.GetNamespace() / "textures" / location.GetPath();
+    path += ".png";
     stbi_set_flip_vertically_on_load(flip);
     data.data = stbi_load(path.u8string().c_str(), &data.width, &data.height, &data.channels,0);
 
@@ -195,7 +204,7 @@ void ResourceManager::UploadAtlas()
 {
     blockAtlasPtr->Upload(ATLAS_SIZE, ATLAS_SIZE, blockAtlas.data());
 }
-std::shared_ptr<Texture> ResourceManager::LoadCubemap(const std::array<std::string, 6>& loadPaths, bool flip)
+std::shared_ptr<Texture> ResourceManager::LoadCubemap(const std::array<ResourceLocation, 6>& locations, bool flip)
 {
     std::array<unsigned char*, 6> data = {};
     stbi_set_flip_vertically_on_load(flip);
@@ -203,9 +212,10 @@ std::shared_ptr<Texture> ResourceManager::LoadCubemap(const std::array<std::stri
     int dataIndex = 0;
     int width, height, channels;
     bool success = true;
-    for(const auto& loadPath : loadPaths)
+    for(const auto& location : locations)
     {
-        auto path = assetRoot / "minecraft" / "textures" / loadPath;
+        auto path = assetRoot / location.GetNamespace() / "textures" / location.GetPath();
+        path += ".png";
         data[dataIndex] = stbi_load(path.u8string().c_str(), &width, &height, &channels, 0);
         if (data[dataIndex] == nullptr)
         {

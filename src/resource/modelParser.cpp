@@ -1,6 +1,7 @@
 #include "modelParser.h"
 
 #include <unordered_set>
+#include "resourceManager.h"
 
 RawModel ModelParser::Parse(const Json& rawJson)
 {
@@ -62,7 +63,8 @@ ResolvedModel ModelParser::Resolve(const RawModel& rawModel)
     ResolvedModel result;
     if(rawModel.parent.has_value())
     {
-        result = Resolve(Parse(JsonReader::ReadJson("assets/minecraft/models/" + *rawModel.parent + ".json")));
+        ResourceLocation location(*rawModel.parent);
+        result = Resolve(Parse(JsonReader::ReadJson(ResourceManager::GetInstance().GetModelPath(location).string())));
     }
     if(rawModel.ambientOcclusion.has_value())
     {
