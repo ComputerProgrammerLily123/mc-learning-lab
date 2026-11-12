@@ -48,7 +48,7 @@ void Player::ProcessRayCast()
     {
         lookAtPosition = glm::i16vec3(0, -1, 0);
     }
-    if (time.GetCurrentTime() - lastRayCastTime > rayCastDuration && input.IsMouseButtonDown(GLFW_MOUSE_BUTTON_1))
+    if (time.GetCurrentTime() - lastRayCastTime > rayCastDuration && input.IsMouseButtonPressed(GLFW_MOUSE_BUTTON_1))
     {
         if (lookAtPosition.y != -1)
         {
@@ -56,7 +56,7 @@ void Player::ProcessRayCast()
             lastRayCastTime = time.GetCurrentTime();
         }
     }
-    if (time.GetCurrentTime() - lastRayCastTime > rayCastDuration && input.IsMouseButtonDown(GLFW_MOUSE_BUTTON_2))
+    if (time.GetCurrentTime() - lastRayCastTime > rayCastDuration && input.IsMouseButtonPressed(GLFW_MOUSE_BUTTON_2))
     {
         if (lookAtPosition.y != -1)
         {

@@ -4,7 +4,8 @@
 #include <glm/glm.hpp>
 #include "stbImage/stb_image.h"
 #include "textureRegion.h"
-#include "modelParser.h"
+#include "model/modelParser.h"
+#include "model/modelContainer.h"
 #include "resourceLocation.h"
 #include "bitmapFont.h"
 struct TextureData
@@ -25,6 +26,8 @@ public:
         return instance;
     }
 
+    ModelContainer modelContainer;
+    
     const std::filesystem::path GetModelPath(const ResourceLocation& location);
 
     void RegisterTextureRegion(const ResourceLocation& location);
@@ -33,8 +36,7 @@ public:
     void RegisterBitmapFont(const ResourceLocation& location);
     void UploadAtlas();
     void RegisterCubemap(const ResourceLocation& mapId, const std::array<ResourceLocation, 6>& locations);
-    std::shared_ptr<model::ResolvedModel> LoadModel(const ResourceLocation& location);
-    [[nodiscard]] std::shared_ptr<model::ResolvedModel> GetModel(const ResourceLocation& location) const;
+    std::shared_ptr<model::Model> LoadModel(const ResourceLocation& location);
     [[nodiscard]] std::shared_ptr<TextureRegion> GetTextureRegion(const ResourceLocation& location) const;
     [[nodiscard]] std::shared_ptr<Texture> GetCubemap(const ResourceLocation& mapId) const;   
     [[nodiscard]] std::shared_ptr<BitmapFont> GetBitmapFont() const;
@@ -44,7 +46,6 @@ public:
     
     std::filesystem::path assetRoot;
 
-    std::unordered_map<ResourceLocation, std::shared_ptr<ResolvedModel>> models;
     
     std::unordered_map<ResourceLocation, std::shared_ptr<TextureRegion>> textureRegions;
     std::unordered_map<ResourceLocation, std::shared_ptr<Texture>> cubemaps;

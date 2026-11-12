@@ -52,11 +52,11 @@ void Chunk::AddVertices(int x, int y, int z, float blockId)
     auto fy = static_cast<float>(y);
     auto fz = static_cast<float>(z + chunkZ * CHUNK_WIDTH);
     unsigned startIndex = 0;
-    auto& faces = resourceManager.GetModel(ResourceLocation("block/" + blockRegister.GetBlock(blockId).GetName()))->elements->front().faces;
-    if (ShouldRenderFace(x, y, z, Face::front))
+    auto& faces = resourceManager.modelContainer.GetModel(ResourceLocation("block/" + blockRegister.GetBlock(blockId).GetName()))->elements->front().faces;
+    if (ShouldRenderFace(x, y, z, "front"))
     {
         startIndex = vertices.size() / 9;
-        const auto& textureRegion = resourceManager.GetTextureRegion(ResourceLocation(faces[Direction::South].texture));
+        const auto& textureRegion = resourceManager.GetTextureRegion(ResourceLocation(faces["south"].texture));
         if(textureRegion != nullptr)
         {
             const auto& u1 = textureRegion->GetU1();
@@ -72,10 +72,10 @@ void Chunk::AddVertices(int x, int y, int z, float blockId)
         }
     }
 
-    if (ShouldRenderFace(x, y, z, Face::back))
+    if (ShouldRenderFace(x, y, z, "back"))
     {
         startIndex = vertices.size() / 9;
-        const auto& textureRegion = resourceManager.GetTextureRegion(ResourceLocation(faces[Direction::North].texture));
+        const auto& textureRegion = resourceManager.GetTextureRegion(ResourceLocation(faces["north"].texture));
         if(textureRegion != nullptr)
         {
             const auto& u1 = textureRegion->GetU1();
@@ -91,10 +91,10 @@ void Chunk::AddVertices(int x, int y, int z, float blockId)
         }
     }
 
-    if (ShouldRenderFace(x, y, z, Face::left))
+    if (ShouldRenderFace(x, y, z, "left"))
     {
         startIndex = vertices.size() / 9;
-        const auto& textureRegion = resourceManager.GetTextureRegion(ResourceLocation(faces[Direction::West].texture));
+        const auto& textureRegion = resourceManager.GetTextureRegion(ResourceLocation(faces["west"].texture));
         if(textureRegion != nullptr)
         {
             const auto& u1 = textureRegion->GetU1();
@@ -110,10 +110,10 @@ void Chunk::AddVertices(int x, int y, int z, float blockId)
         }
     }
 
-    if (ShouldRenderFace(x, y, z, Face::right))
+    if (ShouldRenderFace(x, y, z, "right"))
     {
         startIndex = vertices.size() / 9;
-        const auto& textureRegion = resourceManager.GetTextureRegion(ResourceLocation(faces[Direction::East].texture));
+        const auto& textureRegion = resourceManager.GetTextureRegion(ResourceLocation(faces["east"].texture));
         if(textureRegion != nullptr)
         {
             const auto& u1 = textureRegion->GetU1();
@@ -129,10 +129,10 @@ void Chunk::AddVertices(int x, int y, int z, float blockId)
         }
     }
 
-    if (ShouldRenderFace(x, y, z, Face::top))
+    if (ShouldRenderFace(x, y, z, "top"))
     {
         startIndex = vertices.size() / 9;
-        const auto& textureRegion = resourceManager.GetTextureRegion(ResourceLocation(faces[Direction::Up].texture));
+        const auto& textureRegion = resourceManager.GetTextureRegion(ResourceLocation(faces["up"].texture));
         if(textureRegion != nullptr)
         {
             const auto& u1 = textureRegion->GetU1();
@@ -148,10 +148,10 @@ void Chunk::AddVertices(int x, int y, int z, float blockId)
             }
     }
 
-    if (ShouldRenderFace(x, y, z, Face::bottom))
+    if (ShouldRenderFace(x, y, z, "bottom"))
     {
         startIndex = vertices.size() / 9;
-        const auto& textureRegion = resourceManager.GetTextureRegion(ResourceLocation(faces[Direction::Down].texture));
+        const auto& textureRegion = resourceManager.GetTextureRegion(ResourceLocation(faces["down"].texture));
         if(textureRegion != nullptr)
         {
             const auto& u1 = textureRegion->GetU1();
@@ -167,29 +167,29 @@ void Chunk::AddVertices(int x, int y, int z, float blockId)
         }
     }
 }
-bool Chunk::ShouldRenderFace(int x, int y, int z, Face face)
+bool Chunk::ShouldRenderFace(int x, int y, int z, const std::string& face)
 {
-    if (face == Face::front && (BlockRegister::GetInstance().GetBlock(GetBlock(x, y, z + 1)).GetSolid() || z == 15 && world->GetChunk(chunkX, chunkZ + 1) && BlockRegister::GetInstance().GetBlock(world->GetChunk(chunkX, chunkZ + 1)->GetBlock(x, y, 0)).GetSolid()))
+    if (face == "front" && (BlockRegister::GetInstance().GetBlock(GetBlock(x, y, z + 1)).GetSolid() || z == 15 && world->GetChunk(chunkX, chunkZ + 1) && BlockRegister::GetInstance().GetBlock(world->GetChunk(chunkX, chunkZ + 1)->GetBlock(x, y, 0)).GetSolid()))
     {
         return false;
     }
-    if (face == Face::back && (BlockRegister::GetInstance().GetBlock(GetBlock(x, y, z - 1)).GetSolid() || z == 0 && world->GetChunk(chunkX, chunkZ - 1) && BlockRegister::GetInstance().GetBlock(world->GetChunk(chunkX, chunkZ - 1)->GetBlock(x, y, 15)).GetSolid()))
+    if (face == "back" && (BlockRegister::GetInstance().GetBlock(GetBlock(x, y, z - 1)).GetSolid() || z == 0 && world->GetChunk(chunkX, chunkZ - 1) && BlockRegister::GetInstance().GetBlock(world->GetChunk(chunkX, chunkZ - 1)->GetBlock(x, y, 15)).GetSolid()))
     {
         return false;
     }
-    if (face == Face::left && (BlockRegister::GetInstance().GetBlock(GetBlock(x - 1, y, z)).GetSolid() || x == 0 && world->GetChunk(chunkX - 1, chunkZ) && BlockRegister::GetInstance().GetBlock(world->GetChunk(chunkX - 1, chunkZ)->GetBlock(15, y, z)).GetSolid()))
+    if (face == "left" && (BlockRegister::GetInstance().GetBlock(GetBlock(x - 1, y, z)).GetSolid() || x == 0 && world->GetChunk(chunkX - 1, chunkZ) && BlockRegister::GetInstance().GetBlock(world->GetChunk(chunkX - 1, chunkZ)->GetBlock(15, y, z)).GetSolid()))
     {
         return false;
     }
-    if (face == Face::right && (BlockRegister::GetInstance().GetBlock(GetBlock(x + 1, y, z)).GetSolid() || x == 15 && world->GetChunk(chunkX + 1, chunkZ) && BlockRegister::GetInstance().GetBlock(world->GetChunk(chunkX + 1, chunkZ)->GetBlock(0, y, z)).GetSolid()))
+    if (face == "right" && (BlockRegister::GetInstance().GetBlock(GetBlock(x + 1, y, z)).GetSolid() || x == 15 && world->GetChunk(chunkX + 1, chunkZ) && BlockRegister::GetInstance().GetBlock(world->GetChunk(chunkX + 1, chunkZ)->GetBlock(0, y, z)).GetSolid()))
     {
         return false;
     }
-    if (face == Face::top && BlockRegister::GetInstance().GetBlock(GetBlock(x, y + 1, z)).GetSolid())
+    if (face == "top" && BlockRegister::GetInstance().GetBlock(GetBlock(x, y + 1, z)).GetSolid())
     {
         return false;
     }
-    if (face == Face::bottom && BlockRegister::GetInstance().GetBlock(GetBlock(x, y - 1, z)).GetSolid())
+    if (face == "bottom" && BlockRegister::GetInstance().GetBlock(GetBlock(x, y - 1, z)).GetSolid())
     {
         return false;
     }

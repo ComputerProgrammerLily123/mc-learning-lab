@@ -34,5 +34,5 @@ private:
     ResourceManager& resourceManager = ResourceManager::GetInstance();
     World* world;
     void AddVertices(int x,int y,int z, float blockId);
-    bool ShouldRenderFace(int x,int y,int z, Face face);
+    bool ShouldRenderFace(int x,int y,int z, const std::string& face);
 };

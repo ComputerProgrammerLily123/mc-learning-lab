@@ -16,18 +16,6 @@ const std::filesystem::path ResourceManager::GetModelPath(const ResourceLocation
     path += ".json";
     return path;
 }
-std::shared_ptr<ResolvedModel> ResourceManager::GetModel(const ResourceLocation& location) const
-{
-    auto it = models.find(location);
-    if(it != models.end())
-    {
-        return it->second;
-    }
-    else
-    {
-        return nullptr;
-    }
-}
 std::shared_ptr<TextureRegion> ResourceManager::GetTextureRegion(const ResourceLocation& location) const
 {
     auto it = textureRegions.find(location);
@@ -116,12 +104,12 @@ void ResourceManager::RegisterCubemap(const ResourceLocation& mapId, const std::
     auto cubemap = LoadCubemap(locations, false);
     if(cubemap != nullptr) cubemaps.emplace(mapId, cubemap);
 }
-std::shared_ptr<ResolvedModel> ResourceManager::LoadModel(const ResourceLocation& location)
+std::shared_ptr<model::Model> ResourceManager::LoadModel(const ResourceLocation& location)
 {
     auto json = JsonReader::ReadJson("assets/"  + location.GetNamespace() + "/models/" + location.GetPath() + ".json");
     auto rawModel = ModelParser::Parse(json);
-    auto model = std::make_shared<ResolvedModel>(ModelParser::Resolve(rawModel));
-    models.emplace(location, model);
+    auto model = std::make_shared<model::Model>(ModelParser::Bake(rawModel));
+    modelContainer.LoadModel(location, model);
     return model;
 }
 std::shared_ptr<TextureRegion> ResourceManager::LoadTexture(const ResourceLocation& location, bool flip)
