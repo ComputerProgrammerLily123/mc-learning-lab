@@ -1,9 +1,11 @@
 #pragma once
-#include <glm/glm.hpp>
+
 #include <array>
+#include <glm/glm.hpp>
 
 #define KEY_COUNT 512
 #define MOUSE_BUTTON_COUNT 3
+#define MOUSE_BUTTON_LEFT 0
 enum class KeyState : unsigned char
 {
     Release,
@@ -31,10 +33,7 @@ public:
     [[nodiscard]] bool IsKeyPressed(int key) const;
     [[nodiscard]] bool IsKeyUp(int key) const;
     [[nodiscard]] double GetDeltaScroll() const;
-    void UpdateMousePosition();
-    void UpdateMouseButton();
-    void UpdateKey();
-    void UpdateScroll();
+    void Update();
 
     static void MouseButtonCallback(GLFWwindow *window,int button,int action,int mods);
     static void MouseMoveCallback(GLFWwindow *window, double xpos, double ypos);
@@ -44,21 +43,20 @@ public:
 private:
     Input() = default;
     ~Input() = default;
-    bool isMouseFirstMove = true;
-    glm::vec2 lastMousePosition{0.0f, 0.0f};
-    glm::vec2 currentMousePosition{0.0f, 0.0f};
-    glm::vec2 deltaMousePosition{0.0f, 0.0f};
+    bool isMouseFirstMove {true};
+    glm::vec2 lastMousePosition {0.0f, 0.0f};
+    glm::vec2 currentMousePosition {0.0f, 0.0f};
 
-    std::array<bool,KEY_COUNT> m_currentKeys = {false};
-    std::array<bool,KEY_COUNT> m_previousKeys = {false};
+    std::array<bool,KEY_COUNT> m_currentKeys {false};
+    std::array<bool,KEY_COUNT> m_previousKeys {false};
 
-    std::array<int,MOUSE_BUTTON_COUNT> mouseButtonState = {0};
+    std::array<int,MOUSE_BUTTON_COUNT> mouseButtonState {0};
     std::array<bool, MOUSE_BUTTON_COUNT> currentMouseButtons{};
     std::array<bool, MOUSE_BUTTON_COUNT> previousMouseButtons{};
 
-    double lastScrollPos{0.0};
-    double currentScrollPos{0.0};
-    double deltaScroll{0.0};
+    double lastScrollPos {0.0};
+    double currentScrollPos {0.0};
+    double deltaScroll {0.0};
 
     void ProcessMousePosition(double xpos, double ypos);
     void ProcessMouseButton(int button, int action, int mods);

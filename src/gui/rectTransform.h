@@ -12,34 +12,37 @@ enum class PivotType : unsigned char
     BottomMiddle,
     BottomRight
 };
-enum class FlexType : unsigned char
+inline glm::vec2 PivotToPosition(PivotType type)
 {
-    None,
-    Horizontal,
-    Vertical,
-    Full
-};
+    switch (type)
+    {
+    case PivotType::TopLeft:      return {0.0f, 0.0f};
+    case PivotType::TopMiddle:    return {0.5f, 0.0f};
+    case PivotType::TopRight:     return {1.0f, 0.0f};
+    case PivotType::MiddleLeft:   return {0.0f, 0.5f};
+    case PivotType::Center:       return {0.5f, 0.5f};
+    case PivotType::MiddleRight:  return {1.0f, 0.5f};
+    case PivotType::BottomLeft:   return {0.0f, 1.0f};
+    case PivotType::BottomMiddle: return {0.5f, 1.0f};
+    case PivotType::BottomRight:  return {1.0f, 1.0f};
+    }
+    return {0.5f, 0.5f};
+}
 
-struct CenterTransform
+struct UIScreenRect
 {
-    float posX, posY, posZ, width, height;
+    glm::vec2 position {};
+    glm::vec2 size {};
+
+    [[nodiscard]] bool Contain(const glm::vec2& point) const
+    {
+        return point.x >= position.x && point.y >= position.y && point.x < position.x + size.x && point.y < position.y + size.y;
+    }
 };
-struct AnchorTransform
+struct RectTransform
 {
-    float posZ, left, right, top, bottom;
-};
-struct Anchors
-{
-    float minX, minY, maxX, maxY;
-};
-class RectTransform
-{
-public:
-    RectTransform(PivotType pivotType, FlexType flexType, float x, float y, float width, float height);
-    PivotType pivotType;
-    FlexType flexType;
-    float x, y, width, height;
-    Anchors anchors;
-    glm::vec2 pivot;
-    glm::vec2 GetPosition() const;
+    glm::vec2 anchor {0.5f, 0.5f};
+    glm::vec2 pivot {0.5f, 0.5f};
+    glm::vec2 anchoredPosition {};
+    glm::vec2 size {100.0f, 100.0f};
 };

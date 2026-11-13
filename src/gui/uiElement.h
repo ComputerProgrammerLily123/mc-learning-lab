@@ -12,24 +12,38 @@ public:
     UIElement(UIElement&&) = delete;
     UIElement& operator=(const UIElement&) = delete;
     UIElement& operator=(UIElement&&) = delete;
-    UIElement(PivotType pivotType, FlexType flexType, float x, float y, float width = 100.0f, float height = 100.0f);
+
+    UIElement(PivotType pivotType, float x, float y, float width = 100.0f, float height = 100.0f);
     virtual ~UIElement() = default;
-    [[nodiscard]] glm::vec2 GetStartPointPosition() const;
-    [[nodiscard]] glm::vec2 GetCenterPosition() const;
-    void SetCenterPosition(float x, float y);
-    [[nodiscard]] glm::vec2 GetSize() const;
-    void SetSize(float width, float height);
-    void AddElement(std::unique_ptr<UIElement> uiElement);
+
+    bool isVisible = true;
+    bool enable = true;
+    bool raycastTarget = false;
+
+    void AddChild(std::unique_ptr<UIElement> child);
+
+    [[nodiscard]] const UIScreenRect& GetScreenRect() const;
+
     void ClearElements();
     [[nodiscard]] const std::vector<std::unique_ptr<UIElement>>& GetChildElements() const;
+
+    void SetAnchoredPosition(const glm::vec2& position);
 
     virtual ResourceLocation GetTextureId() { return ResourceLocation(""); };
     [[nodiscard]] virtual const std::string GetText() const { return {}; };
     virtual void OnPointerEnter() {}
     virtual void OnPointerExit() {}
     virtual void OnPointerClick() {}
+    virtual void OnPointerDown() {}
+    virtual void OnPointerUp() {}
+    virtual void OnScroll(double delta) {}
 
-protected:
+private:
+    UIElement* parent = nullptr;
+    std::vector<std::unique_ptr<UIElement>> children;
     RectTransform rectTransform;
-    std::vector<std::unique_ptr<UIElement>> childElements = {};
+    UIScreenRect screenRect;
+    bool layoutDirty = true;
+
+    friend class UILayoutSystem;
 };

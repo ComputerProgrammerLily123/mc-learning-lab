@@ -1,38 +1,32 @@
 #include "uiElement.h"
-UIElement::UIElement(PivotType pivotType, FlexType flexType, float x, float y, float width, float height) : rectTransform(pivotType, flexType, x, y, width, height)
+UIElement::UIElement(PivotType pivotType, float x, float y, float width, float height)
 {
+    const glm::vec2 normalizedPosition = PivotToPosition(pivotType);
+
+    rectTransform.anchor = normalizedPosition;
+    rectTransform.pivot = normalizedPosition;
+    rectTransform.anchoredPosition = {x, y};
+    rectTransform.size = {width, height};
 }
-void UIElement::AddElement(std::unique_ptr<UIElement> uiElement)
+void UIElement::AddChild(std::unique_ptr<UIElement> child)
 {
-    childElements.push_back(std::move(uiElement));
+    child->parent = this;
+    children.push_back(std::move(child));
 }
 void UIElement::ClearElements()
 {
-    childElements.clear();
+    children.clear();
+}
+const UIScreenRect& UIElement::GetScreenRect() const
+{
+    return screenRect;
 }
 const std::vector<std::unique_ptr<UIElement>>& UIElement::GetChildElements() const
 {
-    return childElements;
+    return children;
 }
-glm::vec2 UIElement::GetStartPointPosition() const
+void UIElement::SetAnchoredPosition(const glm::vec2& position)
 {
-    return {rectTransform.GetPosition()};
-}
-glm::vec2 UIElement::GetCenterPosition() const
-{
-    return {rectTransform.x, rectTransform.y};
-}
-void UIElement::SetCenterPosition(float x, float y)
-{
-    rectTransform.x = x;
-    rectTransform.y = y;
-}
-glm::vec2 UIElement::GetSize() const
-{
-    return {rectTransform.width, rectTransform.height};
-}
-void UIElement::SetSize(float width, float height)
-{
-    rectTransform.width = width;
-    rectTransform.height = height;
+    rectTransform.anchoredPosition = position;
+    layoutDirty = true;
 }

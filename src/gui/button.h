@@ -1,7 +1,6 @@
 #pragma once
 #include "uiElement.h"
 #include <string>
-//include "core/eventSystem.h"
 #include <functional>
 #include <vector>
 enum class ButtonState : unsigned char
@@ -18,8 +17,7 @@ public:
     Button(Button&&) = delete;
     Button& operator=(const Button&) = delete;
     Button& operator=(Button&&) = delete;
-    Button(PivotType pivotType, FlexType flexType, float x, float y, float width, float height, const ResourceLocation& normalTextureId, const ResourceLocation& highlightedTextureId);
-    Button(PivotType pivotType, FlexType flexType, float x, float y, float width, float height, const ResourceLocation& normalTextureId, const ResourceLocation& highlightedTextureId, const std::string& text);
+    Button(PivotType pivotType, float x, float y, float width, float height, const ResourceLocation& normalTextureId, const ResourceLocation& highlightedTextureId, const std::string& text = "");
     void AddListener(std::function<void()> listener);
     ResourceLocation GetTextureId() override { return currentTextureId; };
     void OnPointerEnter() override;

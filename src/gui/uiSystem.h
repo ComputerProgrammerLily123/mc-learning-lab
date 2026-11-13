@@ -1,5 +1,8 @@
 #pragma once
 
+#include "uiLayoutSystem.h"
+#include "uiEventSystem.h"
+
 #include "canvas.h"
 #include "config/gameConstant.h"
 #include "render/uiRenderer.h"
@@ -19,16 +22,23 @@ public:
     }
     void ResizeScreen(unsigned width, unsigned height);
     void RenderAll();
-    void SetMainCanvas(Canvas* canvas);
-    Canvas* GetMainCanvas() const;
+    void SetMainCanvas(std::unique_ptr<Canvas> canvas);
+    void ClearMainCanvas();
+    [[nodiscard]] Canvas* GetMainCanvas() const;
     void OnUpdate();
 
 private:
     UISystem() = default;
     ~UISystem() = default;
-    UIRenderer uiRenderer = UIRenderer(INITIAL_SCREEN_WIDTH, INITIAL_SCREEN_HEIGHT);
-    Canvas* mainCanvas = nullptr;
 
-    void ProcessPointerEvent(const std::unique_ptr<UIElement>& element, const glm::vec2& mousePos);
-    void CollectRenderInfo(const std::unique_ptr<UIElement>& element, const glm::vec2& origin);
+    unsigned screenWidth = INITIAL_SCREEN_WIDTH;
+    unsigned screenHeight = INITIAL_SCREEN_HEIGHT;
+    std::unique_ptr<Canvas> mainCanvas = nullptr;
+
+    UILayoutSystem layoutSystem;
+    UIEventSystem eventSystem;
+
+    UIRenderer uiRenderer = UIRenderer(INITIAL_SCREEN_WIDTH, INITIAL_SCREEN_HEIGHT);
+
+    void CollectRenderInfo(const std::unique_ptr<UIElement>& element);
 };
