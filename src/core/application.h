@@ -39,5 +39,5 @@ private:
     void InitScene();
     
     void RegisterItems();
-    void OnWindowResize(unsigned newWidth, unsigned newHeight);
+    void OnWindowResize(int newWidth, int newHeight);
 };

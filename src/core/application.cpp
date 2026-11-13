@@ -212,8 +212,9 @@ void Application::RegisterItems()
     itemRegister.RegisterItem("stone");
     
 }
-void Application::OnWindowResize(unsigned newWidth, unsigned newHeight)
+void Application::OnWindowResize(int newWidth, int newHeight)
 {
+    if(newWidth <= 0 || newHeight <= 0) return;
     window->ResizeViewport(newWidth, newHeight);
     UISystem::GetInstance().ResizeScreen(newWidth, newHeight);
     sceneManager.GetObject<Camera>("Camera")->ResizeScreen(newWidth, newHeight);
