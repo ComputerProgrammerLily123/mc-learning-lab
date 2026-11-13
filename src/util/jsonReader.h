@@ -38,6 +38,26 @@ public:
         }
         return std::nullopt;
     }
+    template <typename T>
+    static T GetDataOrDefault(const Json &json, const std::string& key, T defaultValue)
+    {
+        if (json.is_object())
+        {
+            auto iter = json.find(key);
+            if (iter != json.end())
+            {
+                try
+                {
+                    return iter->get<T>();
+                }
+                catch (const Json::exception&)
+                {
+                    return defaultValue;
+                }
+            }
+        }
+        return defaultValue;
+    }
 };
 template <> std::optional<glm::vec3> JsonReader::GetData<glm::vec3>(const Json &json, const std::string &key);
 template <> std::optional<glm::vec4> JsonReader::GetData<glm::vec4>(const Json &json, const std::string &key);

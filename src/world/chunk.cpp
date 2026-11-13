@@ -2,6 +2,7 @@
 
 #include <glad/glad.h>
 
+#include "resource/model/direction.h"
 #include "world.h"
 
 Chunk::Chunk(int x, int z, World* world) : chunkX(x), chunkZ(z), world(world) 
@@ -48,148 +49,73 @@ void Chunk::SetBlock(unsigned x, unsigned y, unsigned z, unsigned id)
 }
 void Chunk::AddVertices(int x, int y, int z, float blockId)
 {
-    auto fx = static_cast<float>(x + chunkX * CHUNK_WIDTH);
-    auto fy = static_cast<float>(y);
-    auto fz = static_cast<float>(z + chunkZ * CHUNK_WIDTH);
-    unsigned startIndex = 0;
-    auto& faces = resourceManager.modelContainer.GetModel(ResourceLocation("block/" + blockRegister.GetBlock(blockId).GetName()))->elements->front().faces;
-    if (ShouldRenderFace(x, y, z, "front"))
+    auto bakedModel = resourceManager.modelContainer.GetModel(ResourceLocation("block/" + blockRegister.GetBlock(blockId).GetName()));
+    if(!bakedModel) return;
+    const glm::i32vec3 position {x, y, z};
+    for (const auto& quad : bakedModel->generalQuads)
     {
-        startIndex = vertices.size() / 9;
-        const auto& textureRegion = resourceManager.GetTextureRegion(ResourceLocation(faces["south"].texture));
-        if(textureRegion != nullptr)
-        {
-            const auto& u1 = textureRegion->GetU1();
-            const auto& v1 = textureRegion->GetV1();
-            const auto& u2 = textureRegion->GetU2();
-            const auto& v2 = textureRegion->GetV2();
-            vertices.insert(vertices.end(), {fx - 0.5f, fy - 0.5f, fz + 0.5f, u1, v1, 0, 0, 1, blockId,
-                                         fx + 0.5f, fy - 0.5f, fz + 0.5f, u2, v1, 0, 0, 1, blockId,
-                                         fx + 0.5f, fy + 0.5f, fz + 0.5f, u2, v2, 0, 0, 1, blockId,
-                                         fx - 0.5f, fy + 0.5f, fz + 0.5f, u1, v2, 0, 0, 1, blockId});
-            indices.insert(indices.end(), {startIndex, startIndex + 1, startIndex + 2,
-                                       startIndex, startIndex + 2, startIndex + 3});
-        }
+        EmitQuad(quad, position, blockId);
     }
 
-    if (ShouldRenderFace(x, y, z, "back"))
+    for (std::size_t i = 0;i < model::DirectionToIndex(model::Direction::Count);++i)
     {
-        startIndex = vertices.size() / 9;
-        const auto& textureRegion = resourceManager.GetTextureRegion(ResourceLocation(faces["north"].texture));
-        if(textureRegion != nullptr)
-        {
-            const auto& u1 = textureRegion->GetU1();
-            const auto& v1 = textureRegion->GetV1();
-            const auto& u2 = textureRegion->GetU2();
-            const auto& v2 = textureRegion->GetV2();
-            vertices.insert(vertices.end(), {fx + 0.5f, fy - 0.5f, fz - 0.5f, u1, v1, 0, 0, -1, blockId,
-                                         fx - 0.5f, fy - 0.5f, fz - 0.5f, u2, v1, 0, 0, -1, blockId,
-                                         fx - 0.5f, fy + 0.5f, fz - 0.5f, u2, v2, 0, 0, -1, blockId,
-                                         fx + 0.5f, fy + 0.5f, fz - 0.5f, u1, v2, 0, 0, -1, blockId});
-            indices.insert(indices.end(), {startIndex, startIndex + 1, startIndex + 2,
-                                       startIndex, startIndex + 2, startIndex + 3});
-        }
-    }
+        auto direction = static_cast<model::Direction>(i);
+        if (!ShouldRenderFace(x, y, z, direction))
+            continue;
 
-    if (ShouldRenderFace(x, y, z, "left"))
-    {
-        startIndex = vertices.size() / 9;
-        const auto& textureRegion = resourceManager.GetTextureRegion(ResourceLocation(faces["west"].texture));
-        if(textureRegion != nullptr)
+        for (const auto& quad : bakedModel->faceQuads[i])
         {
-            const auto& u1 = textureRegion->GetU1();
-            const auto& v1 = textureRegion->GetV1();
-            const auto& u2 = textureRegion->GetU2();
-            const auto& v2 = textureRegion->GetV2();
-            vertices.insert(vertices.end(), {fx - 0.5f, fy - 0.5f, fz - 0.5f, u1, v1, -1, 0, 0, blockId,
-                                         fx - 0.5f, fy - 0.5f, fz + 0.5f, u2, v1, -1, 0, 0, blockId,
-                                         fx - 0.5f, fy + 0.5f, fz + 0.5f, u2, v2, -1, 0, 0, blockId,
-                                         fx - 0.5f, fy + 0.5f, fz - 0.5f, u1, v2, -1, 0, 0, blockId});
-            indices.insert(indices.end(), {startIndex, startIndex + 1, startIndex + 2,
-                                       startIndex, startIndex + 2, startIndex + 3});
-        }
-    }
-
-    if (ShouldRenderFace(x, y, z, "right"))
-    {
-        startIndex = vertices.size() / 9;
-        const auto& textureRegion = resourceManager.GetTextureRegion(ResourceLocation(faces["east"].texture));
-        if(textureRegion != nullptr)
-        {
-            const auto& u1 = textureRegion->GetU1();
-            const auto& v1 = textureRegion->GetV1();
-            const auto& u2 = textureRegion->GetU2();
-            const auto& v2 = textureRegion->GetV2();
-            vertices.insert(vertices.end(), {fx + 0.5f, fy - 0.5f, fz + 0.5f, u1, v1, 1, 0, 0, blockId,
-                                         fx + 0.5f, fy - 0.5f, fz - 0.5f, u2, v1, 1, 0, 0, blockId,
-                                         fx + 0.5f, fy + 0.5f, fz - 0.5f, u2, v2, 1, 0, 0, blockId,
-                                         fx + 0.5f, fy + 0.5f, fz + 0.5f, u1, v2, 1, 0, 0, blockId});
-            indices.insert(indices.end(), {startIndex, startIndex + 1, startIndex + 2,
-                                       startIndex, startIndex + 2, startIndex + 3});
-        }
-    }
-
-    if (ShouldRenderFace(x, y, z, "top"))
-    {
-        startIndex = vertices.size() / 9;
-        const auto& textureRegion = resourceManager.GetTextureRegion(ResourceLocation(faces["up"].texture));
-        if(textureRegion != nullptr)
-        {
-            const auto& u1 = textureRegion->GetU1();
-            const auto& v1 = textureRegion->GetV1();
-            const auto& u2 = textureRegion->GetU2();
-            const auto& v2 = textureRegion->GetV2();
-            vertices.insert(vertices.end(), {fx - 0.5f, fy + 0.5f, fz - 0.5f, u1, v1, 0, 1, 0, blockId,
-                                         fx - 0.5f, fy + 0.5f, fz + 0.5f, u1, v2, 0, 1, 0, blockId,
-                                         fx + 0.5f, fy + 0.5f, fz + 0.5f, u2, v2, 0, 1, 0, blockId,
-                                         fx + 0.5f, fy + 0.5f, fz - 0.5f, u2, v1, 0, 1, 0, blockId});
-            indices.insert(indices.end(), {startIndex, startIndex + 1, startIndex + 2,
-                                       startIndex, startIndex + 2, startIndex + 3});
-            }
-    }
-
-    if (ShouldRenderFace(x, y, z, "bottom"))
-    {
-        startIndex = vertices.size() / 9;
-        const auto& textureRegion = resourceManager.GetTextureRegion(ResourceLocation(faces["down"].texture));
-        if(textureRegion != nullptr)
-        {
-            const auto& u1 = textureRegion->GetU1();
-            const auto& v1 = textureRegion->GetV1();
-            const auto& u2 = textureRegion->GetU2();
-            const auto& v2 = textureRegion->GetV2();
-            vertices.insert(vertices.end(), {fx - 0.5f, fy - 0.5f, fz - 0.5f, u1, v1, 0, -1, 0, blockId,
-                                         fx + 0.5f, fy - 0.5f, fz - 0.5f, u2, v1, 0, -1, 0, blockId,
-                                         fx + 0.5f, fy - 0.5f, fz + 0.5f, u2, v2, 0, -1, 0, blockId,
-                                         fx - 0.5f, fy - 0.5f, fz + 0.5f, u1, v2, 0, -1, 0, blockId});
-            indices.insert(indices.end(), {startIndex, startIndex + 1, startIndex + 2,
-                                       startIndex, startIndex + 2, startIndex + 3});
+            EmitQuad(quad, position, blockId);
         }
     }
 }
-bool Chunk::ShouldRenderFace(int x, int y, int z, const std::string& face)
+void Chunk::EmitQuad(const model::BakedQuad& quad, const glm::i32vec3 blockPosition, int blockId)
 {
-    if (face == "front" && (BlockRegister::GetInstance().GetBlock(GetBlock(x, y, z + 1)).GetSolid() || z == 15 && world->GetChunk(chunkX, chunkZ + 1) && BlockRegister::GetInstance().GetBlock(world->GetChunk(chunkX, chunkZ + 1)->GetBlock(x, y, 0)).GetSolid()))
+    auto fx = static_cast<float>(blockPosition.x + chunkX * CHUNK_WIDTH);
+    auto fy = static_cast<float>(blockPosition.y);
+    auto fz = static_cast<float>(blockPosition.z + chunkZ * CHUNK_WIDTH);
+    unsigned startIndex = vertices.size() / 9;
+    for (const auto& vertex : quad.vertices)
+    {
+        vertices.insert(vertices.end(), {
+            vertex.position.x + fx,
+            vertex.position.y + fy,
+            vertex.position.z + fz,
+            vertex.uv.x,
+            vertex.uv.y,
+            vertex.normal.x,
+            vertex.normal.y,
+            vertex.normal.z,
+            static_cast<float>(blockId)
+        });
+    }
+    indices.insert(indices.end(), {startIndex, startIndex + 1, startIndex + 2,
+        startIndex, startIndex + 2, startIndex + 3});
+}
+    
+bool Chunk::ShouldRenderFace(int x, int y, int z, model::Direction face)
+{
+    if (face == model::Direction::South && (BlockRegister::GetInstance().GetBlock(GetBlock(x, y, z + 1)).GetSolid() || z == 15 && world->GetChunk(chunkX, chunkZ + 1) && BlockRegister::GetInstance().GetBlock(world->GetChunk(chunkX, chunkZ + 1)->GetBlock(x, y, 0)).GetSolid()))
     {
         return false;
     }
-    if (face == "back" && (BlockRegister::GetInstance().GetBlock(GetBlock(x, y, z - 1)).GetSolid() || z == 0 && world->GetChunk(chunkX, chunkZ - 1) && BlockRegister::GetInstance().GetBlock(world->GetChunk(chunkX, chunkZ - 1)->GetBlock(x, y, 15)).GetSolid()))
+    if (face == model::Direction::North && (BlockRegister::GetInstance().GetBlock(GetBlock(x, y, z - 1)).GetSolid() || z == 0 && world->GetChunk(chunkX, chunkZ - 1) && BlockRegister::GetInstance().GetBlock(world->GetChunk(chunkX, chunkZ - 1)->GetBlock(x, y, 15)).GetSolid()))
     {
         return false;
     }
-    if (face == "left" && (BlockRegister::GetInstance().GetBlock(GetBlock(x - 1, y, z)).GetSolid() || x == 0 && world->GetChunk(chunkX - 1, chunkZ) && BlockRegister::GetInstance().GetBlock(world->GetChunk(chunkX - 1, chunkZ)->GetBlock(15, y, z)).GetSolid()))
+    if (face == model::Direction::West && (BlockRegister::GetInstance().GetBlock(GetBlock(x - 1, y, z)).GetSolid() || x == 0 && world->GetChunk(chunkX - 1, chunkZ) && BlockRegister::GetInstance().GetBlock(world->GetChunk(chunkX - 1, chunkZ)->GetBlock(15, y, z)).GetSolid()))
     {
         return false;
     }
-    if (face == "right" && (BlockRegister::GetInstance().GetBlock(GetBlock(x + 1, y, z)).GetSolid() || x == 15 && world->GetChunk(chunkX + 1, chunkZ) && BlockRegister::GetInstance().GetBlock(world->GetChunk(chunkX + 1, chunkZ)->GetBlock(0, y, z)).GetSolid()))
+    if (face == model::Direction::East && (BlockRegister::GetInstance().GetBlock(GetBlock(x + 1, y, z)).GetSolid() || x == 15 && world->GetChunk(chunkX + 1, chunkZ) && BlockRegister::GetInstance().GetBlock(world->GetChunk(chunkX + 1, chunkZ)->GetBlock(0, y, z)).GetSolid()))
     {
         return false;
     }
-    if (face == "top" && BlockRegister::GetInstance().GetBlock(GetBlock(x, y + 1, z)).GetSolid())
+    if (face == model::Direction::Up && BlockRegister::GetInstance().GetBlock(GetBlock(x, y + 1, z)).GetSolid())
     {
         return false;
     }
-    if (face == "bottom" && BlockRegister::GetInstance().GetBlock(GetBlock(x, y - 1, z)).GetSolid())
+    if (face == model::Direction::Down && BlockRegister::GetInstance().GetBlock(GetBlock(x, y - 1, z)).GetSolid())
     {
         return false;
     }

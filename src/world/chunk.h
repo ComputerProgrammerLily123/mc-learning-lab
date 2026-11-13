@@ -34,5 +34,6 @@ private:
     ResourceManager& resourceManager = ResourceManager::GetInstance();
     World* world;
     void AddVertices(int x,int y,int z, float blockId);
-    bool ShouldRenderFace(int x,int y,int z, const std::string& face);
+    void EmitQuad(const model::BakedQuad& quad, const glm::i32vec3 blockPosition, int blockId);
+    bool ShouldRenderFace(int x,int y,int z, model::Direction face);
 };

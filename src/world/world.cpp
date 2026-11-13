@@ -13,10 +13,10 @@ World::~World()
 }
 int World::GetBlock(int x, int y, int z)
 {
-    int chunkX = x >= 0 ? x / 16 : (x - 15) / 16;
-    int chunkZ = z >= 0 ? z / 16 : (z - 15) / 16;
-    unsigned localX = x - chunkX * 16;
-    unsigned localZ = z - chunkZ * 16;
+    int chunkX = WorldToChunk(x);
+    int chunkZ = WorldToChunk(z);
+    unsigned localX = WorldToLocal(x);
+    unsigned localZ = WorldToLocal(z);
     if (GetChunk(chunkX, chunkZ))
     {
         return GetChunk(chunkX, chunkZ)->GetBlock(localX, y, localZ);
@@ -28,10 +28,10 @@ int World::GetBlock(int x, int y, int z)
 }
 void World::SetBlock(int x, int y, int z, int id)
 {
-    int chunkX = x >= 0 ? x / 16 : (x - 15) / 16;
-    int chunkZ = z >= 0 ? z / 16 : (z - 15) / 16;
-    unsigned localX = x - chunkX * 16;
-    unsigned localZ = z - chunkZ * 16;
+    int chunkX = WorldToChunk(x);
+    int chunkZ = WorldToChunk(z);
+    unsigned localX = WorldToLocal(x);
+    unsigned localZ = WorldToLocal(z);
     if (GetChunk(chunkX, chunkZ))
     {
         GetChunk(chunkX, chunkZ)->SetBlock(localX, y, localZ,id);
@@ -39,10 +39,10 @@ void World::SetBlock(int x, int y, int z, int id)
 }
 void World::SetBlockAndRefresh(int x, int y, int z, int id)
 {
-    int chunkX = x >= 0 ? x / 16 : (x - 15) / 16;
-    int chunkZ = z >= 0 ? z / 16 : (z - 15) / 16;
-    unsigned localX = x - chunkX * 16;
-    unsigned localZ = z - chunkZ * 16;
+    int chunkX = WorldToChunk(x);
+    int chunkZ = WorldToChunk(z);
+    unsigned localX = WorldToLocal(x);
+    unsigned localZ = WorldToLocal(z);
     if (GetChunk(chunkX, chunkZ))
     {
         GetChunk(chunkX, chunkZ)->SetBlock(localX, y, localZ,id);

@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include "direction.h"
+
 namespace model
 {
 //components
@@ -12,21 +14,21 @@ struct Face
 {
     std::string texture;
     std::optional<glm::vec4> uv;
-    std::optional<int> rotation {0};
-    std::optional<int> tintIndex {-1};
-    std::optional<std::string> cullFace;
+    int rotation = 0;
+    int tintIndex = -1;
+    std::optional<model::Direction> cullFace;
 };
 struct SingleRotation
 {
     glm::vec3 origin;
-    std::optional<bool> rescale {false};
+    bool rescale = false;
     float angle;
     std::string axis;
 };
 struct MultiRotation
 {
     glm::vec3 origin;
-    std::optional<bool> rescale {false};
+    bool rescale = false;
     float x, y, z;
 };
 struct Rotation
@@ -39,9 +41,9 @@ struct Element
     glm::vec3 from;
     glm::vec3 to;
     std::optional<Rotation> rotation;
-    std::optional<bool> shade {true};
+    bool shade = true;
     std::optional<int> light_emission;
-    std::unordered_map<std::string, Face> faces;
+    std::array<std::optional<Face>, 6> faces;
 };
 struct DisplayMode
 {

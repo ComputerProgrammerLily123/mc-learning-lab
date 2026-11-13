@@ -1,6 +1,7 @@
 #include "modelParser.h"
 
 #include <unordered_set>
+#include "direction.h"
 #include "resource/resourceManager.h"
 
 model::Model ModelParser::Parse(const Json& rawJson)
@@ -36,13 +37,13 @@ model::Model ModelParser::Parse(const Json& rawJson)
     }
     return model;
 }
-model::Model ModelParser::Bake(const model::Model& rawModel)
+model::Model ModelParser::ResolveInheritance(const model::Model& rawModel)
 {
     model::Model result;
     if(rawModel.parent.has_value())
     {
         ResourceLocation location(*rawModel.parent);
-        result = Bake(Parse(JsonReader::ReadJson(ResourceManager::GetInstance().GetModelPath(location).string())));
+        result = ResolveInheritance(Parse(JsonReader::ReadJson(ResourceManager::GetInstance().GetModelPath(location).string())));
     }
     if(rawModel.ambientOcclusion.has_value())
     {
@@ -72,8 +73,12 @@ model::Model ModelParser::Bake(const model::Model& rawModel)
     {
         result.gui_light = rawModel.gui_light;
     }
-    result = ParseTexture(result);
     return result;
+}
+model::Model ModelParser::Resolve(const model::Model& rawModel)
+{
+    model::Model result = ResolveInheritance(rawModel);
+    return ParseTexture(result);
 }
 model::Element ModelParser::ParseElement(const Json& rawJson)
 {
@@ -114,7 +119,7 @@ model::Element ModelParser::ParseElement(const Json& rawJson)
         element.rotation = ParseRotation(*rotation);
     }
 
-    element.shade = JsonReader::GetData<bool>(rawJson, "shade");
+    element.shade = JsonReader::GetDataOrDefault<bool>(rawJson, "shade", true);
 
     return element;
 }
@@ -131,31 +136,41 @@ model::Face ModelParser::ParseFace(const Json& rawJson)
         throw std::runtime_error("Face requires a texture.");
     }
     face.uv = JsonReader::GetData<glm::vec4>(rawJson, "uv");
-    face.cullFace = JsonReader::GetData<std::string>(rawJson, "cullface");
+    if(auto cullFace = JsonReader::GetData<std::string>(rawJson, "cullface"))
+    {
+        auto direction = model::StringToDirection(*cullFace);
+        if (!direction)
+        {
+            throw std::runtime_error("Invalid cullface: " + *cullFace);
+        }
+        face.cullFace = direction;
+    }
     if(auto rotation = JsonReader::GetData<int>(rawJson, "rotation"))
     {
-        if (face.rotation != 0 && face.rotation != 90 && face.rotation != 180 && face.rotation != 270)
+        if (*rotation != 0 && *rotation != 90 && *rotation != 180 && *rotation != 270)
         {
             throw std::runtime_error("Face rotation must be 0, 90, 180 or 270.");
         }
-        face.rotation = rotation;
+        face.rotation = rotation.value();
     }
-    face.tintIndex = JsonReader::GetData<int>(rawJson, "tintindex");
+    face.tintIndex = JsonReader::GetDataOrDefault<int>(rawJson, "tintindex", -1);
 
     return face;
 }
-std::unordered_map<std::string, model::Face> ModelParser::ParseFaces(const Json& rawJson)
+std::array<std::optional<model::Face>, 6> ModelParser::ParseFaces(const Json& rawJson)
 {
 
-    std::unordered_map<std::string, model::Face> faces;
+    std::array<std::optional<model::Face>, 6> faces;
 
     for (const auto& [directionName, faceJson] : rawJson.items())
     {
-        const auto& [iterator, inserted] = faces.emplace(directionName,ParseFace(faceJson));
-
-        if (!inserted)
+        if(auto index = model::StringToDirection(directionName))
         {
-            throw std::runtime_error("Duplicate face direction: " + directionName);
+            faces.at(model::DirectionToIndex(index.value())) = ParseFace(faceJson);
+        }
+        else
+        {
+            throw std::runtime_error("Invalid face direction: " + directionName);
         }
     }
     return faces;
@@ -180,7 +195,7 @@ model::Rotation ModelParser::ParseRotation(const Json& rawJson)
         {
             throw std::runtime_error("Element rotation requires origin.");
         }
-        singleRotation.rescale = JsonReader::GetData<bool>(rawJson, "rescale");
+        singleRotation.rescale = JsonReader::GetDataOrDefault<bool>(rawJson, "rescale", false);
         singleRotation.axis = *axis;
         if(auto angle = JsonReader::GetData<float>(rawJson, "angle"))
         {
@@ -207,7 +222,7 @@ model::Rotation ModelParser::ParseRotation(const Json& rawJson)
         {
             throw std::runtime_error("Element rotation requires origin.");
         }
-        multiRotation.rescale = JsonReader::GetData<bool>(rawJson, "rescale");
+        multiRotation.rescale = JsonReader::GetDataOrDefault<bool>(rawJson, "rescale", false);
         multiRotation.x = *x;
         multiRotation.y = *y;
         multiRotation.z = *z;
@@ -272,11 +287,14 @@ model::Model ModelParser::ParseTexture(model::Model& rawModel)
     {
         for (model::Element& element : *rawModel.elements)
         {
-            for (auto& [direction, face] : element.faces)
+            for (auto& face : element.faces)
             {
-                if (const auto resolved = resolveReference(face.texture))
+                if(face.has_value())
                 {
-                    face.texture = *resolved;
+                    if (const auto resolved = resolveReference(face->texture))
+                    {
+                        face->texture = *resolved;
+                    }
                 }
             }
         }

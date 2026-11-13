@@ -28,7 +28,7 @@ glm::i16vec3 Player::GetLookAtPosition() const
 glm::i16vec3 Player::GetChunkPosition() const
 {
     auto pos = GetBlockPosition();
-    return {pos.x / 16, 0, pos.z / 16};
+    return {World::WorldToChunk(pos.x), 0, World::WorldToChunk(pos.z)};
 }
 HotBar &Player::GetHotBar()
 {

@@ -5,6 +5,7 @@
 #include "stbImage/stb_image.h"
 #include "textureRegion.h"
 #include "model/modelParser.h"
+#include "model/modelBaker.h"
 #include "model/modelContainer.h"
 #include "resourceLocation.h"
 #include "bitmapFont.h"
@@ -37,6 +38,7 @@ public:
     void UploadAtlas();
     void RegisterCubemap(const ResourceLocation& mapId, const std::array<ResourceLocation, 6>& locations);
     std::shared_ptr<model::Model> LoadModel(const ResourceLocation& location);
+    void BakeModel();
     [[nodiscard]] std::shared_ptr<TextureRegion> GetTextureRegion(const ResourceLocation& location) const;
     [[nodiscard]] std::shared_ptr<Texture> GetCubemap(const ResourceLocation& mapId) const;   
     [[nodiscard]] std::shared_ptr<BitmapFont> GetBitmapFont() const;

@@ -1,6 +1,6 @@
 #include "modelContainer.h"
 
-std::shared_ptr<model::Model> ModelContainer::GetModel(const ResourceLocation& location) const
+std::shared_ptr<model::BakedModel> ModelContainer::GetModel(const ResourceLocation& location) const
 {
     auto it = bakedModels.find(location);
     if(it != bakedModels.end())
@@ -12,7 +12,7 @@ std::shared_ptr<model::Model> ModelContainer::GetModel(const ResourceLocation& l
         return nullptr;
     }
 }
-void ModelContainer::LoadModel(const ResourceLocation& location, const std::shared_ptr<model::Model>& bakedModel)
+void ModelContainer::LoadModel(const ResourceLocation& location, const std::shared_ptr<model::BakedModel>& bakedModel)
 {
     bakedModels.emplace(location, bakedModel);
 }

@@ -106,11 +106,20 @@ void ResourceManager::RegisterCubemap(const ResourceLocation& mapId, const std::
 }
 std::shared_ptr<model::Model> ResourceManager::LoadModel(const ResourceLocation& location)
 {
-    auto json = JsonReader::ReadJson("assets/"  + location.GetNamespace() + "/models/" + location.GetPath() + ".json");
+    auto json = JsonReader::ReadJson(GetModelPath(location).string());
     auto rawModel = ModelParser::Parse(json);
-    auto model = std::make_shared<model::Model>(ModelParser::Bake(rawModel));
-    modelContainer.LoadModel(location, model);
-    return model;
+    auto resolvedModel = std::make_shared<model::Model>(ModelParser::Resolve(rawModel));
+    modelContainer.resolvedModels.insert_or_assign(location, resolvedModel);
+    return resolvedModel;
+}
+void ResourceManager::BakeModel()
+{
+    for (const auto& [location, resolved] : modelContainer.resolvedModels)
+    {
+        auto baked = std::make_shared<model::BakedModel>(ModelBaker::Bake(*resolved));
+
+        modelContainer.LoadModel(location, baked);
+    }
 }
 std::shared_ptr<TextureRegion> ResourceManager::LoadTexture(const ResourceLocation& location, bool flip)
 {
@@ -158,7 +167,8 @@ std::vector<std::shared_ptr<TextureRegion>> ResourceManager::LoadPartialTexture(
     auto path = assetRoot / location.GetNamespace() / "textures" / location.GetPath();
     path += ".png";
     stbi_set_flip_vertically_on_load(flip);
-    data.data = stbi_load(path.u8string().c_str(), &data.width, &data.height, &data.channels,0);
+    constexpr int AtlasChannels = 4;
+    data.data = stbi_load(path.u8string().c_str(), &data.width, &data.height, &data.channels,STBI_rgb_alpha);
 
     if (data.data == nullptr)
     {
@@ -177,9 +187,9 @@ std::vector<std::shared_ptr<TextureRegion>> ResourceManager::LoadPartialTexture(
 
     const unsigned row    = data.height / ATLAS_CELL;
     const unsigned column = data.width  / ATLAS_CELL;
-    const size_t  srcRowBytes  = size_t(data.width)  * data.channels;
-    const size_t  dstRowBytes  = size_t(ATLAS_SIZE)  * data.channels;
-    const size_t  cellRowBytes = size_t(ATLAS_CELL)  * data.channels;
+    const size_t  srcRowBytes  = size_t(data.width)  * AtlasChannels;
+    const size_t  dstRowBytes  = size_t(ATLAS_SIZE)  * AtlasChannels;
+    const size_t  cellRowBytes = size_t(ATLAS_CELL)  * AtlasChannels;
 
     for (unsigned i = 0; i < row; ++i)
     {
@@ -200,9 +210,9 @@ std::vector<std::shared_ptr<TextureRegion>> ResourceManager::LoadPartialTexture(
             const unsigned ox = blockAtlasOffsetX;
             const unsigned oy = blockAtlasOffsetY;
 
-            const unsigned char* src = data.data + size_t(i * ATLAS_CELL) * srcRowBytes + size_t(j * ATLAS_CELL) * data.channels;
+            const unsigned char* src = data.data + size_t(i * ATLAS_CELL) * srcRowBytes + size_t(j * ATLAS_CELL) * AtlasChannels;
 
-            unsigned char* dst = blockAtlas.data() + size_t(oy) * dstRowBytes + size_t(ox) * data.channels;
+            unsigned char* dst = blockAtlas.data() + size_t(oy) * dstRowBytes + size_t(ox) * AtlasChannels;
 
             for (int r = 0; r < ATLAS_CELL; ++r)
             {

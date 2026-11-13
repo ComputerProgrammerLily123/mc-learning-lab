@@ -6,7 +6,7 @@ void BlockRegister::RegisterAll()
     RegisterBlock("dirt");
     RegisterBlock("stone");
     RegisterBlock("oak_log");
-    RegisterBlock("birch_bark");
+    RegisterBlock("lever");
     RegisterBlock("beacon");
     RegisterBlock("birch_log");
     RegisterBlock("blue_wool");

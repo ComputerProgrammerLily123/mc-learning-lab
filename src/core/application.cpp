@@ -69,13 +69,14 @@ void Application::InitResource()
     for (int i = 0;i < BlockRegister::GetInstance().GetBlockCount();i++) 
     {
         auto model = resourceManager.LoadModel(ResourceLocation("block/" + BlockRegister::GetInstance().GetBlock(i).GetName()));
-        if(!model->textures.has_value()) continue;
+        if(!model->textures) continue;
         for (const auto& [id, content] : model->textures.value())
         {
             resourceManager.RegisterTextureRegionInAtlas(ResourceLocation(content));
         }
     }
     resourceManager.UploadAtlas();
+    resourceManager.BakeModel();
     resourceManager.RegisterBitmapFont(ResourceLocation("font/ascii"));
     resourceManager.RegisterTextureRegion(ResourceLocation("gui/title_left"), ResourceLocation("gui/title/minecraft"), glm::i16vec4(0, 256, 155, 212));
     resourceManager.RegisterTextureRegion(ResourceLocation("gui/title_right"), ResourceLocation("gui/title/minecraft"), glm::i16vec4(0, 211, 119, 167));

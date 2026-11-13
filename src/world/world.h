@@ -22,6 +22,16 @@ public:
     void CreateChunk(int x, int z);
     void InitChunk(int32_t i, int32_t j);
 
+    static constexpr int WorldToChunk(int coordinate)
+    {
+        return coordinate >= 0 ? coordinate / CHUNK_WIDTH : (coordinate - CHUNK_WIDTH + 1) / CHUNK_WIDTH;
+    }
+
+    static constexpr int WorldToLocal(int coordinate)
+    {
+        return coordinate - WorldToChunk(coordinate) * CHUNK_WIDTH;
+    }
+
 private:
     std::unordered_map<uint64_t, Chunk*> chunks;
     FastNoiseLite noise1, noise2;
