@@ -6,13 +6,24 @@
 #include <cstdlib>
 
 #include "config/gameConstant.h"
+#include "util/jsonReader.h"
+#include "model/modelParser.h"
+#include "model/modelBaker.h"
+#include "blockstate/blockstateParser.h"
+#include "blockstate/blockstateBaker.h"
 
 using namespace GameConstant;
 
 ResourceManager::ResourceManager() : assetRoot(GetExecutableDirectory()), blockAtlas(ATLAS_SIZE * ATLAS_SIZE * 4, 0) {}
-const std::filesystem::path ResourceManager::GetModelPath(const ResourceLocation& location)
+const std::filesystem::path ResourceManager::GetModelPath(const ResourceLocation& location) const
 {
     auto path = assetRoot / location.GetNamespace() / "models" / location.GetPath();
+    path += ".json";
+    return path;
+}
+const std::filesystem::path ResourceManager::GetBlockstatePath(const ResourceLocation& location) const
+{
+    auto path = assetRoot / location.GetNamespace() / "blockstates" / location.GetPath();
     path += ".json";
     return path;
 }
@@ -42,6 +53,47 @@ std::shared_ptr<Texture> ResourceManager::GetCubemap(const ResourceLocation& map
 std::shared_ptr<BitmapFont> ResourceManager::GetBitmapFont() const
 {
     return bitmapFont;
+}
+void ResourceManager::GetBlockModels(const ResourceLocation& block, const blockstate::RuntimeBlockState& state, const glm::ivec3& position, std::vector<const model::BakedModel*>& output) const
+{
+    output.clear();
+
+    const auto found = bakedBlockstateDefinitions.find(block);
+
+    if (found == bakedBlockstateDefinitions.end())
+        return;
+
+    const auto& definition = *found->second;
+
+    for (const auto& entry : definition.variants)
+    {
+        if (!blockstate::Matches(entry, state) || entry.models.empty())
+        {
+            continue;
+        }
+
+        const auto& selected = SelectVariant(entry.models, position, 0);
+
+        output.push_back(selected.model.get());
+        break;
+    }
+
+    for (std::size_t index = 0;index < definition.multipart.size();++index)
+    {
+        const auto& entry = definition.multipart[index];
+
+        if (entry.models.empty())
+            continue;
+
+        if (entry.condition && !blockstate::Matches(*entry.condition, state))
+        {
+            continue;
+        }
+
+        const auto& selected = SelectVariant(entry.models, position, static_cast<std::uint32_t>(index + 1));
+
+        output.push_back(selected.model.get());
+    }
 }
 void ResourceManager::RegisterTextureRegion(const ResourceLocation& location)
 {
@@ -119,6 +171,22 @@ void ResourceManager::BakeModel()
         auto baked = std::make_shared<model::BakedModel>(ModelBaker::Bake(*resolved));
 
         modelContainer.LoadModel(location, baked);
+    }
+}
+std::shared_ptr<blockstate::BlockStateDefinition> ResourceManager::LoadBlockstate(const ResourceLocation& location)
+{
+    auto json = JsonReader::ReadJson(GetBlockstatePath(location).string());
+    auto blockstate = std::make_shared<blockstate::BlockStateDefinition>(BlockstateParser::Parse(json));
+    blockstateDefinitions.insert_or_assign(location, blockstate);
+    return blockstate;
+}
+void ResourceManager::BakeBlockstates()
+{
+    for (const auto& [location, definition] : blockstateDefinitions)
+    {
+        auto baked =std::make_shared<blockstate::BakedBlockStateDefinition>(blockstate::BlockstateBaker::Bake(*definition,modelContainer));
+
+        bakedBlockstateDefinitions.insert_or_assign(location, std::move(baked));
     }
 }
 std::shared_ptr<TextureRegion> ResourceManager::LoadTexture(const ResourceLocation& location, bool flip)
@@ -298,4 +366,59 @@ std::filesystem::path ResourceManager::GetExecutableDirectory()
         throw std::runtime_error("Missing asset marker: " + rootMarker.string());
     }
     return assetRoot;
+}
+
+std::uint32_t ResourceManager::HashBlockPosition(const glm::ivec3& position)
+{
+    std::uint32_t hash = 2166136261u;
+
+    const auto mix = [&](int value)
+    {
+        hash ^= static_cast<std::uint32_t>(value);
+        hash *= 16777619u;
+    };
+
+    mix(position.x);
+    mix(position.y);
+    mix(position.z);
+
+    hash ^= hash >> 16;
+    hash *= 0x7feb352du;
+    hash ^= hash >> 15;
+    hash *= 0x846ca68bu;
+    hash ^= hash >> 16;
+
+    return hash;
+}
+
+const blockstate::BakedModelVariant& ResourceManager::SelectVariant(const std::vector<blockstate::BakedModelVariant>& models, const glm::ivec3& position, std::uint32_t salt)
+{
+    if (models.empty())
+        throw std::invalid_argument("Cannot select from empty models.");
+
+    std::uint64_t totalWeight = 0;
+
+    for (const auto& variant : models)
+        totalWeight += static_cast<std::uint64_t>(variant.weight);
+
+    std::uint32_t hash = HashBlockPosition(position);
+
+    if (salt != 0)
+    {
+        hash ^= salt + 0x9e3779b9u + (hash << 6) + (hash >> 2);
+    }
+
+    std::uint64_t selected = hash % totalWeight;
+
+    for (const auto& variant : models)
+    {
+        const auto weight = static_cast<std::uint64_t>(variant.weight);
+
+        if (selected < weight)
+            return variant;
+
+        selected -= weight;
+    }
+
+    return models.back();
 }

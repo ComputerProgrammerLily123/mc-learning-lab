@@ -56,7 +56,7 @@ void WorldGenerator::TreeGenerate(int32_t i, int32_t j)
             {
                 for (int y = 0; y < CHUNK_HEIGHT; y++)
                 {
-                    if (!world->GetBlock(blockX, y, blockZ))
+                    if (!world->GetBlockStateId(blockX, y, blockZ))
                     {
                         surfaceHeight = y;
                         break;
@@ -107,7 +107,7 @@ bool WorldGenerator::CheckTreeSpace(int32_t x, int32_t y, int32_t z)
         {
             for (int32_t j = z - 2; j <= z + 2; j++)
             {
-                if (world->GetBlock(i, m, j))
+                if (world->GetBlockStateId(i, m, j))
                     return false;
             }
         }

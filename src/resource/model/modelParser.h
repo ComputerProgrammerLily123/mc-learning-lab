@@ -1,6 +1,5 @@
 #pragma once
 #include "modelDefinition.h"
-#include "bakedModel.h"
 #include "util/jsonReader.h"
 
 using namespace model;

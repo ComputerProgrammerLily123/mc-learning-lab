@@ -9,6 +9,7 @@
 #include "gui/canvas.h"
 #include "gui/quad.h"
 #include "gui/uiSystem.h"
+#include "resource/blockstate/blockstateRegistry.h"
 #include "item/itemRegister.h"
 #include "player/player.h"
 #include "render/camera.h"
@@ -61,22 +62,103 @@ void Application::InitGLFWCallback()
 }
 void Application::InitRegistry()
 {
-    BlockRegister::GetInstance().RegisterAll();
+    auto& blocks = BlockRegister::GetInstance();
+    auto& states = blockstate::BlockStateRegistry::GetInstance();
+
+    blocks.RegisterAll();
+
+    for (unsigned id = 0; id < blocks.GetBlockCount(); ++id)
+    {
+        const auto block = blocks.GetBlock(id);
+        std::unordered_map<std::string, std::string> properties;
+
+        if (block.GetName() == "grass")
+            properties = {{"snowy", "false"}};
+        else if (block.GetName() == "oak_log" ||
+                 block.GetName() == "birch_log")
+            properties = {{"axis", "y"}};
+        else if (block.GetName() == "lever")
+            properties = {
+                {"facing", "north"},
+                {"powered", "false"}
+            };
+        else if (block.GetName() == "stone_button")
+            properties = {
+                {"facing", "up"},
+                {"powered", "false"}
+            };
+        else if (block.GetName() == "fence")
+            properties = {
+                {"north", "false"},
+                {"east",  "false"},
+                {"south", "false"},
+                {"west",  "false"}
+            };
+            
+
+        const auto stateId = states.Register(id, std::move(properties));
+        states.SetDefaultState(id, stateId);
+        if (block.GetName() == "oak_log" || block.GetName() == "birch_log")
+        {
+            states.Register(id, {{"axis", "x"}});
+            states.Register(id, {{"axis", "z"}});
+            states.Register(id, {{"axis", "none"}});
+        }
+        if(block.GetName() == "stone_button")
+        {
+            states.Register(id, {{"facing", "north"},{"powered", "false"}});
+        }
+        if(block.GetName() == "fence")
+        {
+            for (unsigned mask = 1; mask < 16; ++mask)
+            {
+                states.Register(id, {
+                    {"north", (mask & 1) ? "true" : "false"},
+                    {"east",  (mask & 2) ? "true" : "false"},
+                    {"south", (mask & 4) ? "true" : "false"},
+                    {"west",  (mask & 8) ? "true" : "false"}
+                });
+            }
+        }
+    }
+
     RegisterItems();
 }
 void Application::InitResource()
 {
     for (int i = 0;i < BlockRegister::GetInstance().GetBlockCount();i++) 
     {
-        auto model = resourceManager.LoadModel(ResourceLocation("block/" + BlockRegister::GetInstance().GetBlock(i).GetName()));
-        if(!model->textures) continue;
-        for (const auto& [id, content] : model->textures.value())
+        const auto block = BlockRegister::GetInstance().GetBlock(i);
+        if (block.GetName() == "air") continue;
+        auto blockstate = resourceManager.LoadBlockstate(ResourceLocation(BlockRegister::GetInstance().GetBlock(i).GetName()));
+        for (const auto& entry : blockstate->variants)
         {
-            resourceManager.RegisterTextureRegionInAtlas(ResourceLocation(content));
+            for (const auto& variant : entry.models)
+            {
+                auto model = resourceManager.LoadModel(variant.model);
+                if(!model || !model->textures) continue;
+                for (const auto& [id, content] : model->textures.value())
+                {
+                    resourceManager.RegisterTextureRegionInAtlas(ResourceLocation(content));
+                }
+            }
+        }
+        for (const auto& entry : blockstate->multipart)
+        {
+            for (const auto& variant : entry.models)
+            {
+                auto model = resourceManager.LoadModel(variant.model);
+                if(!model || !model->textures) continue;
+                for (const auto& [id, content] : model->textures.value())
+                {
+                    resourceManager.RegisterTextureRegionInAtlas(ResourceLocation(content));
+                }
+            }
         }
     }
     resourceManager.UploadAtlas();
     resourceManager.BakeModel();
+    resourceManager.BakeBlockstates();
     resourceManager.RegisterBitmapFont(ResourceLocation("font/ascii"));
     resourceManager.RegisterTextureRegion(ResourceLocation("gui/title_left"), ResourceLocation("gui/title/minecraft"), glm::i16vec4(0, 256, 155, 212));
     resourceManager.RegisterTextureRegion(ResourceLocation("gui/title_right"), ResourceLocation("gui/title/minecraft"), glm::i16vec4(0, 211, 119, 167));

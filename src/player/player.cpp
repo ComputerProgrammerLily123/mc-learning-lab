@@ -61,7 +61,7 @@ void Player::ProcessRayCast()
         if (lookAtPosition.y != -1)
         {
             glm::i16vec3 blockPos = glm::i16vec3(lookAtPosition.x + offset.x, lookAtPosition.y + offset.y, lookAtPosition.z + offset.z);
-            if (!world->GetBlock(blockPos.x, blockPos.y, blockPos.z) && !GetPlayerAABB(position).Intersects(GetBlockAABB(blockPos.x, blockPos.y, blockPos.z)) && !GetPlayerAABB(position + glm::vec3(0, 1, 0)).Intersects(GetBlockAABB(blockPos.x, blockPos.y, blockPos.z)))
+            if (!world->GetBlockStateId(blockPos.x, blockPos.y, blockPos.z) && !GetPlayerAABB(position).Intersects(GetBlockAABB(blockPos.x, blockPos.y, blockPos.z)) && !GetPlayerAABB(position + glm::vec3(0, 1, 0)).Intersects(GetBlockAABB(blockPos.x, blockPos.y, blockPos.z)))
             {
                 world->SetBlockAndRefresh(lookAtPosition.x + offset.x, lookAtPosition.y + offset.y, lookAtPosition.z + offset.z, hotbar.GetSlotItem());
                 lastRayCastTime = time.GetCurrentTime();

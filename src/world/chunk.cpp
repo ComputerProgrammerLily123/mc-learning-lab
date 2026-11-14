@@ -2,6 +2,7 @@
 
 #include <glad/glad.h>
 
+#include "resource/blockstate/blockstateRegistry.h"
 #include "resource/model/direction.h"
 #include "world.h"
 
@@ -11,6 +12,7 @@ Chunk::Chunk(int x, int z, World* world) : chunkX(x), chunkZ(z), world(world)
 
     vertices.reserve(EstimatedFaces * 4 * 9);
     indices.reserve(EstimatedFaces * 6);
+    selectedModels.reserve(16);
 }
 Chunk::~Chunk() {}
 void Chunk::UpdateMesh()
@@ -19,53 +21,63 @@ void Chunk::UpdateMesh()
     indices.clear();
     for (unsigned i = 0; i < CHUNK_WIDTH * CHUNK_WIDTH * CHUNK_HEIGHT; i++)
     {
-        if (blockIDs[i])
+        if (blockstateIDs[i])
         {
             int x = i % CHUNK_WIDTH;
             int z = (i / CHUNK_WIDTH) % CHUNK_WIDTH;
             int y = i / (CHUNK_WIDTH * CHUNK_WIDTH);
-            AddVertices(x, y, z, blockIDs[i]);
+            AddVertices(x, y, z, blockstateIDs[i]);
         }
     }
     isDirty = true;
 }
 int Chunk::GetBlock(glm::u8vec3 position)
 {
-    return blockIDs[(position.y * CHUNK_WIDTH + position.z) * CHUNK_WIDTH + position.x];
+    return blockstateIDs[(position.y * CHUNK_WIDTH + position.z) * CHUNK_WIDTH + position.x];
 }
 int Chunk::GetBlock(unsigned x, unsigned y, unsigned z)
 {
     if (x > 15 || y > 255 || z > 15)
         return 0;
-    return blockIDs[(y * CHUNK_WIDTH + z) * CHUNK_WIDTH + x];
+    return blockstateIDs[(y * CHUNK_WIDTH + z) * CHUNK_WIDTH + x];
 }
-void Chunk::SetBlock(glm::u8vec3 position, unsigned id)
+void Chunk::SetBlock(glm::u8vec3 position, blockstate::BlockStateId stateId)
 {
-    blockIDs[(position.y * CHUNK_WIDTH + position.z) * CHUNK_WIDTH + position.x] = id;
+    blockstateIDs[(position.y * CHUNK_WIDTH + position.z) * CHUNK_WIDTH + position.x] = stateId;
 }
-void Chunk::SetBlock(unsigned x, unsigned y, unsigned z, unsigned id)
+void Chunk::SetBlock(unsigned x, unsigned y, unsigned z, blockstate::BlockStateId stateId)
 {
-    blockIDs[(y * CHUNK_WIDTH + z) * CHUNK_WIDTH + x] = id;
+    blockstateIDs[(y * CHUNK_WIDTH + z) * CHUNK_WIDTH + x] = stateId;
 }
-void Chunk::AddVertices(int x, int y, int z, float blockId)
+void Chunk::AddVertices(int x, int y, int z, blockstate::BlockStateId stateId)
 {
-    auto bakedModel = resourceManager.modelContainer.GetModel(ResourceLocation("block/" + blockRegister.GetBlock(blockId).GetName()));
-    if(!bakedModel) return;
-    const glm::i32vec3 position {x, y, z};
-    for (const auto& quad : bakedModel->generalQuads)
-    {
-        EmitQuad(quad, position, blockId);
-    }
+    const auto& state = blockstate::BlockStateRegistry::GetInstance().Get(stateId);
 
-    for (std::size_t i = 0;i < model::DirectionToIndex(model::Direction::Count);++i)
+    const BlockBase block = blockRegister.GetBlock(state.blockId);
+
+    const glm::ivec3 worldPosition{chunkX * CHUNK_WIDTH + x, y, chunkZ * CHUNK_WIDTH + z};
+
+    resourceManager.GetBlockModels(ResourceLocation(block.GetName()), state, worldPosition, selectedModels);
+
+    const glm::i32vec3 position{x, y, z};
+
+    for (const model::BakedModel* bakedModel : selectedModels)
     {
-        auto direction = static_cast<model::Direction>(i);
-        if (!ShouldRenderFace(x, y, z, direction))
+        if (!bakedModel)
             continue;
 
-        for (const auto& quad : bakedModel->faceQuads[i])
+        for (const auto& quad : bakedModel->generalQuads)
+            EmitQuad(quad, position, state.blockId);
+
+        for (std::size_t i = 0;i < model::DirectionToIndex(model::Direction::Count);++i)
         {
-            EmitQuad(quad, position, blockId);
+            const auto direction = static_cast<model::Direction>(i);
+
+            if (!ShouldRenderFace(x, y, z, direction))
+                continue;
+
+            for (const auto& quad : bakedModel->faceQuads[i])
+                EmitQuad(quad, position, state.blockId);
         }
     }
 }
@@ -95,31 +107,44 @@ void Chunk::EmitQuad(const model::BakedQuad& quad, const glm::i32vec3 blockPosit
     
 bool Chunk::ShouldRenderFace(int x, int y, int z, model::Direction face)
 {
-    if (face == model::Direction::South && (BlockRegister::GetInstance().GetBlock(GetBlock(x, y, z + 1)).GetSolid() || z == 15 && world->GetChunk(chunkX, chunkZ + 1) && BlockRegister::GetInstance().GetBlock(world->GetChunk(chunkX, chunkZ + 1)->GetBlock(x, y, 0)).GetSolid()))
+    glm::ivec3 offset{0};
+
+    switch (face)
     {
-        return false;
+    case model::Direction::North:
+        offset = {0, 0, -1};
+        break;
+
+    case model::Direction::South:
+        offset = {0, 0, 1};
+        break;
+
+    case model::Direction::West:
+        offset = {-1, 0, 0};
+        break;
+
+    case model::Direction::East:
+        offset = {1, 0, 0};
+        break;
+
+    case model::Direction::Up:
+        offset = {0, 1, 0};
+        break;
+
+    case model::Direction::Down:
+        offset = {0, -1, 0};
+        break;
+
+    case model::Direction::Count:
+        return true;
     }
-    if (face == model::Direction::North && (BlockRegister::GetInstance().GetBlock(GetBlock(x, y, z - 1)).GetSolid() || z == 0 && world->GetChunk(chunkX, chunkZ - 1) && BlockRegister::GetInstance().GetBlock(world->GetChunk(chunkX, chunkZ - 1)->GetBlock(x, y, 15)).GetSolid()))
-    {
-        return false;
-    }
-    if (face == model::Direction::West && (BlockRegister::GetInstance().GetBlock(GetBlock(x - 1, y, z)).GetSolid() || x == 0 && world->GetChunk(chunkX - 1, chunkZ) && BlockRegister::GetInstance().GetBlock(world->GetChunk(chunkX - 1, chunkZ)->GetBlock(15, y, z)).GetSolid()))
-    {
-        return false;
-    }
-    if (face == model::Direction::East && (BlockRegister::GetInstance().GetBlock(GetBlock(x + 1, y, z)).GetSolid() || x == 15 && world->GetChunk(chunkX + 1, chunkZ) && BlockRegister::GetInstance().GetBlock(world->GetChunk(chunkX + 1, chunkZ)->GetBlock(0, y, z)).GetSolid()))
-    {
-        return false;
-    }
-    if (face == model::Direction::Up && BlockRegister::GetInstance().GetBlock(GetBlock(x, y + 1, z)).GetSolid())
-    {
-        return false;
-    }
-    if (face == model::Direction::Down && BlockRegister::GetInstance().GetBlock(GetBlock(x, y - 1, z)).GetSolid())
-    {
-        return false;
-    }
-    return true;
+
+    const int worldX = chunkX * CHUNK_WIDTH + x;
+    const int worldZ = chunkZ * CHUNK_WIDTH + z;
+
+    const int neighborStateId = world->GetBlockStateId(worldX + offset.x, y + offset.y, worldZ + offset.z);
+    const auto& neighborState = blockstate::BlockStateRegistry::GetInstance().Get(neighborStateId);
+    return !blockRegister.GetBlock(neighborState.blockId).GetSolid();
 }
 const std::vector<float>& Chunk::GetVertices()
 {

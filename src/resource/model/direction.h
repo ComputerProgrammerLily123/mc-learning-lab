@@ -3,6 +3,8 @@
 #include <string>
 #include <optional>
 
+#include <glm/glm.hpp>
+
 namespace model 
 {
 enum class Direction : unsigned char
@@ -46,5 +48,21 @@ inline std::optional<Direction> StringToDirection(const std::string& directionNa
         return Direction::Down;
     }
     return std::nullopt;
+}
+inline Direction VectorToDirection(const glm::vec3& value)
+{
+    const glm::vec3 absolute = glm::abs(value);
+
+    if (absolute.x >= absolute.y && absolute.x >= absolute.z)
+    {
+        return value.x >= 0 ? Direction::East : Direction::West;
+    }
+
+    if (absolute.y >= absolute.z)
+    {
+        return value.y >= 0 ? Direction::Up : Direction::Down;
+    }
+
+    return value.z >= 0 ? Direction::South : Direction::North;
 }
 }

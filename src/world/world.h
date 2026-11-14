@@ -15,12 +15,15 @@ public:
     World& operator=(const World&) = delete;
     World& operator=(World&&) = delete;
     ~World();
-    int GetBlock(int x, int y, int z);
-    void SetBlock(int x, int y, int z, int id);
+    blockstate::BlockStateId GetBlockStateId(int x, int y, int z);
+    void SetBlock(int x, int y, int z, int blockId);
     void SetBlockAndRefresh(int x, int y, int z, int id);
+    void SetBlockState(int x, int y, int z, blockstate::BlockStateId stateId);
+    void SetBlockStateAndRefresh(int x, int y, int z, blockstate::BlockStateId stateId);
     Chunk* GetChunk(int x, int z);
     void CreateChunk(int x, int z);
     void InitChunk(int32_t i, int32_t j);
+    void RefreshChunkAndNeighbors(int chunkX, int chunkZ);
 
     static constexpr int WorldToChunk(int coordinate)
     {
@@ -36,4 +39,10 @@ private:
     std::unordered_map<uint64_t, Chunk*> chunks;
     FastNoiseLite noise1, noise2;
     WorldGenerator worldGen;
+
+    bool CanFenceConnect(int x, int y, int z);
+    bool UpdateFenceState(int x, int y, int z);
+    void UpdateFenceConnectionsAround(int x, int y, int z);
+    void UpdateFenceConnectionsAfterChunkLoad(int chunkX, int chunkZ);
+    void UpdateFenceStatesInsideChunk(int chunkX, int chunkZ);
 };

@@ -4,9 +4,8 @@
 #include <glm/glm.hpp>
 #include "stbImage/stb_image.h"
 #include "textureRegion.h"
-#include "model/modelParser.h"
-#include "model/modelBaker.h"
 #include "model/modelContainer.h"
+#include "blockstate/blockstateDefinition.h"
 #include "resourceLocation.h"
 #include "bitmapFont.h"
 struct TextureData
@@ -29,7 +28,8 @@ public:
 
     ModelContainer modelContainer;
     
-    const std::filesystem::path GetModelPath(const ResourceLocation& location);
+    const std::filesystem::path GetModelPath(const ResourceLocation& location) const;
+    const std::filesystem::path GetBlockstatePath(const ResourceLocation& location) const;
 
     void RegisterTextureRegion(const ResourceLocation& location);
     void RegisterTextureRegion(const ResourceLocation& location, const ResourceLocation& fileLocation, const glm::i16vec4& rect);
@@ -39,9 +39,14 @@ public:
     void RegisterCubemap(const ResourceLocation& mapId, const std::array<ResourceLocation, 6>& locations);
     std::shared_ptr<model::Model> LoadModel(const ResourceLocation& location);
     void BakeModel();
+
+    std::shared_ptr<blockstate::BlockStateDefinition> LoadBlockstate(const ResourceLocation& location);  
+    void BakeBlockstates();
+    
     [[nodiscard]] std::shared_ptr<TextureRegion> GetTextureRegion(const ResourceLocation& location) const;
     [[nodiscard]] std::shared_ptr<Texture> GetCubemap(const ResourceLocation& mapId) const;   
     [[nodiscard]] std::shared_ptr<BitmapFont> GetBitmapFont() const;
+    void GetBlockModels(const ResourceLocation& block, const blockstate::RuntimeBlockState& state, const glm::ivec3& position, std::vector<const model::BakedModel*>& output) const;
     private:
     ResourceManager();
     ~ResourceManager() = default;
@@ -51,6 +56,9 @@ public:
     
     std::unordered_map<ResourceLocation, std::shared_ptr<TextureRegion>> textureRegions;
     std::unordered_map<ResourceLocation, std::shared_ptr<Texture>> cubemaps;
+
+    std::unordered_map<ResourceLocation, std::shared_ptr<blockstate::BlockStateDefinition>> blockstateDefinitions;
+    std::unordered_map<ResourceLocation, std::shared_ptr<blockstate::BakedBlockStateDefinition>> bakedBlockstateDefinitions;
 
     std::vector<unsigned char> blockAtlas;
     std::shared_ptr<Texture> blockAtlasPtr = std::make_shared<Texture>();
@@ -66,4 +74,7 @@ public:
     std::vector<std::shared_ptr<TextureRegion>> LoadPartialTexture(const ResourceLocation& locations, bool flip);
 
     std::filesystem::path GetExecutableDirectory();
+
+    static std::uint32_t HashBlockPosition(const glm::ivec3& position);
+    static const blockstate::BakedModelVariant& SelectVariant(const std::vector<blockstate::BakedModelVariant>& models, const glm::ivec3& position, std::uint32_t salt = 0);
 };

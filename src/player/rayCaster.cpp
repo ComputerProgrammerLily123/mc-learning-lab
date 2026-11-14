@@ -10,7 +10,7 @@ int RayCaster::Ray(glm::vec3 startPoint, glm::vec3 direction, glm::i16vec3 &targ
     while (currentDistance <= maxDistance)
     {
         glm::i16vec3 target = glm::round(currentPoint);
-        if (world->GetBlock(target.x, target.y, target.z))
+        if (world->GetBlockStateId(target.x, target.y, target.z))
         {
             targetPoint = target;
             result = 1;
@@ -29,7 +29,7 @@ int RayCaster::Ray(glm::vec3 startPoint, glm::vec3 direction, glm::i16vec3 &targ
     while (currentDistance <= maxDistance)
     {
         glm::i16vec3 target = glm::round(currentPoint);
-        if (world->GetBlock(target.x, target.y, target.z))
+        if (world->GetBlockStateId(target.x, target.y, target.z))
         {
             float offsetX = target.x - currentPoint.x;
             float offsetY = target.y - currentPoint.y;

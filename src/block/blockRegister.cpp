@@ -2,11 +2,13 @@
 void BlockRegister::RegisterAll()
 {
     RegisterBlock("air", false);
-    RegisterBlock("grass_normal");
+    RegisterBlock("grass");
     RegisterBlock("dirt");
     RegisterBlock("stone");
+    RegisterBlock("fence", false);
     RegisterBlock("oak_log");
-    RegisterBlock("lever");
+    RegisterBlock("stone_button", false);
+    RegisterBlock("lever", false);
     RegisterBlock("beacon");
     RegisterBlock("birch_log");
     RegisterBlock("blue_wool");

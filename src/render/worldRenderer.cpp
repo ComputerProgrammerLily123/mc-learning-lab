@@ -41,7 +41,6 @@ void WorldRenderer::Draw(World *world, Camera *camera, int32_t centralX, int32_t
                 world->CreateChunk(i + centralX, j + centralZ);
                 world->InitChunk(i + centralX, j + centralZ);
                 chunk = world->GetChunk(i + centralX, j + centralZ);
-                chunk->UpdateMesh();
             }
             DrawMesh(i + centralX, j + centralZ, chunk->GetVertices(), chunk->GetIndices(), chunk->isDirty);
             drawCount++;
