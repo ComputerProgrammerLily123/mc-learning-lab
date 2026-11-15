@@ -36,6 +36,7 @@ public:
     void UpdateTimer();
     bool ShouldTick();
     void ConsumeTick();
+    void DiscardBacklog();
     [[nodiscard]] float GetAlpha() const;
 
 private:
@@ -47,4 +48,6 @@ private:
 
     double accumulator = 0.0;
     double lastTime = 0.0;
+
+    bool initialized = false;
 };

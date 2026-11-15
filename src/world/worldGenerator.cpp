@@ -1,6 +1,10 @@
 #include "worldGenerator.h"
+
+#include "resource/blockstate/blockstateRegistry.h"
 #include "world.h"
-WorldGenerator::WorldGenerator(World *world) : world(world)
+
+
+WorldGenerator::WorldGenerator(World* world) : world(world)
 {
     surfaceNoise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2S);
     surfaceNoise.SetFrequency(0.001f);
@@ -18,55 +22,54 @@ void WorldGenerator::GenerateChunk(int32_t i, int32_t j)
 }
 void WorldGenerator::NoiseGenerate(int32_t i, int32_t j)
 {
-    for (int x = 0; x < CHUNK_WIDTH; x++)
+    auto grassId = blockstate::BlockStateRegistry::GetInstance().GetDefaultState(1);
+    auto dirtId = blockstate::BlockStateRegistry::GetInstance().GetDefaultState(2);
+    auto stoneId = blockstate::BlockStateRegistry::GetInstance().GetDefaultState(3);
+    if (auto chunk = world->GetChunk(i, j))
     {
-        for (int z = 0; z < CHUNK_WIDTH; z++)
+        for (int x = 0; x < CHUNK_WIDTH; x++)
         {
-            if (world->GetChunk(i, j))
+            for (int z = 0; z < CHUNK_WIDTH; z++)
             {
-                int32_t blockX = x + i * 16;
-                int32_t blockZ = z + j * 16;
+                int32_t blockX = x + i * CHUNK_WIDTH;
+                int32_t blockZ = z + j * CHUNK_WIDTH;
                 unsigned height = ((surfaceNoise.GetNoise(static_cast<float>(blockX), static_cast<float>(blockZ)) + 1) / 2) * 64 + ((surfaceNoise.GetNoise(static_cast<float>(blockX * 4), static_cast<float>(blockZ * 4)) + 1) / 2) * 32 + ((surfaceNoise.GetNoise(static_cast<float>(blockX * 16), static_cast<float>(blockZ * 16)) + 1) / 2) * 8 + 10;
+                height_map.at(x * CHUNK_WIDTH + z) = height;
                 for (unsigned y = 0; y < height - 3; y++)
                 {
-                    world->SetBlock(blockX, y, blockZ,3);
+                    chunk->SetBlock(x, y, z, stoneId);
                 }
                 for (unsigned y = height - 3; y < height; y++)
                 {
-                    world->SetBlock(blockX, y, blockZ,2);
+                    chunk->SetBlock(x, y, z, dirtId);
                 }
-                world->SetBlock(blockX, height, blockZ,1);
+                chunk->SetBlock(x, height, z, grassId);
             }
         }
     }
 }
 void WorldGenerator::TreeGenerate(int32_t i, int32_t j)
 {
-    for (int x = 2; x < CHUNK_WIDTH - 2; x++)
+    auto oakLogId = blockstate::BlockStateRegistry::GetInstance().GetDefaultState(4);
+    auto leaveId = blockstate::BlockStateRegistry::GetInstance().GetDefaultState(10);
+    if (auto chunk = world->GetChunk(i, j))
     {
-        for (int z = 2; z < CHUNK_WIDTH - 2; z++)
+        for (int x = 2; x < CHUNK_WIDTH - 2; x++)
         {
-            int32_t blockX = x + i * 16;
-            int32_t blockZ = z + j * 16;
-            unsigned flag = ((treeNoise.GetNoise(static_cast<float>(blockX), static_cast<float>(blockZ)) + 1) / 2) * 32;
-            if (flag < 30)
-                continue;
-            unsigned surfaceHeight = 0;
-            if (world->GetChunk(i, j))
+            for (int z = 2; z < CHUNK_WIDTH - 2; z++)
             {
-                for (int y = 0; y < CHUNK_HEIGHT; y++)
-                {
-                    if (!world->GetBlockStateId(blockX, y, blockZ))
-                    {
-                        surfaceHeight = y;
-                        break;
-                    }
-                }
+                int32_t blockX = x + i * CHUNK_WIDTH;
+                int32_t blockZ = z + j * CHUNK_WIDTH;
+                unsigned flag = ((treeNoise.GetNoise(static_cast<float>(blockX), static_cast<float>(blockZ)) + 1) / 2) * 32;
+                if (flag < 30)
+                    continue;
+                unsigned surfaceHeight = height_map.at(x * CHUNK_WIDTH + z) + 1;
                 if (!CheckTreeSpace(blockX, surfaceHeight, blockZ))
                     continue;
-                world->SetBlock(blockX, surfaceHeight, blockZ, 4);
-                world->SetBlock(blockX, surfaceHeight + 1, blockZ, 4);
-                world->SetBlock(blockX, surfaceHeight + 2, blockZ, 4);
+
+                chunk->SetBlock(x, surfaceHeight, z, oakLogId);
+                chunk->SetBlock(x, surfaceHeight + 1, z, oakLogId);
+                chunk->SetBlock(x, surfaceHeight + 2, z, oakLogId);
                 for (int targetY = surfaceHeight + 2; targetY < surfaceHeight + 4; targetY++)
                 {
                     for (int targetX = blockX - 2; targetX <= blockX + 2; targetX++)
@@ -91,10 +94,10 @@ void WorldGenerator::TreeGenerate(int32_t i, int32_t j)
                         world->SetBlock(targetX, surfaceHeight + 4, targetZ, 10);
                     }
                 }
-                world->SetBlock(blockX - 1, surfaceHeight + 5, blockZ, 10);
-                world->SetBlock(blockX + 1, surfaceHeight + 5, blockZ, 10);
-                world->SetBlock(blockX, surfaceHeight + 5, blockZ - 1, 10);
-                world->SetBlock(blockX, surfaceHeight + 5, blockZ + 1, 10);
+                chunk->SetBlock(x - 1, surfaceHeight + 5, z, leaveId);
+                chunk->SetBlock(x + 1, surfaceHeight + 5, z, leaveId);
+                chunk->SetBlock(x, surfaceHeight + 5, z - 1, leaveId);
+                chunk->SetBlock(x, surfaceHeight + 5, z + 1, leaveId);
             }
         }
     }

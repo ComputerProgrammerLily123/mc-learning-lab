@@ -7,34 +7,36 @@
 
 #include "gui/button.h"
 #include "gui/canvas.h"
+#include "gui/itemIcon.h"
 #include "gui/quad.h"
 #include "gui/uiSystem.h"
-#include "resource/blockstate/blockstateRegistry.h"
 #include "item/itemRegister.h"
 #include "player/player.h"
 #include "render/camera.h"
 #include "render/outlineRenderer.h"
 #include "render/skyboxRenderer.h"
 #include "render/worldRenderer.h"
+#include "resource/blockstate/blockstateRegistry.h"
 #include "window.h"
 #include "world/world.h"
 
+
 Application::Application()
 {
-    std::cout<<"[Application] ========OpenGL init start========\n";
+    std::cout << "[Application] ========OpenGL init start========\n";
     InitGLFW();
     InitGLAD();
     InitGLFWCallback();
-    std::cout<<"[Application] ========OpenGL init finish========\n";
-    std::cout<<"[Application] ========Registry init start========\n";
+    std::cout << "[Application] ========OpenGL init finish========\n";
+    std::cout << "[Application] ========Registry init start========\n";
     InitRegistry();
-    std::cout<<"[Application] ========Reggistry init finish========\n";
-    std::cout<<"[Application] ========Resource init start========\n";
+    std::cout << "[Application] ========Reggistry init finish========\n";
+    std::cout << "[Application] ========Resource init start========\n";
     InitResource();
-    std::cout<<"[Application] ========Resource init finish========\n";
-    std::cout<<"[Application] ========Scene init start========\n";
+    std::cout << "[Application] ========Resource init finish========\n";
+    std::cout << "[Application] ========Scene init start========\n";
     InitScene();
-    std::cout<<"[Application] ========Scene init finish========\n";
+    std::cout << "[Application] ========Scene init finish========\n";
 }
 void Application::InitGLFW()
 {
@@ -69,7 +71,7 @@ void Application::InitRegistry()
 
     for (unsigned id = 0; id < blocks.GetBlockCount(); ++id)
     {
-        const auto block = blocks.GetBlock(id);
+        const auto& block = blocks.GetBlock(id);
         std::unordered_map<std::string, std::string> properties;
 
         if (block.GetName() == "grass")
@@ -80,21 +82,17 @@ void Application::InitRegistry()
         else if (block.GetName() == "lever")
             properties = {
                 {"facing", "north"},
-                {"powered", "false"}
-            };
+                {"powered", "false"}};
         else if (block.GetName() == "stone_button")
             properties = {
                 {"facing", "up"},
-                {"powered", "false"}
-            };
+                {"powered", "false"}};
         else if (block.GetName() == "fence")
             properties = {
                 {"north", "false"},
-                {"east",  "false"},
+                {"east", "false"},
                 {"south", "false"},
-                {"west",  "false"}
-            };
-            
+                {"west", "false"}};
 
         const auto stateId = states.Register(id, std::move(properties));
         states.SetDefaultState(id, stateId);
@@ -104,20 +102,18 @@ void Application::InitRegistry()
             states.Register(id, {{"axis", "z"}});
             states.Register(id, {{"axis", "none"}});
         }
-        if(block.GetName() == "stone_button")
+        if (block.GetName() == "stone_button")
         {
-            states.Register(id, {{"facing", "north"},{"powered", "false"}});
+            states.Register(id, {{"facing", "north"}, {"powered", "false"}});
         }
-        if(block.GetName() == "fence")
+        if (block.GetName() == "fence")
         {
             for (unsigned mask = 1; mask < 16; ++mask)
             {
-                states.Register(id, {
-                    {"north", (mask & 1) ? "true" : "false"},
-                    {"east",  (mask & 2) ? "true" : "false"},
-                    {"south", (mask & 4) ? "true" : "false"},
-                    {"west",  (mask & 8) ? "true" : "false"}
-                });
+                states.Register(id, {{"north", (mask & 1) ? "true" : "false"},
+                                     {"east", (mask & 2) ? "true" : "false"},
+                                     {"south", (mask & 4) ? "true" : "false"},
+                                     {"west", (mask & 8) ? "true" : "false"}});
             }
         }
     }
@@ -126,7 +122,7 @@ void Application::InitRegistry()
 }
 void Application::InitResource()
 {
-    for (int i = 0;i < BlockRegister::GetInstance().GetBlockCount();i++) 
+    for (int i = 0; i < BlockRegister::GetInstance().GetBlockCount(); i++)
     {
         const auto block = BlockRegister::GetInstance().GetBlock(i);
         if (block.GetName() == "air") continue;
@@ -136,7 +132,7 @@ void Application::InitResource()
             for (const auto& variant : entry.models)
             {
                 auto model = resourceManager.LoadModel(variant.model);
-                if(!model || !model->textures) continue;
+                if (!model || !model->textures) continue;
                 for (const auto& [id, content] : model->textures.value())
                 {
                     resourceManager.RegisterTextureRegionInAtlas(ResourceLocation(content));
@@ -148,7 +144,7 @@ void Application::InitResource()
             for (const auto& variant : entry.models)
             {
                 auto model = resourceManager.LoadModel(variant.model);
-                if(!model || !model->textures) continue;
+                if (!model || !model->textures) continue;
                 for (const auto& [id, content] : model->textures.value())
                 {
                     resourceManager.RegisterTextureRegionInAtlas(ResourceLocation(content));
@@ -156,9 +152,13 @@ void Application::InitResource()
             }
         }
     }
+    for (const auto& item : ItemRegister::GetInstance().GetItems())
+        resourceManager.LoadItemModel(item.location);
+
     resourceManager.UploadAtlas();
     resourceManager.BakeModel();
     resourceManager.BakeBlockstates();
+    resourceManager.BakeItemModels();
     resourceManager.RegisterBitmapFont(ResourceLocation("font/ascii"));
     resourceManager.RegisterTextureRegion(ResourceLocation("gui/title_left"), ResourceLocation("gui/title/minecraft"), glm::i16vec4(0, 256, 155, 212));
     resourceManager.RegisterTextureRegion(ResourceLocation("gui/title_right"), ResourceLocation("gui/title/minecraft"), glm::i16vec4(0, 211, 119, 167));
@@ -180,7 +180,7 @@ void Application::InitScene()
     auto welcomeScene = sceneManager.GetScene("Welcome");
     welcomeScene->onLoad = [this]
     {
-        auto canvas = std::make_unique<Canvas>(INITIAL_SCREEN_WIDTH,INITIAL_SCREEN_HEIGHT);
+        auto canvas = std::make_unique<Canvas>(INITIAL_SCREEN_WIDTH, INITIAL_SCREEN_HEIGHT);
         auto camera = std::make_unique<Camera>(window->GetWidth(), window->GetHeight());
         auto skyboxRenderer = std::make_unique<SkyboxRenderer>();
 
@@ -228,19 +228,43 @@ void Application::InitScene()
     static Quad* hotbarFramePtr = nullptr;
     mainScene->onLoad = [this]
     {
-        auto canvas = std::make_unique<Canvas>(INITIAL_SCREEN_WIDTH,INITIAL_SCREEN_HEIGHT);
+        auto canvas = std::make_unique<Canvas>(INITIAL_SCREEN_WIDTH, INITIAL_SCREEN_HEIGHT);
         auto camera = std::make_unique<Camera>(window->GetWidth(), window->GetHeight());
         auto world = std::make_unique<World>();
         auto outlineRenderer = std::make_unique<OutlineRenderer>();
         auto worldRenderer = std::make_unique<WorldRenderer>(RENDER_RADIAN);
         auto player = std::make_unique<Player>(glm::vec3(10.0f, 100.0f, 10.0f), camera.get(), world.get());
+        auto& registry = ItemRegister::GetInstance();
 
+        const auto requireItem = [&registry](const ResourceLocation& location)
+        {
+            auto id = registry.FindItem(location);
+            if (!id)
+                throw std::runtime_error("Item is not registered.");
+            return *id;
+        };
+
+        player->GetHotBar().SetSlotItem(0, {requireItem(ResourceLocation("grass")), 64});
+        player->GetHotBar().SetSlotItem(1, {requireItem(ResourceLocation("dirt")), 64});
+        player->GetHotBar().SetSlotItem(2, {requireItem(ResourceLocation("stone")), 64});
+        player->GetHotBar().SetSlotItem(3, {requireItem(ResourceLocation("oak_log")), 64});
+        player->GetHotBar().SetSlotItem(4, {requireItem(ResourceLocation("iron_ore")), 64});
         auto crosshair = std::make_unique<Quad>(PivotType::Center, 0, 0, 32.0f, 32.0f, ResourceLocation("gui/crosshair"));
         auto hotbar = std::make_unique<Quad>(PivotType::BottomMiddle, 0, -6.0f, 728.0f, 88.0f, ResourceLocation("gui/hotbar"));
         auto hotbarFrame = std::make_unique<Quad>(PivotType::BottomMiddle, player->GetHotBar().GetHotBarSlot() * 80.0f - 320.0f, -6.0f, 88.0f, 88.0f, ResourceLocation("gui/hotbar_frame"));
         hotbarFramePtr = hotbarFrame.get();
         canvas->AddChild(std::move(crosshair));
         canvas->AddChild(std::move(hotbar));
+        for (unsigned slot = 0; slot < SLOT_COUNT; ++slot)
+        {
+            canvas->AddChild(std::make_unique<ItemIcon>(
+                PivotType::BottomMiddle,
+                static_cast<float>(slot) * 80.0f - 320.0f,
+                -18.0f,
+                64.0f,
+                64.0f,
+                player->GetHotBar().GetSlotItem(slot)));
+        }
         canvas->AddChild(std::move(hotbarFrame));
         UISystem::GetInstance().SetMainCanvas(std::move(canvas));
 
@@ -267,10 +291,11 @@ void Application::InitScene()
         if (Input::GetInstance().GetDeltaScroll() < 0)
             player->GetHotBar().SetHotBarSlot(player->GetHotBar().GetHotBarSlot() + 1);
         hotbarFramePtr->SetAnchoredPosition({player->GetHotBar().GetHotBarSlot() * 80.0f - 320.0f, -6.0f});
+        world->ProcessMeshUpdates(1);
         worldRenderer->Draw(world, camera, player->GetChunkPosition().x, player->GetChunkPosition().z);
         outlineRenderer->DrawOutline(world, camera, player->GetLookAtPosition());
-        std::cout << player->GetBlockPosition().x << "," << player->GetBlockPosition().y << "," << player->GetBlockPosition().z << '\n';
-        std::cout << player->GetChunkPosition().x << "," << player->GetChunkPosition().y << "," << player->GetChunkPosition().z << '\n';
+        // std::cout << player->GetBlockPosition().x << "," << player->GetBlockPosition().y << "," << player->GetBlockPosition().z << '\n';
+        // std::cout << player->GetChunkPosition().x << "," << player->GetChunkPosition().y << "," << player->GetChunkPosition().z << '\n';
     };
     mainScene->onTickUpdate = [this]
     {
@@ -287,31 +312,42 @@ void Application::InitScene()
 }
 void Application::RegisterItems()
 {
-    
-    auto &itemRegister = ItemRegister::GetInstance();
-    itemRegister.RegisterItem("grass");
-    itemRegister.RegisterItem("dirt");
-    itemRegister.RegisterItem("stone");
-    
+    auto& itemRegister = ItemRegister::GetInstance();
+    const ItemId grass = itemRegister.RegisterBlockItem(ResourceLocation("grass"), 1);
+    const ItemId dirt = itemRegister.RegisterBlockItem(ResourceLocation("dirt"), 2);
+    const ItemId stone = itemRegister.RegisterBlockItem(ResourceLocation("stone"), 3);
+    const ItemId oak_log = itemRegister.RegisterBlockItem(ResourceLocation("oak_log"), 4);
+    const ItemId iron_ore = itemRegister.RegisterBlockItem(ResourceLocation("iron_ore"), 5);
 }
 void Application::OnWindowResize(int newWidth, int newHeight)
 {
-    if(newWidth <= 0 || newHeight <= 0) return;
+    if (newWidth <= 0 || newHeight <= 0) return;
     window->ResizeViewport(newWidth, newHeight);
     UISystem::GetInstance().ResizeScreen(newWidth, newHeight);
     sceneManager.GetObject<Camera>("Camera")->ResizeScreen(newWidth, newHeight);
 }
 void Application::Run()
 {
-    std::cout<<"[Application] ========Main loop start========\n";
+    std::cout << "[Application] ========Main loop start========\n";
     while (!window->ShouldClose())
     {
-        //std::cout << "FPS:" << 1.0f / time.GetDeltaTime() << '\n';
+        std::cout << "FPS:" << 1.0f / time.GetDeltaTime() << '\n';
+
         tick.UpdateTimer();
-        if (tick.ShouldTick())
+
+        constexpr int MaxTicksPerFrame = 5;
+        int processedTicks = 0;
+
+        while (tick.ShouldTick() && processedTicks < MaxTicksPerFrame)
         {
             sceneManager.TickUpdate();
             tick.ConsumeTick();
+            ++processedTicks;
+        }
+
+        if (tick.ShouldTick())
+        {
+            tick.DiscardBacklog();
         }
         time.UpdateTime();
         if (input.IsKeyDown(GLFW_KEY_ESCAPE))
@@ -325,7 +361,7 @@ void Application::Run()
         glfwSwapBuffers(window->GetNativeWindow());
         glfwPollEvents();
     }
-    std::cout<<"[Application] ========Main loop end========\n";
+    std::cout << "[Application] ========Main loop end========\n";
 }
 void Application::Quit()
 {

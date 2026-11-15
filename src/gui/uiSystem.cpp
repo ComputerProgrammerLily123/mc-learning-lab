@@ -1,5 +1,7 @@
 #include "uiSystem.h"
 
+#include "itemIcon.h"
+
 void UISystem::ResizeScreen(unsigned width, unsigned height)
 {
     screenWidth = width;
@@ -8,7 +10,7 @@ void UISystem::ResizeScreen(unsigned width, unsigned height)
 }
 void UISystem::RenderAll()
 {
-    if(!mainCanvas) return;
+    if (!mainCanvas) return;
     uiRenderer.ClearRenderQueue();
     for (const auto& childElement : mainCanvas->GetChildElements())
     {
@@ -32,24 +34,24 @@ Canvas* UISystem::GetMainCanvas() const
 }
 void UISystem::OnUpdate()
 {
-    if(mainCanvas == nullptr) return;
-    UIScreenRect rootRect
-    {
+    if (mainCanvas == nullptr) return;
+    UIScreenRect rootRect{
         {0.0f, 0.0f},
-        {
-            static_cast<float>(screenWidth),
-            static_cast<float>(screenHeight)
-        }
-    };
+        {static_cast<float>(screenWidth),
+         static_cast<float>(screenHeight)}};
     layoutSystem.Layout(*mainCanvas, rootRect);
     eventSystem.Update(*mainCanvas);
 }
 void UISystem::CollectRenderInfo(const std::unique_ptr<UIElement>& element)
 {
-    if(!element->isVisible) return;
+    if (!element->isVisible) return;
     const auto& rect = element->GetScreenRect();
     auto textureId = element->GetTextureId();
-    if(textureId == ResourceLocation("font/ascii"))
+    if (const auto* icon = dynamic_cast<const ItemIcon*>(element.get()))
+    {
+        uiRenderer.AddItemRenderQueue(icon->GetStack(), rect);
+    }
+    else if (textureId == ResourceLocation("font/ascii"))
     {
         uiRenderer.AddTextRenderQueue(rect.position.x, rect.position.y, rect.size.x, rect.size.y, ResourceLocation(textureId), element->GetText());
     }

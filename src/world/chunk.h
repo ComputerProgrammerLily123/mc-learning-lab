@@ -21,6 +21,7 @@ public:
     Chunk(int x, int z, World* world);
     ~Chunk();
     bool isDirty = true;
+    bool meshQueued = false;
     void UpdateMesh();
     int GetBlock(glm::u8vec3 position);
     int GetBlock(unsigned x,unsigned y,unsigned z);

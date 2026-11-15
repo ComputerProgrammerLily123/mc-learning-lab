@@ -1,13 +1,14 @@
 #pragma once
 #include <filesystem>
-
 #include <glm/glm.hpp>
+
+#include "bitmapFont.h"
+#include "blockstate/blockstateDefinition.h"
+#include "model/modelContainer.h"
+#include "resourceLocation.h"
 #include "stbImage/stb_image.h"
 #include "textureRegion.h"
-#include "model/modelContainer.h"
-#include "blockstate/blockstateDefinition.h"
-#include "resourceLocation.h"
-#include "bitmapFont.h"
+
 struct TextureData
 {
     unsigned char* data;
@@ -27,9 +28,10 @@ public:
     }
 
     ModelContainer modelContainer;
-    
+
     const std::filesystem::path GetModelPath(const ResourceLocation& location) const;
     const std::filesystem::path GetBlockstatePath(const ResourceLocation& location) const;
+    std::shared_ptr<Texture> GetBlockAtlas() const;
 
     void RegisterTextureRegion(const ResourceLocation& location);
     void RegisterTextureRegion(const ResourceLocation& location, const ResourceLocation& fileLocation, const glm::i16vec4& rect);
@@ -40,25 +42,34 @@ public:
     std::shared_ptr<model::Model> LoadModel(const ResourceLocation& location);
     void BakeModel();
 
-    std::shared_ptr<blockstate::BlockStateDefinition> LoadBlockstate(const ResourceLocation& location);  
+    std::shared_ptr<blockstate::BlockStateDefinition> LoadBlockstate(const ResourceLocation& location);
     void BakeBlockstates();
-    
+
+    void LoadItemModel(const ResourceLocation& item);
+    void BakeItemModels();
+
+    [[nodiscard]] std::shared_ptr<const model::BakedItemModel> GetItemModel(const ResourceLocation& item) const;
+
     [[nodiscard]] std::shared_ptr<TextureRegion> GetTextureRegion(const ResourceLocation& location) const;
-    [[nodiscard]] std::shared_ptr<Texture> GetCubemap(const ResourceLocation& mapId) const;   
+    [[nodiscard]] std::shared_ptr<Texture> GetCubemap(const ResourceLocation& mapId) const;
     [[nodiscard]] std::shared_ptr<BitmapFont> GetBitmapFont() const;
     void GetBlockModels(const ResourceLocation& block, const blockstate::RuntimeBlockState& state, const glm::ivec3& position, std::vector<const model::BakedModel*>& output) const;
-    private:
+
+private:
     ResourceManager();
     ~ResourceManager() = default;
-    
+
     std::filesystem::path assetRoot;
 
-    
     std::unordered_map<ResourceLocation, std::shared_ptr<TextureRegion>> textureRegions;
     std::unordered_map<ResourceLocation, std::shared_ptr<Texture>> cubemaps;
 
     std::unordered_map<ResourceLocation, std::shared_ptr<blockstate::BlockStateDefinition>> blockstateDefinitions;
     std::unordered_map<ResourceLocation, std::shared_ptr<blockstate::BakedBlockStateDefinition>> bakedBlockstateDefinitions;
+
+    std::unordered_map<ResourceLocation, std::shared_ptr<model::BakedItemModel>> bakedItemModels;
+
+    std::unordered_map<ResourceLocation, ResourceLocation> itemModelLocations;
 
     std::vector<unsigned char> blockAtlas;
     std::shared_ptr<Texture> blockAtlasPtr = std::make_shared<Texture>();
@@ -66,11 +77,11 @@ public:
     unsigned blockAtlasOffsetY = 0;
 
     std::shared_ptr<BitmapFont> bitmapFont;
-    
+
     std::shared_ptr<TextureRegion> LoadTexture(const ResourceLocation& location, bool flip);
     std::shared_ptr<TextureRegion> LoadTexture(const ResourceLocation& location, bool flip, const glm::i16vec4& rect);
     std::shared_ptr<Texture> LoadCubemap(const std::array<ResourceLocation, 6>& location, bool flip);
-    
+
     std::vector<std::shared_ptr<TextureRegion>> LoadPartialTexture(const ResourceLocation& locations, bool flip);
 
     std::filesystem::path GetExecutableDirectory();

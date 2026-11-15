@@ -18,7 +18,7 @@ public:
     BlockRegister(BlockRegister&&) = delete;
     BlockRegister& operator=(BlockRegister&&) = delete;
     void RegisterAll();
-    BlockBase GetBlock(int id);
+    const BlockBase& GetBlock(int id) const;
     unsigned GetBlockCount() const;
     
 private:

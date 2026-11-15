@@ -6,6 +6,7 @@
 #define KEY_COUNT 512
 #define MOUSE_BUTTON_COUNT 3
 #define MOUSE_BUTTON_LEFT 0
+#define MOUSE_BUTTON_RIGHT 1
 enum class KeyState : unsigned char
 {
     Release,

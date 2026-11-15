@@ -20,14 +20,10 @@ blockstate::BlockStateId World::GetBlockStateId(int x, int y, int z)
     int chunkZ = WorldToChunk(z);
     unsigned localX = WorldToLocal(x);
     unsigned localZ = WorldToLocal(z);
-    if (GetChunk(chunkX, chunkZ))
-    {
-        return GetChunk(chunkX, chunkZ)->GetBlock(localX, y, localZ);
-    }
-    else
-    {
-        return 0;
-    }
+    if (Chunk* chunk = GetChunk(chunkX, chunkZ))
+        return chunk->GetBlock(localX, y, localZ);
+
+    return 0;
 }
 void World::SetBlock(int x, int y, int z, int blockId)
 {
@@ -63,7 +59,7 @@ void World::SetBlockStateAndRefresh(int x, int y, int z, blockstate::BlockStateI
 
     SetBlockState(x, y, z, stateId);
     UpdateFenceConnectionsAround(x, y, z);
-    RefreshChunkAndNeighbors(chunkX, chunkZ);
+    QueueBlockMeshUpdate(x, z);
 }
 Chunk *World::GetChunk(int x, int z)
 {
@@ -85,7 +81,7 @@ void World::CreateChunk(int x, int z)
 void World::InitChunk(int32_t i, int32_t j)
 {
     worldGen.GenerateChunk(i, j);
-    UpdateFenceStatesInsideChunk(i, j);
+    //UpdateFenceStatesInsideChunk(i, j);
     UpdateFenceConnectionsAfterChunkLoad(i, j);
     RefreshChunkAndNeighbors(i, j);
 }
@@ -105,9 +101,53 @@ void World::RefreshChunkAndNeighbors(int chunkX, int chunkZ)
     {
         if (Chunk* chunk = GetChunk(chunkX + offset.x, chunkZ + offset.y))
         {
-            chunk->UpdateMesh();
+            QueueChunkMeshUpdate(chunkX + offset.x, chunkZ + offset.y);
         }
     }
+}
+
+void World::QueueChunkMeshUpdate(int chunkX, int chunkZ)
+{
+    Chunk* chunk = GetChunk(chunkX, chunkZ);
+
+    if (!chunk || chunk->meshQueued)
+        return;
+
+    chunk->meshQueued = true;
+    meshUpdateQueue.push_back(chunk);
+}
+
+void World::ProcessMeshUpdates(std::size_t maxUpdates)
+{
+    while (maxUpdates > 0 && !meshUpdateQueue.empty())
+    {
+        Chunk* chunk = meshUpdateQueue.front();
+        meshUpdateQueue.pop_front();
+
+        chunk->meshQueued = false;
+        chunk->UpdateMesh();
+
+        --maxUpdates;
+    }
+}
+void World::QueueBlockMeshUpdate(int x, int z)
+{
+    const int chunkX = WorldToChunk(x);
+    const int chunkZ = WorldToChunk(z);
+    const int localX = WorldToLocal(x);
+    const int localZ = WorldToLocal(z);
+
+    QueueChunkMeshUpdate(chunkX, chunkZ);
+
+    if (localX == 0)
+        QueueChunkMeshUpdate(chunkX - 1, chunkZ);
+    else if (localX == CHUNK_WIDTH - 1)
+        QueueChunkMeshUpdate(chunkX + 1, chunkZ);
+
+    if (localZ == 0)
+        QueueChunkMeshUpdate(chunkX, chunkZ - 1);
+    else if (localZ == CHUNK_WIDTH - 1)
+        QueueChunkMeshUpdate(chunkX, chunkZ + 1);
 }
 
 bool World::CanFenceConnect(int x, int y, int z)

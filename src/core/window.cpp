@@ -19,6 +19,7 @@ Window::Window(unsigned width, unsigned height, const std::string &title): width
         glfwTerminate();
     }
     glfwMakeContextCurrent(nativeWindow);
+    //glfwSwapInterval(0);
     glViewport(0, 0, static_cast<int>(width), static_cast<int>(height));
     Center();
 }

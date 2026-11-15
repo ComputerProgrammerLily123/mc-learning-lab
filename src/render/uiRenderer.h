@@ -4,6 +4,9 @@
 
 #include <vector>
 #include "resource/resourceLocation.h"
+#include "itemRenderer.h"
+#include "config/gameConstant.h"
+using namespace GameConstant;
 class UIRenderer{
 public:
     UIRenderer(const UIRenderer&) = delete;
@@ -13,6 +16,7 @@ public:
     UIRenderer(unsigned screenWidth, unsigned screenHeight);
     ~UIRenderer();
     void ResizeScreen(unsigned screenWidth, unsigned screenHeight);
+    void AddItemRenderQueue(const ItemStack& stack, const UIScreenRect& rect);
     void ClearRenderQueue();
     void AddRenderQueue(int startX, int startY, int width, int height, const ResourceLocation& location);
     void AddTextRenderQueue(int startX, int startY, int width, int height, const ResourceLocation& location, const std::string& text);
@@ -37,4 +41,6 @@ private:
     std::vector<float> vertices_buffer;
     std::vector<unsigned> indices_buffer;
     std::vector<unsigned> offsets = {0};
+
+    ItemRenderer itemRenderer {INITIAL_SCREEN_WIDTH, INITIAL_SCREEN_HEIGHT};
 };

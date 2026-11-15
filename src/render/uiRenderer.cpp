@@ -4,7 +4,9 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+
 #include "resource/resourceManager.h"
+
 
 UIRenderer::UIRenderer(unsigned screenWidth, unsigned scrrenHeight) : screenWidth(screenWidth), screenHeight(scrrenHeight)
 {
@@ -33,19 +35,25 @@ void UIRenderer::ResizeScreen(unsigned screenWidth, unsigned screenHeight)
 {
     this->screenWidth = screenWidth;
     this->screenHeight = screenHeight;
+    itemRenderer.ResizeScreen(screenWidth, screenHeight);
+}
+void UIRenderer::AddItemRenderQueue(const ItemStack& stack, const UIScreenRect& rect)
+{
+    itemRenderer.AddRenderQueue(stack, rect);
 }
 void UIRenderer::ClearRenderQueue()
 {
     renderQueue.clear();
+    itemRenderer.ClearRenderQueue();
 }
 void UIRenderer::AddRenderQueue(int startX, int startY, int width, int height, const ResourceLocation& location)
 {
     auto x = static_cast<float>(startX);
     auto y = static_cast<float>(startY);
 
-    if(renderQueue.empty() || location != renderQueue.back().textureLocation)
+    if (renderQueue.empty() || location != renderQueue.back().textureLocation)
     {
-        RenderQueueEntry newEntry = {{},{},location};
+        RenderQueueEntry newEntry = {{}, {}, location};
         renderQueue.push_back(newEntry);
     }
     auto& vertices = renderQueue.back().vertices;
@@ -54,7 +62,7 @@ void UIRenderer::AddRenderQueue(int startX, int startY, int width, int height, c
     unsigned startIndex = vertices.size() / 5;
 
     auto region = ResourceManager::GetInstance().GetTextureRegion(location);
-    if(!region) return;
+    if (!region) return;
 
     float u1 = region->GetU1();
     float v1 = region->GetV1();
@@ -77,14 +85,14 @@ void UIRenderer::AddTextRenderQueue(int startX, int startY, int width, int heigh
     if (!region) return;
     if (renderQueue.empty() || location != renderQueue.back().textureLocation)
     {
-        RenderQueueEntry entry = {{},{},location};
+        RenderQueueEntry entry = {{}, {}, location};
         renderQueue.push_back(std::move(entry));
     }
     auto& vertices = renderQueue.back().vertices;
-    auto& indices  = renderQueue.back().indices;
+    auto& indices = renderQueue.back().indices;
 
     constexpr float atlasSize = 128.0f;
-    constexpr float cellSize  = 8.0f;
+    constexpr float cellSize = 8.0f;
     constexpr unsigned columns = 16;
     const float scale = static_cast<float>(height) / cellSize;
 
@@ -132,15 +140,13 @@ void UIRenderer::AddTextRenderQueue(int startX, int startY, int width, int heigh
         const auto startIndex = static_cast<unsigned>(vertices.size() / 5);
 
         vertices.insert(vertices.end(),
-        {
-            x, y, 0.0f, u1, v1,
-            x, y + static_cast<float>(height), 0.0f, u1, v2,
-            x + drawWidth, y + static_cast<float>(height), 0.0f, u2, v2,
-            x + drawWidth, y, 0.0f, u2, v1
-        });
+                        {x, y, 0.0f, u1, v1,
+                         x, y + static_cast<float>(height), 0.0f, u1, v2,
+                         x + drawWidth, y + static_cast<float>(height), 0.0f, u2, v2,
+                         x + drawWidth, y, 0.0f, u2, v1});
 
         indices.insert(indices.end(),
-        {startIndex, startIndex + 1, startIndex + 2, startIndex, startIndex + 2, startIndex + 3});
+                       {startIndex, startIndex + 1, startIndex + 2, startIndex, startIndex + 2, startIndex + 3});
         x += advance;
     }
 }
@@ -157,10 +163,12 @@ void UIRenderer::Draw()
     offsets.clear();
     offsets.push_back(0);
 
-    for (const auto& entry : renderQueue) {
+    for (const auto& entry : renderQueue)
+    {
         auto vertexOffset = static_cast<unsigned int>(vertices_buffer.size() / 5);
         vertices_buffer.insert(vertices_buffer.end(), entry.vertices.begin(), entry.vertices.end());
-        for (unsigned index : entry.indices) {
+        for (unsigned index : entry.indices)
+        {
             indices_buffer.push_back(index + vertexOffset);
         }
         offsets.push_back(offsets.back() + entry.indices.size());
@@ -177,16 +185,18 @@ void UIRenderer::Draw()
     shader.setValue("projection", projection);
 
     int groupIndex = 0;
-    for(const auto& entry : renderQueue)
+    for (const auto& entry : renderQueue)
     {
         auto region = ResourceManager::GetInstance().GetTextureRegion(ResourceLocation(entry.textureLocation));
-        if(region)
+        if (region)
         {
             region->Bind(1);
             glDrawElements(GL_TRIANGLES, offsets[groupIndex + 1] - offsets[groupIndex], GL_UNSIGNED_INT, reinterpret_cast<const void*>(offsets[groupIndex] * sizeof(unsigned int)));
         }
         groupIndex++;
     }
+    glBindVertexArray(0);
+    itemRenderer.Draw();
     glEnable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
 }

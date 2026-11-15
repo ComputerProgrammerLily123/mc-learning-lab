@@ -36,4 +36,10 @@ struct BakedModel
     bool ambientOcclusion = true;
     std::optional<Display> display;
 };
+
+struct BakedItemModel
+{
+    std::shared_ptr<const model::BakedModel> model;
+    std::string guiLight = "side";
+};
 }

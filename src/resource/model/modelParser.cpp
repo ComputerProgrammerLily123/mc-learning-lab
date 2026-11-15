@@ -1,6 +1,7 @@
 #include "modelParser.h"
 
 #include <unordered_set>
+
 #include "direction.h"
 #include "resource/resourceManager.h"
 
@@ -9,6 +10,8 @@ model::Model ModelParser::Parse(const Json& rawJson)
     model::Model model;
     model.parent = JsonReader::GetData<std::string>(rawJson, "parent");
     model.ambientOcclusion = JsonReader::GetData<bool>(rawJson, "ambientocclusion");
+    model.display = ParseDisplay(rawJson);
+    model.gui_light = JsonReader::GetData<std::string>(rawJson, "gui_light");
 
     if (auto iter = rawJson.find("textures"); iter != rawJson.end())
     {
@@ -26,7 +29,7 @@ model::Model ModelParser::Parse(const Json& rawJson)
     if (const auto& iter = rawJson.find("elements"); iter != rawJson.end())
     {
         if (!iter->is_array()) throw std::runtime_error("Model elements must be an array.");
-        
+
         std::vector<Element> result;
         result.reserve(iter->size());
         for (const Json& elementJson : *iter)
@@ -40,23 +43,23 @@ model::Model ModelParser::Parse(const Json& rawJson)
 model::Model ModelParser::ResolveInheritance(const model::Model& rawModel)
 {
     model::Model result;
-    if(rawModel.parent.has_value())
+    if (rawModel.parent.has_value())
     {
         ResourceLocation location(*rawModel.parent);
         result = ResolveInheritance(Parse(JsonReader::ReadJson(ResourceManager::GetInstance().GetModelPath(location).string())));
     }
-    if(rawModel.ambientOcclusion.has_value())
+    if (rawModel.ambientOcclusion.has_value())
     {
         result.ambientOcclusion = rawModel.ambientOcclusion;
     }
-    if(rawModel.textures.has_value())
+    if (rawModel.textures.has_value())
     {
-        if(!result.textures.has_value())
+        if (!result.textures.has_value())
         {
             result.textures.emplace();
         }
         result.textures->reserve(result.textures->size() + rawModel.textures->size());
-        for(const auto& [key, value] : *rawModel.textures)
+        for (const auto& [key, value] : *rawModel.textures)
         {
             result.textures->insert_or_assign(key, value);
         }
@@ -65,11 +68,11 @@ model::Model ModelParser::ResolveInheritance(const model::Model& rawModel)
     {
         result.elements = *rawModel.elements;
     }
-    if(rawModel.display.has_value())
+    if (rawModel.display.has_value())
     {
         result.display = rawModel.display;
     }
-    if(rawModel.gui_light.has_value())
+    if (rawModel.gui_light.has_value())
     {
         result.gui_light = rawModel.gui_light;
     }
@@ -127,7 +130,7 @@ model::Face ModelParser::ParseFace(const Json& rawJson)
 {
     model::Face face;
 
-    if(auto texture = JsonReader::GetData<std::string>(rawJson, "texture"))
+    if (auto texture = JsonReader::GetData<std::string>(rawJson, "texture"))
     {
         face.texture = *texture;
     }
@@ -136,7 +139,7 @@ model::Face ModelParser::ParseFace(const Json& rawJson)
         throw std::runtime_error("Face requires a texture.");
     }
     face.uv = JsonReader::GetData<glm::vec4>(rawJson, "uv");
-    if(auto cullFace = JsonReader::GetData<std::string>(rawJson, "cullface"))
+    if (auto cullFace = JsonReader::GetData<std::string>(rawJson, "cullface"))
     {
         auto direction = model::StringToDirection(*cullFace);
         if (!direction)
@@ -145,7 +148,7 @@ model::Face ModelParser::ParseFace(const Json& rawJson)
         }
         face.cullFace = direction;
     }
-    if(auto rotation = JsonReader::GetData<int>(rawJson, "rotation"))
+    if (auto rotation = JsonReader::GetData<int>(rawJson, "rotation"))
     {
         if (*rotation != 0 && *rotation != 90 && *rotation != 180 && *rotation != 270)
         {
@@ -159,12 +162,11 @@ model::Face ModelParser::ParseFace(const Json& rawJson)
 }
 std::array<std::optional<model::Face>, 6> ModelParser::ParseFaces(const Json& rawJson)
 {
-
     std::array<std::optional<model::Face>, 6> faces;
 
     for (const auto& [directionName, faceJson] : rawJson.items())
     {
-        if(auto index = model::StringToDirection(directionName))
+        if (auto index = model::StringToDirection(directionName))
         {
             faces.at(model::DirectionToIndex(index.value())) = ParseFace(faceJson);
         }
@@ -187,7 +189,7 @@ model::Rotation ModelParser::ParseRotation(const Json& rawJson)
     if (axis)
     {
         model::SingleRotation singleRotation;
-        if(auto origin = JsonReader::GetData<glm::vec3>(rawJson, "origin"))
+        if (auto origin = JsonReader::GetData<glm::vec3>(rawJson, "origin"))
         {
             singleRotation.origin = *origin;
         }
@@ -197,7 +199,7 @@ model::Rotation ModelParser::ParseRotation(const Json& rawJson)
         }
         singleRotation.rescale = JsonReader::GetDataOrDefault<bool>(rawJson, "rescale", false);
         singleRotation.axis = *axis;
-        if(auto angle = JsonReader::GetData<float>(rawJson, "angle"))
+        if (auto angle = JsonReader::GetData<float>(rawJson, "angle"))
         {
             if (angle != -45.0f && angle != -22.5f && angle != 0.0f && angle != 22.5f && angle != 45.0f)
             {
@@ -214,7 +216,7 @@ model::Rotation ModelParser::ParseRotation(const Json& rawJson)
     if (x && y && z)
     {
         model::MultiRotation multiRotation;
-        if(auto origin = JsonReader::GetData<glm::vec3>(rawJson, "origin"))
+        if (auto origin = JsonReader::GetData<glm::vec3>(rawJson, "origin"))
         {
             multiRotation.origin = *origin;
         }
@@ -239,7 +241,7 @@ model::Model ModelParser::ParseTexture(model::Model& rawModel)
         return rawModel;
     }
 
-    const auto resolveReference =[&rawModel](std::string& reference) -> std::optional<std::string>
+    const auto resolveReference = [&rawModel](std::string& reference) -> std::optional<std::string>
     {
         std::unordered_set<std::string> visited;
 
@@ -254,7 +256,7 @@ model::Model ModelParser::ParseTexture(model::Model& rawModel)
 
             if (!visited.insert(variable).second)
             {
-                throw std::runtime_error("Circular texture reference: #" +variable);
+                throw std::runtime_error("Circular texture reference: #" + variable);
             }
 
             const auto iterator = rawModel.textures->find(variable);
@@ -289,7 +291,7 @@ model::Model ModelParser::ParseTexture(model::Model& rawModel)
         {
             for (auto& face : element.faces)
             {
-                if(face.has_value())
+                if (face.has_value())
                 {
                     if (const auto resolved = resolveReference(face->texture))
                     {
@@ -300,4 +302,37 @@ model::Model ModelParser::ParseTexture(model::Model& rawModel)
         }
     }
     return rawModel;
+}
+std::optional<model::Display> ModelParser::ParseDisplay(const Json& json)
+{
+    const auto it = json.find("display");
+    if (it == json.end())
+        return std::nullopt;
+
+    if (!it->is_object())
+        throw std::runtime_error("Model display must be an object.");
+
+    model::Display result;
+    result.gui = ParseDisplayMode(*it, "gui");
+    result.ground = ParseDisplayMode(*it, "ground");
+    result.fixed = ParseDisplayMode(*it, "fixed");
+    result.thirdperson_righthand = ParseDisplayMode(*it, "thirdperson_righthand");
+    result.firstperson_righthand = ParseDisplayMode(*it, "firstperson_righthand");
+    result.firstperson_lefthand = ParseDisplayMode(*it, "firstperson_lefthand");
+    return result;
+}
+std::optional<model::DisplayMode> ModelParser::ParseDisplayMode(const Json& json, const char* name)
+{
+    const auto it = json.find(name);
+    if (it == json.end())
+        return std::nullopt;
+
+    if (!it->is_object())
+        throw std::runtime_error("Display mode must be an object.");
+
+    model::DisplayMode result;
+    result.rotation = JsonReader::GetData<glm::vec3>(*it, "rotation").value_or(glm::vec3(0.0f));
+    result.translation = JsonReader::GetData<glm::vec3>(*it, "translation").value_or(glm::vec3(0.0f));
+    result.scale = JsonReader::GetData<glm::vec3>(*it, "scale").value_or(glm::vec3(1.0f));
+    return result;
 }

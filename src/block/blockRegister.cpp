@@ -5,14 +5,12 @@ void BlockRegister::RegisterAll()
     RegisterBlock("grass");
     RegisterBlock("dirt");
     RegisterBlock("stone");
-    RegisterBlock("fence", false);
     RegisterBlock("oak_log");
-    RegisterBlock("stone_button", false);
+    RegisterBlock("iron_ore");
     RegisterBlock("lever", false);
-    RegisterBlock("beacon");
-    RegisterBlock("birch_log");
+    RegisterBlock("fence", false);
     RegisterBlock("blue_wool");
-    RegisterBlock("clay");
+    RegisterBlock("sand");
     RegisterBlock("oak_leaves", false);
 }
 BlockBase BlockRegister::RegisterBlock(const std::string &name, bool isSolid)
@@ -25,9 +23,9 @@ BlockBase BlockRegister::RegisterBlock(const std::string &name, bool isSolid)
     blockCount++;
     return block;
 }
-BlockBase BlockRegister::GetBlock(int id)
+const BlockBase& BlockRegister::GetBlock(int id) const
 {
-    return blocks[id];
+    return blocks.at(id);
 }
 unsigned BlockRegister::GetBlockCount() const
 {

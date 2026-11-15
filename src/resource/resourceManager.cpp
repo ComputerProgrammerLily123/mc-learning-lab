@@ -27,6 +27,10 @@ const std::filesystem::path ResourceManager::GetBlockstatePath(const ResourceLoc
     path += ".json";
     return path;
 }
+std::shared_ptr<Texture> ResourceManager::GetBlockAtlas() const
+{
+    return blockAtlasPtr;
+}
 std::shared_ptr<TextureRegion> ResourceManager::GetTextureRegion(const ResourceLocation& location) const
 {
     auto it = textureRegions.find(location);
@@ -188,6 +192,40 @@ void ResourceManager::BakeBlockstates()
 
         bakedBlockstateDefinitions.insert_or_assign(location, std::move(baked));
     }
+}
+void ResourceManager::LoadItemModel(const ResourceLocation& item)
+{
+    ResourceLocation modelLocation(item.GetNamespace(), "item/" + item.GetPath());
+
+    auto model = LoadModel(modelLocation);
+    itemModelLocations.insert_or_assign(item, modelLocation);
+
+    if (model && model->textures)
+    {
+        for (const auto& [name, texture] : *model->textures)
+            RegisterTextureRegionInAtlas(ResourceLocation(texture));
+    }
+}
+void ResourceManager::BakeItemModels()
+{
+    for (const auto& [item, modelLocation] : itemModelLocations)
+    {
+        auto baked = modelContainer.GetModel(modelLocation);
+        auto resolved = modelContainer.resolvedModels.at(modelLocation);
+
+        auto result = std::make_shared<model::BakedItemModel>();
+        result->model = baked;
+        result->guiLight = resolved->gui_light.value_or("side");
+
+        bakedItemModels.insert_or_assign(item, std::move(result));
+    }
+}
+std::shared_ptr<const model::BakedItemModel> ResourceManager::GetItemModel(const ResourceLocation& item) const
+{
+    const auto it = bakedItemModels.find(item);
+    if (it == bakedItemModels.end())
+        return nullptr;
+    return it->second;
 }
 std::shared_ptr<TextureRegion> ResourceManager::LoadTexture(const ResourceLocation& location, bool flip)
 {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <unordered_map>
+#include <deque>
 
 #include "chunk.h"
 #include "core/sceneManager.h"
@@ -25,6 +26,10 @@ public:
     void InitChunk(int32_t i, int32_t j);
     void RefreshChunkAndNeighbors(int chunkX, int chunkZ);
 
+    void QueueChunkMeshUpdate(int chunkX, int chunkZ);
+    void QueueBlockMeshUpdate(int x, int z);
+    void ProcessMeshUpdates(std::size_t maxUpdates = 1);
+
     static constexpr int WorldToChunk(int coordinate)
     {
         return coordinate >= 0 ? coordinate / CHUNK_WIDTH : (coordinate - CHUNK_WIDTH + 1) / CHUNK_WIDTH;
@@ -39,6 +44,8 @@ private:
     std::unordered_map<uint64_t, Chunk*> chunks;
     FastNoiseLite noise1, noise2;
     WorldGenerator worldGen;
+
+    std::deque<Chunk*> meshUpdateQueue;
 
     bool CanFenceConnect(int x, int y, int z);
     bool UpdateFenceState(int x, int y, int z);

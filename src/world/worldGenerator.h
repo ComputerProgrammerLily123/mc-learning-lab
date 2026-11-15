@@ -1,6 +1,7 @@
 #pragma once
 #include <fastNoiseLite/FastNoiseLite.h>
 #include <cstdint>
+#include "world/chunk.h"
 class World;
 class WorldGenerator
 {
@@ -16,6 +17,8 @@ public:
 private:
     World *world;
     FastNoiseLite surfaceNoise, treeNoise;
+
+    std::array<int, CHUNK_WIDTH * CHUNK_WIDTH> height_map {};
 
     void NoiseGenerate(int32_t i, int32_t j);
     void TreeGenerate(int32_t i, int32_t j);

@@ -1,13 +1,19 @@
 #pragma once
-#include<array>
+#include <array>
+
+#include "item/itemRegister.h"
+
 #define SLOT_COUNT 9
 class HotBar
 {
 public:
-    [[nodiscard]] unsigned GetSlotItem() const;
-    [[nodiscard]] unsigned GetHotBarSlot() const;
+    [[nodiscard]] const ItemStack& GetSlotItem() const;
+    [[nodiscard]] const ItemStack& GetSlotItem(unsigned slot) const;
+    void SetSlotItem(unsigned slot, ItemStack stack);
     void SetHotBarSlot(unsigned slot);
+    [[nodiscard]] unsigned GetHotBarSlot() const;
+
 private:
     unsigned currentSlot = 0;
-    std::array<unsigned,SLOT_COUNT> slots = {1,2,3,4,5,6,7,8,10};
+    std::array<ItemStack, SLOT_COUNT> slots{};
 };

@@ -1,9 +1,10 @@
 #include "player.h"
 
-#include "world/world.h"
-#include "GLFW/glfw3.h"
 #include "render/camera.h"
-Player::Player(glm::vec3 position, Camera *camera, World *world) : position(position), movement(world, 0.08), rayCaster(world, 5, 0.01f), hotbar(), camera(camera), world(world)
+#include "world/world.h"
+#include "core/input.h"
+
+Player::Player(glm::vec3 position, Camera* camera, World* world) : position(position), previousPosition(position), movement(world, 0.08), rayCaster(world, 5, 0.01f), hotbar(), camera(camera), world(world)
 {
 }
 glm::vec3 Player::GetPosition() const
@@ -30,7 +31,7 @@ glm::i16vec3 Player::GetChunkPosition() const
     auto pos = GetBlockPosition();
     return {World::WorldToChunk(pos.x), 0, World::WorldToChunk(pos.z)};
 }
-HotBar &Player::GetHotBar()
+HotBar& Player::GetHotBar()
 {
     return hotbar;
 }
@@ -48,7 +49,7 @@ void Player::ProcessRayCast()
     {
         lookAtPosition = glm::i16vec3(0, -1, 0);
     }
-    if (time.GetCurrentTime() - lastRayCastTime > rayCastDuration && input.IsMouseButtonPressed(GLFW_MOUSE_BUTTON_1))
+    if (time.GetCurrentTime() - lastRayCastTime > rayCastDuration && input.IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
     {
         if (lookAtPosition.y != -1)
         {
@@ -56,15 +57,28 @@ void Player::ProcessRayCast()
             lastRayCastTime = time.GetCurrentTime();
         }
     }
-    if (time.GetCurrentTime() - lastRayCastTime > rayCastDuration && input.IsMouseButtonPressed(GLFW_MOUSE_BUTTON_2))
+    if (time.GetCurrentTime() - lastRayCastTime > rayCastDuration && input.IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
     {
         if (lookAtPosition.y != -1)
         {
+            const ItemStack& stack = hotbar.GetSlotItem();
+
             glm::i16vec3 blockPos = glm::i16vec3(lookAtPosition.x + offset.x, lookAtPosition.y + offset.y, lookAtPosition.z + offset.z);
-            if (!world->GetBlockStateId(blockPos.x, blockPos.y, blockPos.z) && !GetPlayerAABB(position).Intersects(GetBlockAABB(blockPos.x, blockPos.y, blockPos.z)) && !GetPlayerAABB(position + glm::vec3(0, 1, 0)).Intersects(GetBlockAABB(blockPos.x, blockPos.y, blockPos.z)))
+            const bool targetIsAir = world->GetBlockStateId(blockPos.x, blockPos.y, blockPos.z) == 0;
+
+            const bool intersectsPlayer = GetPlayerAABB(position).Intersects(GetBlockAABB(blockPos.x, blockPos.y, blockPos.z)) ||
+            GetPlayerAABB(position + glm::vec3(0, 1, 0)).Intersects(GetBlockAABB(blockPos.x, blockPos.y, blockPos.z));
+
+            if (!stack.IsEmpty() && targetIsAir && !intersectsPlayer)
             {
-                world->SetBlockAndRefresh(lookAtPosition.x + offset.x, lookAtPosition.y + offset.y, lookAtPosition.z + offset.z, hotbar.GetSlotItem());
-                lastRayCastTime = time.GetCurrentTime();
+                const auto& item =
+                    ItemRegister::GetInstance().GetItem(stack.itemId);
+
+                if (item.blockId)
+                {
+                    world->SetBlockAndRefresh(blockPos.x, blockPos.y, blockPos.z, *item.blockId);
+                    lastRayCastTime = time.GetCurrentTime();
+                }
             }
         }
     }
